@@ -8,7 +8,7 @@
     - [x] Sub-task: Define `TimelineSchema` (fps, dimensions, duration, tracks array). <!-- 537b4a8 -->
     - [x] Sub-task: Export inferred TypeScript types from Zod schemas. <!-- 537b4a8 -->
 - [x] Task: Create a simple test script `tests/schema.test.ts` to verify that valid JSON objects pass validation and invalid ones fail. <!-- 537b4a8 -->
-- [ ] Task: Conductor - User Manual Verification 'Data Models & Schema Definitions' (Protocol in workflow.md)
+- [x] Task: Conductor - User Manual Verification 'Data Models & Schema Definitions' (Protocol in workflow.md) <!-- 188561d -->
 
 ## Phase 2: Template Architecture
 - [ ] Task: Create `types/template.ts` to define the `AnimationTemplate` interface.
