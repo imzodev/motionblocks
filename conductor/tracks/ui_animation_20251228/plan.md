@@ -4,9 +4,9 @@
 - [x] Task: Create `components/AssetsPanel.tsx` with a drag-and-drop uploader. <!-- bd73db9 -->
     - [x] Write Tests: Ensure files can be dropped and the upload handler is called. <!-- bd73db9 -->
     - [x] Implement Feature: Integrate Shadcn `Dropzone` or similar and update local state. <!-- bd73db9 -->
-- [ ] Task: Create `components/AssetLibrary.tsx` to display uploaded assets.
-    - [ ] Write Tests: Ensure a list of assets renders as a grid of thumbnails.
-    - [ ] Implement Feature: Render a grid of assets with selection state.
+- [x] Task: Create `components/AssetLibrary.tsx` to display uploaded assets. <!-- f2bf7da -->
+    - [x] Write Tests: Ensure a list of assets renders as a grid of thumbnails. <!-- f2bf7da -->
+    - [x] Implement Feature: Render a grid of assets with selection state. <!-- f2bf7da -->
 - [ ] Task: Implement `components/SequenceList.tsx` for reorderable blocks.
     - [ ] Write Tests: Ensure blocks can be reordered and the `Timeline` state updates.
     - [ ] Implement Feature: Use `@dnd-kit` or similar to create a reorderable list of blocks.
