@@ -23,7 +23,6 @@ import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
 import { GripVertical, Trash2 } from "lucide-react";
 
 interface SequenceListProps {
@@ -68,7 +67,7 @@ function SortableItem({
       ref={setNodeRef}
       style={style}
       className={cn(
-        "flex items-center gap-3 p-3 shadow-sm transition-all",
+        "flex flex-row items-center justify-between gap-2 px-2 py-1 shadow-sm transition-all",
         isSelected ? "border-primary ring-1 ring-primary" : "border-border",
         isDragging && "opacity-50 scale-105 shadow-xl"
       )}
@@ -79,24 +78,27 @@ function SortableItem({
         {...listeners}
         variant="ghost"
         size="icon"
-        className="cursor-grab active:cursor-grabbing"
+        className="cursor-grab active:cursor-grabbing h-7 w-7 shrink-0"
       >
         <GripVertical className="w-4 h-4 text-muted-foreground" />
       </Button>
 
-      <div className="flex-1 min-w-0">
-        <p className="text-sm font-medium truncate uppercase tracking-tight">
-          {track.template}
-        </p>
-        <p className="text-xs text-muted-foreground truncate">
-          ID: {track.id} • Asset: {track.assetId}
-        </p>
-      </div>
+      <p className="flex-1 min-w-0 text-xs font-semibold truncate uppercase tracking-tight leading-none">
+        {track.template}
+      </p>
 
-      <Separator orientation="vertical" className="h-6" />
-      <Badge variant="secondary" className="tabular-nums">
-        {track.duration}f
-      </Badge>
+      <div className="shrink-0 flex items-center gap-1">
+        <Badge variant="secondary" className="tabular-nums text-[10px] px-2 py-0 leading-none">
+          {track.duration}f
+        </Badge>
+        <Badge
+          variant="outline"
+          className="tabular-nums font-mono text-[10px] px-2 py-0 leading-none text-muted-foreground"
+          title={track.id}
+        >
+          {track.id.slice(-6)}
+        </Badge>
+      </div>
 
       <Button
         onClick={(e) => {
@@ -105,7 +107,7 @@ function SortableItem({
         }}
         variant="ghost"
         size="icon"
-        className="text-muted-foreground hover:text-destructive"
+        className="text-muted-foreground hover:text-destructive h-7 w-7 shrink-0"
         aria-label="Delete block"
       >
         <Trash2 className="w-4 h-4" />
@@ -144,7 +146,7 @@ export function SequenceList({
   };
 
   return (
-    <div className={cn("space-y-2", className)}>
+    <div className={cn("space-y-1.5", className)}>
       <DndContext
         sensors={sensors}
         collisionDetection={closestCenter}
