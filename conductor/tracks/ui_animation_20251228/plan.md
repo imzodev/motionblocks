@@ -12,9 +12,9 @@
 - [x] Task: Implement Entry Templates (Fade In, Slide, Scale Pop, Mask Reveal). <!-- 245287a -->
     - [x] Write Tests: Verify the `render` function returns the correct motion props/styles for each template. <!-- 245287a -->
     - [x] Implement Feature: Create the functional components for each entry animation. <!-- 245287a -->
-- [ ] Task: Implement Emphasis Templates (Pulse, Glow, Bounce, Shake).
-    - [ ] Write Tests: Verify the animation loops and properties match the schema.
-    - [ ] Implement Feature: Create the functional components for each emphasis animation.
+- [x] Task: Implement Emphasis Templates (Pulse, Glow, Bounce, Shake). <!-- 8d79883 -->
+    - [x] Write Tests: Verify the animation loops and properties match the schema. <!-- 8d79883 -->
+    - [x] Implement Feature: Create the functional components for each emphasis animation. <!-- 8d79883 -->
 - [ ] Task: Implement Data Templates (Counter, Timeline Reveal).
     - [ ] Write Tests: Verify number interpolation and mask progress logic.
     - [ ] Implement Feature: Create the specialized data-driven animation components.
