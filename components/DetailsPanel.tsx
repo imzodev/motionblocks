@@ -36,12 +36,30 @@ export function DetailsPanel({
   }
 
   const handleSlotUpdate = (slotId: string, value: unknown) => {
+    const nextTemplateProps = {
+      ...selectedTrack.templateProps,
+      [slotId]: value,
+    };
+
+    let nextDuration = selectedTrack.duration;
+    if (selectedTrack.template === "timeline-reveal") {
+      const filled = new Set<number>();
+      for (let i = 1; i <= 5; i += 1) {
+        const labelVal = nextTemplateProps[`label${i}`];
+        const imageVal = nextTemplateProps[`image${i}`];
+        const hasLabel = typeof labelVal === "string" && labelVal.trim().length > 0;
+        const hasImage = typeof imageVal === "string" && imageVal.trim().length > 0;
+        if (hasLabel || hasImage) filled.add(i);
+      }
+
+      const itemCount = Math.max(1, filled.size);
+      nextDuration = Math.max(80, Math.min(360, 100 + (itemCount - 1) * 35));
+    }
+
     onUpdateTrack({
       ...selectedTrack,
-      templateProps: {
-        ...selectedTrack.templateProps,
-        [slotId]: value,
-      },
+      duration: nextDuration,
+      templateProps: nextTemplateProps,
     });
   };
 

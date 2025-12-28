@@ -69,7 +69,7 @@ export default function Home() {
         assetId: "", 
         template: templateId,
         startFrame: startFrame,
-        duration: 60,
+        duration: templateId === "timeline-reveal" ? 240 : 60,
         position: { x: 0, y: 0 },
         templateProps: {},
       };
