@@ -87,9 +87,13 @@ export const TimelineRevealTemplate: AnimationTemplate = {
     cardOffset: z.number().min(60).max(260).default(120),
     lineWidth: z.number().min(2).max(16).default(6),
     introFrames: z.number().min(1).max(60).default(24),
-    perItemFrames: z.number().min(10).max(160).default(44),
+    perItemFrames: z.number().min(70).max(150).default(110),
+    itemZoom: z.number().min(0).max(1.2).default(0.35),
     panStrength: z.number().min(0).max(1).default(0.82),
     zoomStrength: z.number().min(0).max(1).default(0.14),
+    backgroundEnabled: z.boolean().default(false),
+    backgroundColor: z.string().default("#ffffff"),
+    backgroundOpacity: z.number().min(0).max(1).default(1),
   }),
   render: ({ assets, frame, duration, props }: RenderProps) => {
     const p = (props ?? {}) as Record<string, unknown>;
@@ -107,8 +111,12 @@ export const TimelineRevealTemplate: AnimationTemplate = {
     const lineWidth = typeof p.lineWidth === "number" ? p.lineWidth : 6;
     const introFrames = typeof p.introFrames === "number" ? p.introFrames : 24;
     const perItemFramesProp = typeof p.perItemFrames === "number" ? p.perItemFrames : undefined;
+    const itemZoom = typeof p.itemZoom === "number" ? p.itemZoom : 0.35;
     const panStrength = typeof p.panStrength === "number" ? p.panStrength : 0.82;
     const zoomStrength = typeof p.zoomStrength === "number" ? p.zoomStrength : 0.14;
+    const backgroundEnabled = typeof p.backgroundEnabled === "boolean" ? p.backgroundEnabled : false;
+    const backgroundColor = typeof p.backgroundColor === "string" ? p.backgroundColor : "#ffffff";
+    const backgroundOpacity = typeof p.backgroundOpacity === "number" ? p.backgroundOpacity : 1;
 
     const clamp01 = (v: number) => Math.min(1, Math.max(0, v));
     const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
@@ -146,8 +154,6 @@ export const TimelineRevealTemplate: AnimationTemplate = {
     const autoSegmentFrames = Math.max(10, Math.floor(availableSegmentFrames / segmentCount));
     const perItemFrames = perItemFramesProp ?? autoSegmentFrames;
 
-    const tGlobal = clamp01(duration > 0 ? frame / duration : 0);
-
     const introT = clamp01(frame / Math.max(1, introFramesEffective));
     const introEase = easeOutCubic(introT);
 
@@ -179,8 +185,19 @@ export const TimelineRevealTemplate: AnimationTemplate = {
 
     return (
       <group scale={[zoom, zoom, 1]} position={[panX * introEase, 0, 0]}>
+        {backgroundEnabled && (
+          <mesh position={[0, 0, -50]}>
+            <planeGeometry args={[6000, 6000]} />
+            <meshBasicMaterial
+              color={backgroundColor}
+              transparent={backgroundOpacity < 1}
+              opacity={clamp01(backgroundOpacity)}
+              depthWrite={false}
+            />
+          </mesh>
+        )}
         <group>
-          <mesh position={[lineCenterX, 0, -1]}>
+          <mesh position={[lineCenterX, 0, -80]} renderOrder={0}>
             <planeGeometry args={[Math.max(1, drawnWidth), lineWidth]} />
             <meshBasicMaterial
               color={lineColor}
@@ -203,7 +220,8 @@ export const TimelineRevealTemplate: AnimationTemplate = {
           const spotlight = clamp01(1 - Math.abs(activeIdxFloat - idx));
           const spotlightEase = easeInOutSine(spotlight);
 
-          const nodeScale = lerp(0.8, 1.0, itemEase) * lerp(1.0, 1.12, spotlightEase);
+          const focusZoom = lerp(1.0, 1.0 + Math.max(0, itemZoom) * 2.4, spotlightEase);
+          const nodeScale = lerp(0.8, 1.0, itemEase) * focusZoom;
           const labelOpacity = lerp(0, 1, itemEase);
 
           const img = item.image;
@@ -216,7 +234,12 @@ export const TimelineRevealTemplate: AnimationTemplate = {
           const glowOpacity = (0.12 + 0.25 * spotlightEase) * glowAlpha;
 
           return (
-            <group key={idx} position={[x, 0, 0]}>
+            <group
+              key={idx}
+              position={[x, 0, lerp(0, -24, spotlightEase)]}
+              scale={[focusZoom, focusZoom, 1]}
+              renderOrder={2}
+            >
               <mesh scale={[glowScale, glowScale, 1]}>
                 <circleGeometry args={[1, 64]} />
                 <meshBasicMaterial
@@ -254,8 +277,7 @@ export const TimelineRevealTemplate: AnimationTemplate = {
                     <meshBasicMaterial
                       color={accentColor}
                       transparent
-                      opacity={(0.04 + 0.08 * spotlightEase) * glowAlpha}
-                      blending={THREE.AdditiveBlending}
+                      opacity={0}
                       depthWrite={false}
                     />
                   </mesh>

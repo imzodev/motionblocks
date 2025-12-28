@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { Slider } from "@/components/ui/slider";
 import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
 
@@ -53,7 +54,14 @@ export function DetailsPanel({
       }
 
       const itemCount = Math.max(1, filled.size);
-      nextDuration = Math.max(80, Math.min(360, 100 + (itemCount - 1) * 35));
+      const perItemFrames =
+        typeof nextTemplateProps.perItemFrames === "number"
+          ? nextTemplateProps.perItemFrames
+          : 110;
+      const intro = 24;
+      const outro = 18;
+      const segments = Math.max(1, itemCount - 1);
+      nextDuration = Math.max(80, Math.min(600, intro + outro + segments * perItemFrames));
     }
 
     onUpdateTrack({
@@ -157,6 +165,158 @@ export function DetailsPanel({
             </Card>
           )}
         </div>
+
+        {selectedTrack.template === "timeline-reveal" && (
+          <>
+            <Separator />
+            <div className="space-y-3">
+              <div className="flex items-center gap-2">
+                <h4 className="text-[10px] font-bold uppercase text-muted-foreground tracking-widest">Template</h4>
+              </div>
+
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <label className="text-xs font-medium">Per-item frames</label>
+                  <Badge variant="secondary" className="tabular-nums text-[10px] px-2 py-0 leading-none">
+                    {typeof selectedTrack.templateProps.perItemFrames === "number"
+                      ? selectedTrack.templateProps.perItemFrames
+                      : 110}
+                    f
+                  </Badge>
+                </div>
+                <Slider
+                  min={70}
+                  max={150}
+                  step={1}
+                  value={[
+                    typeof selectedTrack.templateProps.perItemFrames === "number"
+                      ? selectedTrack.templateProps.perItemFrames
+                      : 110,
+                  ]}
+                  onValueChange={(v) => handleSlotUpdate("perItemFrames", v[0])}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <label className="text-xs font-medium">Item zoom</label>
+                  <Badge variant="secondary" className="tabular-nums text-[10px] px-2 py-0 leading-none">
+                    {(
+                      typeof selectedTrack.templateProps.itemZoom === "number"
+                        ? selectedTrack.templateProps.itemZoom
+                        : 0.35
+                    ).toFixed(2)}
+                  </Badge>
+                </div>
+                <Slider
+                  min={0}
+                  max={1.2}
+                  step={0.01}
+                  value={[
+                    typeof selectedTrack.templateProps.itemZoom === "number"
+                      ? selectedTrack.templateProps.itemZoom
+                      : 0.35,
+                  ]}
+                  onValueChange={(v) => handleSlotUpdate("itemZoom", v[0])}
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-2">
+                <div className="space-y-1.5">
+                  <label className="text-xs font-medium">Dot color</label>
+                  <div className="flex items-center gap-2 rounded-xl border bg-card/60 px-2 py-1.5">
+                    <input
+                      type="color"
+                      className="h-7 w-8 bg-transparent"
+                      value={String(selectedTrack.templateProps.accentColor || "#6366f1")}
+                      onChange={(e) => handleSlotUpdate("accentColor", e.target.value)}
+                    />
+                    <Input
+                      value={String(selectedTrack.templateProps.accentColor || "#6366f1")}
+                      onChange={(e) => handleSlotUpdate("accentColor", e.target.value)}
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-xs font-medium">Line color</label>
+                  <div className="flex items-center gap-2 rounded-xl border bg-card/60 px-2 py-1.5">
+                    <input
+                      type="color"
+                      className="h-7 w-8 bg-transparent"
+                      value={String(selectedTrack.templateProps.lineColor || "#94a3b8")}
+                      onChange={(e) => handleSlotUpdate("lineColor", e.target.value)}
+                    />
+                    <Input
+                      value={String(selectedTrack.templateProps.lineColor || "#94a3b8")}
+                      onChange={(e) => handleSlotUpdate("lineColor", e.target.value)}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <label className="text-xs font-medium">Background</label>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="h-7 px-2 text-xs"
+                    onClick={() =>
+                      handleSlotUpdate(
+                        "backgroundEnabled",
+                        !(selectedTrack.templateProps.backgroundEnabled === true)
+                      )
+                    }
+                  >
+                    {selectedTrack.templateProps.backgroundEnabled === true ? "On" : "Off"}
+                  </Button>
+                </div>
+
+                {selectedTrack.templateProps.backgroundEnabled === true && (
+                  <>
+                    <div className="flex items-center gap-2 rounded-xl border bg-card/60 px-2 py-1.5">
+                      <input
+                        type="color"
+                        className="h-7 w-8 bg-transparent"
+                        value={String(selectedTrack.templateProps.backgroundColor || "#ffffff")}
+                        onChange={(e) => handleSlotUpdate("backgroundColor", e.target.value)}
+                      />
+                      <Input
+                        value={String(selectedTrack.templateProps.backgroundColor || "#ffffff")}
+                        onChange={(e) => handleSlotUpdate("backgroundColor", e.target.value)}
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <label className="text-xs font-medium">Background opacity</label>
+                        <Badge variant="secondary" className="tabular-nums text-[10px] px-2 py-0 leading-none">
+                          {(
+                            typeof selectedTrack.templateProps.backgroundOpacity === "number"
+                              ? selectedTrack.templateProps.backgroundOpacity
+                              : 1
+                          ).toFixed(2)}
+                        </Badge>
+                      </div>
+                      <Slider
+                        min={0}
+                        max={1}
+                        step={0.01}
+                        value={[
+                          typeof selectedTrack.templateProps.backgroundOpacity === "number"
+                            ? selectedTrack.templateProps.backgroundOpacity
+                            : 1,
+                        ]}
+                        onValueChange={(v) => handleSlotUpdate("backgroundOpacity", v[0])}
+                      />
+                    </div>
+                  </>
+                )}
+              </div>
+            </div>
+          </>
+        )}
 
         <Separator />
 
