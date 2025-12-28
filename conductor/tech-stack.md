@@ -13,6 +13,11 @@
 - **Framer Motion:** Used for smooth, reactive browser-based previews within the editor.
 - **Three.js / React Three Fiber:** Powering 3D animations and spatial depth effects within the motion templates.
 
+## UI Libraries
+- **react-dropzone:** For handling drag-and-drop file uploads in the Assets Panel.
+- **@dnd-kit:** For implementing reorderable lists in the Sequence UI.
+- **lucide-react:** For consistent iconography.
+
 ## Infrastructure & Tooling
 - **Bun:** High-performance JavaScript runtime and package manager used for the local development environment.
 - **ESLint & Prettier:** For maintaining code quality and consistent formatting.
