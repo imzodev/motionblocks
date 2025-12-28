@@ -8,7 +8,7 @@
 - [x] Task: Upgrade `components/DetailsPanel.tsx` to a Dynamic Slot-Based Inspector. <!-- 0bfe5f3 -->
 - [x] Task: Conductor - User Manual Verification 'Editor Infrastructure' (Protocol in workflow.md) <!-- 0bfe5f3 -->
 
-## Phase 2: Core Animation Templates (2D)
+## Phase 2: Core Animation Templates (2D) [checkpoint: da2e6d5]
 - [x] Task: Implement Entry Templates (Fade In, Slide, Scale Pop, Mask Reveal). <!-- 245287a -->
     - [x] Write Tests: Verify the `render` function returns the correct motion props/styles for each template. <!-- 245287a -->
     - [x] Implement Feature: Create the functional components for each entry animation. <!-- 245287a -->
@@ -18,7 +18,7 @@
 - [x] Task: Implement Data Templates (Counter, Timeline Reveal). <!-- e48a750 -->
     - [x] Write Tests: Verify number interpolation and mask progress logic. <!-- e48a750 -->
     - [x] Implement Feature: Create the specialized data-driven animation components. <!-- e48a750 -->
-- [~] Task: Conductor - User Manual Verification 'Core Animation Templates (2D)' (Protocol in workflow.md)
+- [x] Task: Conductor - User Manual Verification 'Core Animation Templates (2D)' (Protocol in workflow.md) <!-- da2e6d5 -->
 
 ## Phase 3: Advanced 3D Templates & Visuals
 - [ ] Task: Setup React Three Fiber environment and `components/Canvas3D.tsx`.
