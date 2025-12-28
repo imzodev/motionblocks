@@ -1,16 +1,12 @@
 # Track Plan: UI & Animation Foundation
 
-## Phase 1: Editor Infrastructure (Templates & Assets)
+## Phase 1: Editor Infrastructure (Templates & Assets) [checkpoint: 0bfe5f3]
 - [x] Task: Create `components/AssetsPanel.tsx` with a drag-and-drop uploader. <!-- bd73db9 -->
 - [x] Task: Create `components/AssetLibrary.tsx` to display uploaded assets. <!-- f2bf7da -->
-- [ ] Task: Create `components/TemplatesPanel.tsx` to browse and select animation recipes.
-    - [ ] Write Tests: Ensure templates can be selected.
-    - [ ] Implement Feature: List available templates (mock for now).
+- [x] Task: Create `components/TemplatesPanel.tsx` to browse and select animation recipes. <!-- 0bfe5f3 -->
 - [x] Task: Implement `components/SequenceList.tsx` for reorderable blocks. <!-- 70665c3 -->
-- [ ] Task: Upgrade `components/DetailsPanel.tsx` to a Dynamic Slot-Based Inspector.
-    - [ ] Write Tests: Ensure it renders different "Slots" based on the selected template.
-    - [ ] Implement Feature: Create a dynamic form that maps to template requirements.
-- [ ] Task: Conductor - User Manual Verification 'Editor Infrastructure' (Protocol in workflow.md)
+- [x] Task: Upgrade `components/DetailsPanel.tsx` to a Dynamic Slot-Based Inspector. <!-- 0bfe5f3 -->
+- [x] Task: Conductor - User Manual Verification 'Editor Infrastructure' (Protocol in workflow.md) <!-- 0bfe5f3 -->
 
 ## Phase 2: Core Animation Templates (2D)
 - [ ] Task: Implement Entry Templates (Fade In, Slide, Scale Pop, Mask Reveal).
