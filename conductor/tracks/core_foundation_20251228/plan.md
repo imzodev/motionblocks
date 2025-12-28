@@ -2,12 +2,12 @@
 
 ## Phase 1: Data Models & Schema Definitions
 - [x] Task: Install `zod` for runtime schema validation. <!-- 8bd6421 -->
-- [ ] Task: Create `types/timeline.ts` and define the Zod schemas and TypeScript types for `Timeline`, `Track`, and `Asset`.
-    - [ ] Sub-task: Define `AssetSchema` (id, type, src, content).
-    - [ ] Sub-task: Define `TrackSchema` (id, assetId, startFrame, duration, position, templateProps).
-    - [ ] Sub-task: Define `TimelineSchema` (fps, dimensions, duration, tracks array).
-    - [ ] Sub-task: Export inferred TypeScript types from Zod schemas.
-- [ ] Task: Create a simple test script `tests/schema.test.ts` to verify that valid JSON objects pass validation and invalid ones fail.
+- [x] Task: Create `types/timeline.ts` and define the Zod schemas and TypeScript types for `Timeline`, `Track`, and `Asset`. <!-- 537b4a8 -->
+    - [x] Sub-task: Define `AssetSchema` (id, type, src, content). <!-- 537b4a8 -->
+    - [x] Sub-task: Define `TrackSchema` (id, assetId, startFrame, duration, position, templateProps). <!-- 537b4a8 -->
+    - [x] Sub-task: Define `TimelineSchema` (fps, dimensions, duration, tracks array). <!-- 537b4a8 -->
+    - [x] Sub-task: Export inferred TypeScript types from Zod schemas. <!-- 537b4a8 -->
+- [x] Task: Create a simple test script `tests/schema.test.ts` to verify that valid JSON objects pass validation and invalid ones fail. <!-- 537b4a8 -->
 - [ ] Task: Conductor - User Manual Verification 'Data Models & Schema Definitions' (Protocol in workflow.md)
 
 ## Phase 2: Template Architecture
