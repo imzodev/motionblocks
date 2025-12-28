@@ -10,9 +10,9 @@
 - [x] Task: Implement `components/SequenceList.tsx` for reorderable blocks. <!-- 70665c3 -->
     - [x] Write Tests: Ensure blocks can be reordered and the `Timeline` state updates. <!-- 70665c3 -->
     - [x] Implement Feature: Use `@dnd-kit` or similar to create a reorderable list of blocks. <!-- 70665c3 -->
-- [ ] Task: Implement `components/DetailsPanel.tsx` for computed timing.
-    - [ ] Write Tests: Ensure it correctly calculates and displays start frames based on sequence order.
-    - [ ] Implement Feature: Create a read-only panel showing Start Frame and Duration for the selected block.
+- [x] Task: Implement `components/DetailsPanel.tsx` for computed timing. <!-- 4646a6b -->
+    - [x] Write Tests: Ensure it correctly calculates and displays start frames based on sequence order. <!-- 4646a6b -->
+    - [x] Implement Feature: Create a read-only panel showing Start Frame and Duration for the selected block. <!-- 4646a6b -->
 - [ ] Task: Conductor - User Manual Verification 'Assets Panel & Sequencing Logic' (Protocol in workflow.md)
 
 ## Phase 2: Core Animation Templates (2D)
