@@ -4,7 +4,7 @@ import React, { useCallback } from "react";
 import { useDropzone } from "react-dropzone";
 import { Upload } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { Card } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 
 interface AssetsPanelProps {
   onUpload: (files: File[]) => void;
@@ -34,22 +34,26 @@ export function AssetsPanel({ onUpload, className }: AssetsPanelProps) {
   return (
     <Card
       className={cn(
-        "p-4 border-2 border-dashed rounded-lg transition-colors cursor-pointer flex flex-col items-center justify-center gap-2 bg-card/60",
-        isDragActive ? "border-primary bg-primary/10" : "border-border hover:border-primary/50",
+        "border-2 border-dashed transition-all cursor-pointer bg-muted/30 hover:bg-muted/50 hover:border-primary/50",
+        isDragActive && "border-primary bg-primary/5",
         className
       )}
       {...getRootProps()}
     >
-      <input {...getInputProps()} />
-      <div className="p-3 bg-muted rounded-full">
-        <Upload className="w-6 h-6 text-muted-foreground" />
-      </div>
-      <div className="text-center">
-        <p className="text-sm font-medium">
-          {isDragActive ? "Drop files here" : "Click or drag assets here"}
-        </p>
-        <p className="text-xs text-muted-foreground mt-1">Supports PNG, JPG, SVG</p>
-      </div>
+      <CardContent className="flex flex-col items-center justify-center p-6 gap-4">
+        <input {...getInputProps()} />
+        <div className="p-4 bg-background rounded-full shadow-sm border border-border/50">
+          <Upload className={cn("w-6 h-6 transition-colors", isDragActive ? "text-primary" : "text-muted-foreground")} />
+        </div>
+        <div className="text-center space-y-1">
+          <p className="text-sm font-bold tracking-tight">
+            {isDragActive ? "Drop to upload" : "Click or drag assets"}
+          </p>
+          <p className="text-[10px] text-muted-foreground uppercase font-black tracking-widest opacity-60">
+            PNG • JPG • SVG
+          </p>
+        </div>
+      </CardContent>
     </Card>
   );
 }

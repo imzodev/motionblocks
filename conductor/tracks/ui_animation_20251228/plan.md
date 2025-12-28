@@ -20,17 +20,17 @@
     - [x] Implement Feature: Create the specialized data-driven animation components. <!-- e48a750 -->
 - [x] Task: Conductor - User Manual Verification 'Core Animation Templates (2D)' (Protocol in workflow.md) <!-- da2e6d5 -->
 
-## Phase 3: Advanced 3D Templates & Visuals
+## Phase 3: Advanced 3D Templates & Visuals [checkpoint: 20816e6]
 - [x] Task: Setup React Three Fiber environment and `components/Canvas3D.tsx`. <!-- 20816e6 -->
     - [x] Write Tests: Ensure the 3D canvas mounts and handles basic resize. <!-- 20816e6 -->
     - [x] Implement Feature: Initialize R3F and create a basic scene wrapper. <!-- 20816e6 -->
-- [ ] Task: Implement the **3D Mind Map** template.
-    - [ ] Write Tests: Verify node positioning and relationship rendering in the 3D space.
-    - [ ] Implement Feature: Use R3F to create a node-link diagram with depth.
-- [ ] Task: Implement the **Animated 3D Graphs** template.
-    - [ ] Write Tests: Verify bar/line generation from data props.
-    - [ ] Implement Feature: Create 3D bar/line graphs with animated entry.
-- [ ] Task: Implement **YouTube-style Text Highlights**.
-    - [ ] Write Tests: Verify high-impact text animation logic.
-    - [ ] Implement Feature: Create high-fidelity text reveal/highlight templates.
-- [ ] Task: Conductor - User Manual Verification 'Advanced 3D Templates & Visuals' (Protocol in workflow.md)
+- [x] Task: Implement the **3D Mind Map** template. <!-- 20816e6 -->
+    - [x] Write Tests: Verify node positioning and relationship rendering in the 3D space. <!-- 20816e6 -->
+    - [x] Implement Feature: Use R3F to create a node-link diagram with depth. <!-- 20816e6 -->
+- [x] Task: Implement the **Animated 3D Graphs** template. <!-- 20816e6 -->
+    - [x] Write Tests: Verify bar/line generation from data props. <!-- 20816e6 -->
+    - [x] Implement Feature: Create 3D bar/line graphs with animated entry. <!-- 20816e6 -->
+- [x] Task: Implement **YouTube-style Text Highlights**. <!-- 20816e6 -->
+    - [x] Write Tests: Verify high-impact text animation logic. <!-- 20816e6 -->
+    - [x] Implement Feature: Create high-fidelity text reveal/highlight templates. <!-- 20816e6 -->
+- [x] Task: Conductor - User Manual Verification 'Advanced 3D Templates & Visuals' (Protocol in workflow.md) <!-- 20816e6 -->

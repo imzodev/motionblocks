@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { AssetsPanel } from "@/components/AssetsPanel";
 import { AssetLibrary } from "@/components/AssetLibrary";
 import { TemplatesPanel } from "@/components/TemplatesPanel";
@@ -8,34 +8,16 @@ import { SequenceList } from "@/components/SequenceList";
 import { DetailsPanel } from "@/components/DetailsPanel";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { Canvas3D } from "@/components/Canvas3D";
+import { Renderer3D, TEMPLATE_REGISTRY } from "@/components/Renderer3D";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
+import { Badge } from "@/components/ui/badge";
+import { Slider } from "@/components/ui/slider";
 import type { Asset, Track } from "@/types/timeline";
-import type { AnimationTemplate, TemplateSlot } from "@/types/template";
-import { Box, Layers, Play, Pause, Save, Sparkles } from "lucide-react";
-
-// Templates Registry
-import { FadeInTemplate, SlideTemplate, ScalePopTemplate, MaskRevealTemplate } from "@/templates/entry";
-import { PulseTemplate, GlowTemplate, BounceTemplate, ShakeTemplate } from "@/templates/emphasis";
-import { CounterTemplate, TimelineRevealTemplate } from "@/templates/data";
-import { MindMapTemplate, GraphTemplate } from "@/templates/visual";
-
-const TEMPLATE_REGISTRY: Record<string, AnimationTemplate> = {
-  "fade-in": FadeInTemplate,
-  "slide-in": SlideTemplate,
-  "scale-pop": ScalePopTemplate,
-  "mask-reveal": MaskRevealTemplate,
-  pulse: PulseTemplate,
-  glow: GlowTemplate,
-  bounce: BounceTemplate,
-  shake: ShakeTemplate,
-  counter: CounterTemplate,
-  "timeline-reveal": TimelineRevealTemplate,
-  "mind-map": MindMapTemplate,
-  graph: GraphTemplate,
-};
+import type { TemplateSlot } from "@/types/template";
+import { Box, Layers, Play, Pause, Save, Sparkles, AlertCircle, Clock } from "lucide-react";
 
 export default function Home() {
   const [assets, setAssets] = useState<Asset[]>([]);
@@ -47,23 +29,26 @@ export default function Home() {
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentFrame, setCurrentFrame] = useState(0);
 
+  // Computed total duration
+  const totalDuration = useMemo(() => tracks.reduce((acc, t) => acc + t.duration, 0), [tracks]);
+
   // Playback Loop
   useEffect(() => {
-    let interval: ReturnType<typeof setInterval> | undefined;
-    if (isPlaying) {
+    let interval: any;
+    if (isPlaying && totalDuration > 0) {
       interval = setInterval(() => {
         setCurrentFrame((prev) => {
-          const totalDuration = tracks.reduce((acc, t) => acc + t.duration, 0);
-          if (totalDuration === 0) return 0;
-          if (prev >= totalDuration) return 0;
-          return prev + 1;
+          const next = prev + 1;
+          if (next >= totalDuration) {
+            setIsPlaying(false);
+            return 0;
+          }
+          return next;
         });
       }, 1000 / 30);
     }
-    return () => {
-      if (interval) clearInterval(interval);
-    };
-  }, [isPlaying, tracks]);
+    return () => clearInterval(interval);
+  }, [isPlaying, totalDuration]);
 
   const handleFileUpload = (files: File[]) => {
     const newAssets: Asset[] = files.map((file) => ({
@@ -75,74 +60,84 @@ export default function Home() {
   };
 
   const addTemplateToSequence = (templateId: string) => {
-    const startFrame = tracks.reduce((acc, t) => acc + t.duration, 0);
-    
-    const newTrack: Track = {
-      id: Math.random().toString(36).substr(2, 9),
-      assetId: "", 
-      template: templateId,
-      startFrame: startFrame,
-      duration: 30,
-      position: { x: 540, y: 960 },
-      templateProps: {},
-    };
-    
-    setTracks((prev) => [...prev, newTrack]);
-    setSelectedTrackId(newTrack.id);
+    setTracks((prev) => {
+      const startFrame = prev.reduce((acc, t) => acc + t.duration, 0);
+      const newTrack: Track = {
+        id: Math.random().toString(36).substr(2, 9),
+        assetId: "", 
+        template: templateId,
+        startFrame: startFrame,
+        duration: 60,
+        position: { x: 0, y: 0 },
+        templateProps: {},
+      };
+      return [...prev, newTrack];
+    });
   };
 
   const handleUpdateTrack = (updatedTrack: Track) => {
-    setTracks((prev) => prev.map((t) => (t.id === updatedTrack.id ? updatedTrack : t)));
+    setTracks((prev) => {
+      const newTracks = prev.map((t) => (t.id === updatedTrack.id ? updatedTrack : t));
+      let currentStart = 0;
+      return newTracks.map(t => {
+        const tWithUpdatedStart = { ...t, startFrame: currentStart };
+        currentStart += t.duration;
+        return tWithUpdatedStart;
+      });
+    });
+  };
+
+  const handleReorderTracks = (newOrder: Track[]) => {
+    let currentStart = 0;
+    const sequenced = newOrder.map(t => {
+      const tWithUpdatedStart = { ...t, startFrame: currentStart };
+      currentStart += t.duration;
+      return tWithUpdatedStart;
+    });
+    setTracks(sequenced);
   };
 
   const selectedTrack = tracks.find((t) => t.id === selectedTrackId);
-  const activeTrack = tracks.find(t => currentFrame >= t.startFrame && currentFrame < t.startFrame + t.duration);
-
-  const resolveAssetById = (id: string) => assets.find((a) => a.id === id);
+  const activeTrack = useMemo(() => {
+    return tracks.find(t => currentFrame >= t.startFrame && currentFrame < t.startFrame + t.duration);
+  }, [tracks, currentFrame]);
 
   return (
     <div className="flex h-screen overflow-hidden bg-background text-foreground font-sans">
-      {/* Left Sidebar: Assets & Templates */}
+      {/* Left Sidebar */}
       <aside className="w-80 border-r border-border bg-background flex flex-col">
-        <Card className="h-full rounded-none border-0 bg-card/85 backdrop-blur-sm">
-          <CardHeader className="py-4">
+        <Card className="h-full rounded-none border-0 bg-card/50 backdrop-blur-sm">
+          <CardHeader className="py-4 border-b">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Box className="w-5 h-5 text-primary" />
-                <CardTitle className="text-base">Assets</CardTitle>
+                <CardTitle className="text-base font-black uppercase">Assets</CardTitle>
               </div>
               <ThemeToggle />
             </div>
           </CardHeader>
-          <Separator />
           <CardContent className="p-0">
-            <ScrollArea className="h-[calc(100vh-72px)]">
-              <div className="p-4 space-y-6">
-                <div className="space-y-3">
-                  <h2 className="text-xs font-bold uppercase text-muted-foreground tracking-widest flex items-center gap-2">
-                    <Sparkles className="w-3 h-3" /> Templates
+            <ScrollArea className="h-[calc(100vh-73px)]">
+              <div className="p-4 space-y-8">
+                <section className="space-y-4">
+                  <h2 className="text-[10px] font-black uppercase text-muted-foreground tracking-[0.2em] flex items-center gap-2">
+                    <Sparkles className="w-3 h-3" /> Recipes
                   </h2>
                   <TemplatesPanel onSelect={addTemplateToSequence} />
-                </div>
-
-                <Separator />
-
-                <div className="space-y-3">
-                  <h2 className="text-xs font-bold uppercase text-muted-foreground tracking-widest">Uploads</h2>
+                </section>
+                <Separator className="opacity-50" />
+                <section className="space-y-4">
+                  <h2 className="text-[10px] font-black uppercase text-muted-foreground tracking-[0.2em]">Uploader</h2>
                   <AssetsPanel onUpload={handleFileUpload} />
-                </div>
-
-                <Separator />
-
-                <div className="space-y-3">
-                  <h2 className="text-xs font-bold uppercase text-muted-foreground tracking-widest">Library</h2>
+                </section>
+                <section className="space-y-4">
+                  <h2 className="text-[10px] font-black uppercase text-muted-foreground tracking-[0.2em]">Collection</h2>
                   <AssetLibrary
                     assets={assets}
                     onSelect={(a) => {
                       setSelectedAssetId(a.id);
                       if (selectedTrackId) {
-                        // Find the first empty "file" slot for this template and assign it
-                        const currentTrack = tracks.find((t) => t.id === selectedTrackId);
+                        const currentTrack = tracks.find(t => t.id === selectedTrackId);
                         const template = TEMPLATE_REGISTRY[currentTrack?.template || ""];
                         const fileSlot = template?.slots.find((s: TemplateSlot) => s.type === "file");
                         if (fileSlot) {
@@ -155,194 +150,125 @@ export default function Home() {
                     }}
                     selectedId={selectedAssetId}
                   />
-                </div>
+                </section>
               </div>
             </ScrollArea>
           </CardContent>
         </Card>
       </aside>
 
-      {/* Center: Canvas Preview */}
-      <main className="flex-1 flex flex-col relative bg-background">
-        <div className="absolute inset-0 bg-gradient-to-b from-primary/5 via-transparent to-transparent pointer-events-none" />
-        <header className="absolute top-0 left-0 right-0 p-4 flex justify-between items-center z-10">
-          <div className="bg-card/70 text-foreground backdrop-blur px-3 py-1.5 rounded-full border border-border/70 flex items-center gap-4 shadow-sm">
-            <span className="text-xs font-mono text-muted-foreground">Frame {currentFrame} • 30fps</span>
-          </div>
-          <div className="flex gap-2">
-            <Button
-              onClick={() => setIsPlaying(!isPlaying)}
-              className="rounded-full shadow-sm"
-            >
-              {isPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />} 
-              {isPlaying ? "Stop" : "Preview"}
-            </Button>
-            <Button
-              variant="outline"
-              className="rounded-full bg-card shadow-sm"
-            >
-              <Save className="w-4 h-4" /> Export
-            </Button>
-          </div>
-        </header>
+      {/* Main Content Area */}
+      <div className="flex-1 flex flex-col relative">
+        <main className="flex-1 flex flex-col relative bg-zinc-950">
+          <header className="absolute top-0 left-0 right-0 p-6 flex justify-between items-center z-10 pointer-events-none">
+            <div className="bg-black/80 text-white backdrop-blur-2xl px-5 py-2.5 rounded-full border border-white/10 flex items-center gap-8 shadow-2xl">
+              <div className="flex flex-col text-center">
+                <span className="text-[9px] font-black uppercase tracking-[0.2em] opacity-40">Status</span>
+                <Badge variant={isPlaying ? "default" : "secondary"} className="text-[9px] h-4 font-black">
+                  {isPlaying ? "RENDERING" : "READY"}
+                </Badge>
+              </div>
+            </div>
+            
+            <div className="flex gap-3 pointer-events-auto">
+              <Button
+                size="lg"
+                variant={isPlaying ? "destructive" : "default"}
+                onClick={() => setIsPlaying(!isPlaying)}
+                className="rounded-full shadow-2xl font-black px-10 tracking-widest transition-all active:scale-95"
+              >
+                {isPlaying ? <Pause className="w-4 h-4 mr-2" /> : <Play className="w-4 h-4 mr-2" />} 
+                {isPlaying ? "STOP" : "PREVIEW"}
+              </Button>
+              <Button
+                size="lg"
+                variant="outline"
+                className="rounded-full bg-white/5 text-white border-white/10 backdrop-blur-xl shadow-2xl font-black px-10 tracking-widest hover:bg-white hover:text-black transition-all"
+              >
+                <Save className="w-4 h-4 mr-2" /> EXPORT
+              </Button>
+            </div>
+          </header>
 
-        <div className="flex-1 flex items-center justify-center p-12">
-          {/* 3D Canvas Environment */}
-          <div className="aspect-video w-full max-w-4xl bg-card shadow-2xl ring-1 ring-border relative overflow-hidden rounded-lg">
-            <Canvas3D>
-              {/* Active Animation Layer */}
-              {activeTrack && (
-                <group>
-                  {/* For now, we render a placeholder 3D object to show the canvas is active */}
-                  <mesh position={[0, 0, 0]} castShadow receiveShadow>
-                    <boxGeometry args={[100, 100, 100]} />
-                    <meshStandardMaterial color="#3b82f6" roughness={0.3} metalness={0.8} />
-                  </mesh>
-                </group>
-              )}
-            </Canvas3D>
+          <div className="flex-1 flex items-center justify-center p-12">
+            <div className="aspect-video w-full max-w-5xl bg-black shadow-[0_0_120px_rgba(0,0,0,0.8)] ring-1 ring-white/10 relative overflow-hidden rounded-2xl border border-white/5">
+              <Canvas3D>
+                <Renderer3D 
+                  activeTrack={activeTrack} 
+                  currentFrame={currentFrame} 
+                  assets={assets} 
+                />
+              </Canvas3D>
 
-            {/* 2D Overlay for Current HTML Logic */}
-            <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
-              {activeTrack ? (
-                <div className="text-foreground text-center bg-background/10 backdrop-blur-sm p-8 rounded-2xl border border-white/5 shadow-2xl pointer-events-auto">
-                   <p className="text-[10px] uppercase font-bold text-primary mb-4 tracking-[0.3em]">Live Rendering: {activeTrack.template}</p>
-                   <div className="w-full max-w-2xl mx-auto">
-                      {(() => {
-                        const template = TEMPLATE_REGISTRY[activeTrack.template];
-                        const props = (activeTrack.templateProps ?? {}) as Record<string, unknown>;
-
-                        if (!template) {
-                          return (
-                            <p className="text-sm text-muted-foreground italic">
-                              No template registered for this block.
-                            </p>
-                          );
-                        }
-
-                        if (!template.slots || template.slots.length === 0) {
-                          return (
-                            <p className="text-sm text-muted-foreground italic">
-                              This template has no active slots.
-                            </p>
-                          );
-                        }
-
-                        return (
-                          <div className="space-y-6">
-                            {template.slots.map((slot) => {
-                              const value = props[slot.id];
-
-                              if (slot.type === "file") {
-                                const assetId = typeof value === "string" ? value : "";
-                                const asset = assetId ? resolveAssetById(assetId) : undefined;
-
-                                if (!asset) {
-                                  return (
-                                    <div key={slot.id} className="text-xs text-muted-foreground bg-muted/20 px-3 py-2 rounded border border-dashed border-border/50">
-                                      {slot.name}: <span className="italic opacity-50">(unassigned)</span>
-                                    </div>
-                                  );
-                                }
-
-                                if ((asset.type === "image" || asset.type === "svg") && asset.src) {
-                                  return (
-                                    <div key={slot.id} className="space-y-3">
-                                      <img
-                                        src={asset.src}
-                                        alt={slot.name}
-                                        className="max-h-[280px] w-auto mx-auto object-contain drop-shadow-2xl"
-                                      />
-                                    </div>
-                                  );
-                                }
-
-                                if (asset.type === "text") {
-                                  return (
-                                    <div key={slot.id} className="space-y-2">
-                                      <p className="text-5xl font-black tracking-tighter bg-clip-text text-transparent bg-gradient-to-br from-white to-white/50">
-                                        {asset.content || "Text"}
-                                      </p>
-                                    </div>
-                                  );
-                                }
-
-                                return (
-                                  <div key={slot.id} className="text-xs font-mono text-muted-foreground">
-                                    {slot.name}: {asset.id}
-                                  </div>
-                                );
-                              }
-
-                              if (slot.type === "text") {
-                                return (
-                                  <div key={slot.id} className="space-y-2">
-                                    <p className="text-5xl font-black tracking-tighter bg-clip-text text-transparent bg-gradient-to-br from-white to-white/50">
-                                      {typeof value === "string" && value.trim().length > 0 ? value : "—"}
-                                    </p>
-                                  </div>
-                                );
-                              }
-
-                              if (slot.type === "data-table") {
-                                return (
-                                  <div key={slot.id} className="space-y-2">
-                                    <pre className="text-[10px] font-mono text-primary/80 bg-black/40 backdrop-blur border border-white/5 p-4 rounded-xl text-left inline-block mx-auto">
-                                      {typeof value === "string" ? value : ""}
-                                    </pre>
-                                  </div>
-                                );
-                              }
-
-                              return null;
-                            })}
-                          </div>
-                        );
-                      })()}
-                   </div>
+              {!activeTrack && (
+                <div className="absolute inset-0 flex items-center justify-center pointer-events-none bg-black/40 backdrop-blur-[2px]">
+                  <div className="text-center space-y-4 opacity-40">
+                    <Sparkles className="w-12 h-12 mx-auto text-primary" />
+                    <p className="text-white font-mono tracking-[0.4em] text-[10px] uppercase font-bold">Waiting for Sequence</p>
+                  </div>
                 </div>
-              ) : (
-                <p className="text-muted-foreground/30 font-mono tracking-[0.4em] text-[10px] uppercase">
-                  {tracks.length > 0 ? "System Ready" : "Select a template to initialize"}
-                </p>
               )}
             </div>
+          </div>
+        </main>
+
+        {/* Seek Bar Area */}
+        <div className="h-20 border-t border-border bg-background/80 backdrop-blur-md px-8 flex items-center gap-8">
+          <div className="flex items-center gap-4 bg-muted/50 px-4 py-2 rounded-lg border">
+            <Clock className="w-4 h-4 text-primary" />
+            <div className="flex flex-col min-w-[80px]">
+              <span className="text-[9px] font-black uppercase text-muted-foreground tracking-widest">Frame</span>
+              <span className="text-sm font-mono font-bold">{currentFrame} / {totalDuration}</span>
+            </div>
+          </div>
+          
+          <div className="flex-1">
+            <Slider
+              value={[currentFrame]}
+              max={totalDuration > 0 ? totalDuration - 1 : 0}
+              step={1}
+              onValueChange={([val]) => {
+                setIsPlaying(false);
+                setCurrentFrame(val);
+              }}
+              className="py-4"
+            />
           </div>
         </div>
-      </main>
+      </div>
 
-      {/* Right Sidebar: Sequence & Details */}
+      {/* Right Sidebar */}
       <aside className="w-80 border-l border-border bg-background flex flex-col">
-        <Card className="h-full rounded-none border-0 bg-card/85 backdrop-blur-sm">
-          <CardHeader className="py-4">
+        <Card className="h-full rounded-none border-0 bg-card/50 backdrop-blur-sm">
+          <CardHeader className="py-4 border-b">
             <div className="flex items-center gap-2">
               <Layers className="w-5 h-5 text-primary" />
-              <CardTitle className="text-base">Sequence</CardTitle>
+              <CardTitle className="text-base font-black uppercase">Sequence</CardTitle>
             </div>
           </CardHeader>
-          <Separator />
           <CardContent className="p-0">
-            <ScrollArea className="h-[calc(100vh-72px)]">
-              <div className="p-4 space-y-6">
-                <div className="space-y-3">
-                  <h2 className="text-xs font-bold uppercase text-muted-foreground tracking-widest">Blocks</h2>
+            <ScrollArea className="h-[calc(100vh-73px)]">
+              <div className="p-4 space-y-8">
+                <section className="space-y-4">
+                  <h2 className="text-[10px] font-black uppercase text-muted-foreground tracking-[0.2em]">Timeline</h2>
                   <SequenceList
                     tracks={tracks}
-                    onReorder={setTracks}
+                    onReorder={handleReorderTracks}
                     onSelect={(t) => setSelectedTrackId(t.id)}
                     onDelete={(id) => setTracks((prev) => prev.filter((t) => t.id !== id))}
                     selectedId={selectedTrackId}
                   />
-                </div>
-
-                <Separator />
-
-                <DetailsPanel
-                  selectedTrack={selectedTrack}
-                  template={selectedTrack ? TEMPLATE_REGISTRY[selectedTrack.template] : undefined}
-                  assets={assets}
-                  onUpdateTrack={handleUpdateTrack}
-                />
+                </section>
+                <Separator className="opacity-50" />
+                <section className="space-y-4">
+                  <h2 className="text-[10px] font-black uppercase text-muted-foreground tracking-[0.2em]">Properties</h2>
+                  <DetailsPanel
+                    selectedTrack={selectedTrack}
+                    template={selectedTrack ? TEMPLATE_REGISTRY[selectedTrack.template] : undefined}
+                    assets={assets}
+                    onUpdateTrack={handleUpdateTrack}
+                  />
+                </section>
               </div>
             </ScrollArea>
           </CardContent>
