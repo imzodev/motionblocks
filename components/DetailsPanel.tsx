@@ -8,12 +8,14 @@ import { Clock, Hash, Layout } from "lucide-react";
 interface DetailsPanelProps {
   selectedTrack?: Track;
   className?: string;
+  assets?: Asset[];
+  onUpdateTrack?: (track: Track) => void;
 }
 
 /**
  * DetailsPanel component displays computed timing and properties for a selected track.
  */
-export function DetailsPanel({ selectedTrack, className }: DetailsPanelProps) {
+export function DetailsPanel({ selectedTrack, className, assets = [], onUpdateTrack }: DetailsPanelProps) {
   if (!selectedTrack) {
     return (
       <div
@@ -22,10 +24,12 @@ export function DetailsPanel({ selectedTrack, className }: DetailsPanelProps) {
           className
         )}
       >
-        <p className="text-sm">Select a block to view timing details.</p>
+        <p className="text-sm">Select a block to view timing details and configure slots.</p>
       </div>
     );
   }
+
+  const assignedAsset = assets.find(a => a.id === selectedTrack.assetId);
 
   return (
     <div className={cn("p-4 space-y-6 border rounded-lg bg-card", className)}>
@@ -33,8 +37,42 @@ export function DetailsPanel({ selectedTrack, className }: DetailsPanelProps) {
         <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
           Block Details
         </h3>
-        <p className="text-lg font-bold truncate">{selectedTrack.template}</p>
+        <p className="text-lg font-bold truncate uppercase tracking-tight">{selectedTrack.template}</p>
       </header>
+
+      {/* Slots Section */}
+      <div className="space-y-3 pt-4 border-t">
+        <h4 className="text-[10px] font-bold uppercase text-muted-foreground tracking-widest">Slots</h4>
+        <div className="p-3 bg-muted/30 border rounded-md space-y-2">
+          <div className="flex justify-between items-center">
+            <span className="text-xs font-medium">Main Asset</span>
+            <span className="text-[10px] text-muted-foreground italic">Required</span>
+          </div>
+          
+          {assignedAsset ? (
+            <div className="flex items-center gap-3 p-2 bg-background border rounded text-xs">
+              <div className="w-8 h-8 bg-muted rounded flex items-center justify-center overflow-hidden">
+                {assignedAsset.type === 'image' ? (
+                  <img src={assignedAsset.src} className="w-full h-full object-contain" />
+                ) : (
+                  <Layout className="w-4 h-4" />
+                )}
+              </div>
+              <span className="flex-1 truncate font-mono">{assignedAsset.id}</span>
+              <button 
+                onClick={() => onUpdateTrack?.({ ...selectedTrack, assetId: "" })}
+                className="text-muted-foreground hover:text-destructive transition-colors px-1"
+              >
+                ×
+              </button>
+            </div>
+          ) : (
+            <div className="text-[10px] text-center py-3 border border-dashed rounded text-muted-foreground">
+              Drop an asset here or select from library
+            </div>
+          )}
+        </div>
+      </div>
 
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2 p-3 bg-muted/50 rounded-md">

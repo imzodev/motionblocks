@@ -5,16 +5,23 @@ This track implements the primary editor interface (Assets Panel, Sequence UI) a
 
 ## Functional Requirements
 
-### 1. Assets Panel (Shadcn)
+### 1. Assets Panel
 - **Uploader:** Drag-and-drop zone for local images and SVGs.
-- **Library Grid:** Thumbnail view of available assets.
-- **Asset Inspector:** View and edit metadata/properties for selected library items.
+- **Library Grid:** Pool of assets (ingredients) to be used in animation slots.
 
-### 2. Sequence UI (Dynamic Orchestration)
-- **List-Based Sequencing:** A vertical list of animation "blocks" instead of a manual timeline.
-- **Auto-Duration:** Total duration is computed automatically based on the sequence of templates; adding an item extends the video.
-- **Drag-to-Reorder:** Change the order of events with automatic start-time recalculation.
-- **Computed Timing Panel:** Read-only view of the precise Start Frame and Duration for each block.
+### 2. Templates Panel (New)
+- **Library:** A list of available animation "recipes" (e.g., 3D Mind Map, Fade In, Animated Graph).
+- **Action:** Dragging a template into the sequence creates a new "Block".
+
+### 3. Sequence UI (Dynamic Orchestration)
+- **Block-Based sequencing:** Represents the logical flow of the video.
+- **Auto-Duration:** Block duration is derived from the chosen template.
+
+### 4. Dynamic Inspector (Slot-Based)
+- **Context-Aware:** When a block is selected, the inspector shows "Slots" required by that specific template.
+    - *Example (Fade In):* Shows a single "Asset" slot.
+    - *Example (Mind Map):* Shows slots for "Central Image", "Nodes", and "Connector Style".
+    - *Example (Graph):* Shows a data entry grid for values and labels.
 
 ### 3. Animation Template Library
 - **Entry:** Fade In, Slide (Directional), Scale Pop, Mask Reveal.

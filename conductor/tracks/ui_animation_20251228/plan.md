@@ -1,19 +1,16 @@
 # Track Plan: UI & Animation Foundation
 
-## Phase 1: Assets Panel & Sequencing Logic
+## Phase 1: Editor Infrastructure (Templates & Assets)
 - [x] Task: Create `components/AssetsPanel.tsx` with a drag-and-drop uploader. <!-- bd73db9 -->
-    - [x] Write Tests: Ensure files can be dropped and the upload handler is called. <!-- bd73db9 -->
-    - [x] Implement Feature: Integrate Shadcn `Dropzone` or similar and update local state. <!-- bd73db9 -->
 - [x] Task: Create `components/AssetLibrary.tsx` to display uploaded assets. <!-- f2bf7da -->
-    - [x] Write Tests: Ensure a list of assets renders as a grid of thumbnails. <!-- f2bf7da -->
-    - [x] Implement Feature: Render a grid of assets with selection state. <!-- f2bf7da -->
+- [ ] Task: Create `components/TemplatesPanel.tsx` to browse and select animation recipes.
+    - [ ] Write Tests: Ensure templates can be selected.
+    - [ ] Implement Feature: List available templates (mock for now).
 - [x] Task: Implement `components/SequenceList.tsx` for reorderable blocks. <!-- 70665c3 -->
-    - [x] Write Tests: Ensure blocks can be reordered and the `Timeline` state updates. <!-- 70665c3 -->
-    - [x] Implement Feature: Use `@dnd-kit` or similar to create a reorderable list of blocks. <!-- 70665c3 -->
-- [x] Task: Implement `components/DetailsPanel.tsx` for computed timing. <!-- 4646a6b -->
-    - [x] Write Tests: Ensure it correctly calculates and displays start frames based on sequence order. <!-- 4646a6b -->
-    - [x] Implement Feature: Create a read-only panel showing Start Frame and Duration for the selected block. <!-- 4646a6b -->
-- [ ] Task: Conductor - User Manual Verification 'Assets Panel & Sequencing Logic' (Protocol in workflow.md)
+- [ ] Task: Upgrade `components/DetailsPanel.tsx` to a Dynamic Slot-Based Inspector.
+    - [ ] Write Tests: Ensure it renders different "Slots" based on the selected template.
+    - [ ] Implement Feature: Create a dynamic form that maps to template requirements.
+- [ ] Task: Conductor - User Manual Verification 'Editor Infrastructure' (Protocol in workflow.md)
 
 ## Phase 2: Core Animation Templates (2D)
 - [ ] Task: Implement Entry Templates (Fade In, Slide, Scale Pop, Mask Reveal).
