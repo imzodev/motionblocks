@@ -14,6 +14,6 @@
 - [x] Task: Create `types/template.ts` to define the `AnimationTemplate` interface. <!-- 413f1f4 -->
     - [x] Sub-task: Define the structure for `name`, `id`, and `propsSchema` (Zod). <!-- 413f1f4 -->
     - [x] Sub-task: Define the `RenderComponent` type signature (props: frame, duration, asset, customProps). <!-- 413f1f4 -->
-- [ ] Task: Create a mock template implementation in `templates/mock-template.ts` to validate the interface design.
-    - [ ] Sub-task: Implement a dummy "FadeIn" template that satisfies the `AnimationTemplate` interface.
+- [x] Task: Create a mock template implementation in `templates/mock-template.ts` to validate the interface design. <!-- 438c836 -->
+    - [x] Sub-task: Implement a dummy "FadeIn" template that satisfies the `AnimationTemplate` interface. <!-- 438c836 -->
 - [ ] Task: Conductor - User Manual Verification 'Template Architecture' (Protocol in workflow.md)
