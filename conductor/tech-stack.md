@@ -19,4 +19,4 @@
 
 ## State Management & Schema
 - **Local State (React Context/Zustand):** For managing the editor's interactive state and the complex timeline JSON.
-- **JSON Schema:** Defining the strict contract for the MotionBlocks Timeline to ensure compatibility between the Editor and the Remotion Renderer.
+- **Zod:** For runtime schema validation and defining the strict contract for the MotionBlocks Timeline to ensure compatibility between the Editor and the Remotion Renderer.
