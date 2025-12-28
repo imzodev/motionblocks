@@ -1,7 +1,7 @@
 # Track Plan: Core Foundation
 
 ## Phase 1: Data Models & Schema Definitions
-- [ ] Task: Install `zod` for runtime schema validation.
+- [x] Task: Install `zod` for runtime schema validation. <!-- 8bd6421 -->
 - [ ] Task: Create `types/timeline.ts` and define the Zod schemas and TypeScript types for `Timeline`, `Track`, and `Asset`.
     - [ ] Sub-task: Define `AssetSchema` (id, type, src, content).
     - [ ] Sub-task: Define `TrackSchema` (id, assetId, startFrame, duration, position, templateProps).
