@@ -108,7 +108,7 @@ export default function Home() {
     <div className="flex h-screen overflow-hidden bg-background text-foreground font-sans">
       {/* Left Sidebar */}
       <aside className="w-80 border-r border-border bg-background flex flex-col">
-        <Card className="h-full rounded-none border-0 bg-card/50 backdrop-blur-sm">
+        <Card className="h-full rounded-none border-0 bg-card/50 backdrop-blur-sm flex flex-col">
           <CardHeader className="py-4 border-b">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
@@ -118,8 +118,8 @@ export default function Home() {
               <ThemeToggle />
             </div>
           </CardHeader>
-          <CardContent className="p-0">
-            <ScrollArea className="h-[calc(100vh-73px)]">
+          <CardContent className="p-0 flex-1 min-h-0">
+            <ScrollArea className="h-full">
               <div className="p-4 space-y-8">
                 <section className="space-y-4">
                   <h2 className="text-[10px] font-black uppercase text-muted-foreground tracking-[0.2em] flex items-center gap-2">
