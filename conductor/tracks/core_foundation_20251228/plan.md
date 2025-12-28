@@ -11,9 +11,9 @@
 - [x] Task: Conductor - User Manual Verification 'Data Models & Schema Definitions' (Protocol in workflow.md) <!-- 188561d -->
 
 ## Phase 2: Template Architecture
-- [ ] Task: Create `types/template.ts` to define the `AnimationTemplate` interface.
-    - [ ] Sub-task: Define the structure for `name`, `id`, and `propsSchema` (Zod).
-    - [ ] Sub-task: Define the `RenderComponent` type signature (props: frame, duration, asset, customProps).
+- [x] Task: Create `types/template.ts` to define the `AnimationTemplate` interface. <!-- 413f1f4 -->
+    - [x] Sub-task: Define the structure for `name`, `id`, and `propsSchema` (Zod). <!-- 413f1f4 -->
+    - [x] Sub-task: Define the `RenderComponent` type signature (props: frame, duration, asset, customProps). <!-- 413f1f4 -->
 - [ ] Task: Create a mock template implementation in `templates/mock-template.ts` to validate the interface design.
     - [ ] Sub-task: Implement a dummy "FadeIn" template that satisfies the `AnimationTemplate` interface.
 - [ ] Task: Conductor - User Manual Verification 'Template Architecture' (Protocol in workflow.md)
