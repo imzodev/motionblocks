@@ -97,6 +97,8 @@ export default function Home() {
   const selectedTrack = tracks.find((t) => t.id === selectedTrackId);
   const activeTrack = tracks.find(t => currentFrame >= t.startFrame && currentFrame < t.startFrame + t.duration);
 
+  const resolveAssetById = (id: string) => assets.find((a) => a.id === id);
+
   return (
     <div className="flex h-screen overflow-hidden bg-background text-foreground font-sans">
       {/* Left Sidebar: Assets & Templates */}
@@ -188,13 +190,113 @@ export default function Home() {
           <div className="aspect-video w-full max-w-4xl bg-card shadow-2xl ring-1 ring-border flex items-center justify-center relative overflow-hidden">
             {activeTrack ? (
               <div className="w-full h-full flex items-center justify-center">
-                 {/* Logic to render based on template and its slots */}
                  <div className="text-foreground text-center">
                     <p className="text-[10px] uppercase font-bold text-primary mb-2">Rendering {activeTrack.template}</p>
-                    {/* Placeholder for actual animation render */}
-                    {Object.values(activeTrack.templateProps as Record<string, unknown>).map((val, i) => (
-                      <p key={i} className="text-2xl font-bold">{String(val)}</p>
-                    ))}
+                    <div className="w-full max-w-2xl mx-auto px-6">
+                      {(() => {
+                        const template = TEMPLATE_REGISTRY[activeTrack.template];
+                        const props = (activeTrack.templateProps ?? {}) as Record<string, unknown>;
+
+                        if (!template) {
+                          return (
+                            <p className="text-sm text-muted-foreground">
+                              No template registered for this block.
+                            </p>
+                          );
+                        }
+
+                        if (!template.slots || template.slots.length === 0) {
+                          return (
+                            <p className="text-sm text-muted-foreground">
+                              This template has no slots.
+                            </p>
+                          );
+                        }
+
+                        return (
+                          <div className="space-y-4">
+                            {template.slots.map((slot) => {
+                              const value = props[slot.id];
+
+                              if (slot.type === "file") {
+                                const assetId = typeof value === "string" ? value : "";
+                                const asset = assetId ? resolveAssetById(assetId) : undefined;
+
+                                if (!asset) {
+                                  return (
+                                    <div key={slot.id} className="text-sm text-muted-foreground">
+                                      {slot.name}: <span className="italic">(unassigned)</span>
+                                    </div>
+                                  );
+                                }
+
+                                if ((asset.type === "image" || asset.type === "svg") && asset.src) {
+                                  return (
+                                    <div key={slot.id} className="space-y-2">
+                                      <p className="text-xs uppercase tracking-widest text-muted-foreground font-bold">
+                                        {slot.name}
+                                      </p>
+                                      <img
+                                        src={asset.src}
+                                        alt={slot.name}
+                                        className="max-h-[340px] w-full object-contain rounded-md border border-border bg-muted/20"
+                                      />
+                                    </div>
+                                  );
+                                }
+
+                                if (asset.type === "text") {
+                                  return (
+                                    <div key={slot.id} className="space-y-2">
+                                      <p className="text-xs uppercase tracking-widest text-muted-foreground font-bold">
+                                        {slot.name}
+                                      </p>
+                                      <p className="text-3xl font-bold tracking-tight">
+                                        {asset.content || "Text"}
+                                      </p>
+                                    </div>
+                                  );
+                                }
+
+                                return (
+                                  <div key={slot.id} className="text-sm text-muted-foreground">
+                                    {slot.name}: <span className="font-mono">{asset.id}</span>
+                                  </div>
+                                );
+                              }
+
+                              if (slot.type === "text") {
+                                return (
+                                  <div key={slot.id} className="space-y-2">
+                                    <p className="text-xs uppercase tracking-widest text-muted-foreground font-bold">
+                                      {slot.name}
+                                    </p>
+                                    <p className="text-3xl font-bold tracking-tight">
+                                      {typeof value === "string" && value.trim().length > 0 ? value : "—"}
+                                    </p>
+                                  </div>
+                                );
+                              }
+
+                              if (slot.type === "data-table") {
+                                return (
+                                  <div key={slot.id} className="space-y-2">
+                                    <p className="text-xs uppercase tracking-widest text-muted-foreground font-bold">
+                                      {slot.name}
+                                    </p>
+                                    <pre className="text-xs font-mono text-muted-foreground whitespace-pre-wrap rounded-md border border-border bg-muted/20 p-3">
+                                      {typeof value === "string" ? value : ""}
+                                    </pre>
+                                  </div>
+                                );
+                              }
+
+                              return null;
+                            })}
+                          </div>
+                        );
+                      })()}
+                    </div>
                  </div>
               </div>
             ) : (
