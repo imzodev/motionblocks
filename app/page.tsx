@@ -7,6 +7,7 @@ import { TemplatesPanel } from "@/components/TemplatesPanel";
 import { SequenceList } from "@/components/SequenceList";
 import { DetailsPanel } from "@/components/DetailsPanel";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { Canvas3D } from "@/components/Canvas3D";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -186,20 +187,34 @@ export default function Home() {
         </header>
 
         <div className="flex-1 flex items-center justify-center p-12">
-          {/* Mock Canvas Container */}
-          <div className="aspect-video w-full max-w-4xl bg-card shadow-2xl ring-1 ring-border flex items-center justify-center relative overflow-hidden">
-            {activeTrack ? (
-              <div className="w-full h-full flex items-center justify-center">
-                 <div className="text-foreground text-center">
-                    <p className="text-[10px] uppercase font-bold text-primary mb-2">Rendering {activeTrack.template}</p>
-                    <div className="w-full max-w-2xl mx-auto px-6">
+          {/* 3D Canvas Environment */}
+          <div className="aspect-video w-full max-w-4xl bg-card shadow-2xl ring-1 ring-border relative overflow-hidden rounded-lg">
+            <Canvas3D>
+              {/* Active Animation Layer */}
+              {activeTrack && (
+                <group>
+                  {/* For now, we render a placeholder 3D object to show the canvas is active */}
+                  <mesh position={[0, 0, 0]} castShadow receiveShadow>
+                    <boxGeometry args={[100, 100, 100]} />
+                    <meshStandardMaterial color="#3b82f6" roughness={0.3} metalness={0.8} />
+                  </mesh>
+                </group>
+              )}
+            </Canvas3D>
+
+            {/* 2D Overlay for Current HTML Logic */}
+            <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
+              {activeTrack ? (
+                <div className="text-foreground text-center bg-background/10 backdrop-blur-sm p-8 rounded-2xl border border-white/5 shadow-2xl pointer-events-auto">
+                   <p className="text-[10px] uppercase font-bold text-primary mb-4 tracking-[0.3em]">Live Rendering: {activeTrack.template}</p>
+                   <div className="w-full max-w-2xl mx-auto">
                       {(() => {
                         const template = TEMPLATE_REGISTRY[activeTrack.template];
                         const props = (activeTrack.templateProps ?? {}) as Record<string, unknown>;
 
                         if (!template) {
                           return (
-                            <p className="text-sm text-muted-foreground">
+                            <p className="text-sm text-muted-foreground italic">
                               No template registered for this block.
                             </p>
                           );
@@ -207,14 +222,14 @@ export default function Home() {
 
                         if (!template.slots || template.slots.length === 0) {
                           return (
-                            <p className="text-sm text-muted-foreground">
-                              This template has no slots.
+                            <p className="text-sm text-muted-foreground italic">
+                              This template has no active slots.
                             </p>
                           );
                         }
 
                         return (
-                          <div className="space-y-4">
+                          <div className="space-y-6">
                             {template.slots.map((slot) => {
                               const value = props[slot.id];
 
@@ -224,22 +239,19 @@ export default function Home() {
 
                                 if (!asset) {
                                   return (
-                                    <div key={slot.id} className="text-sm text-muted-foreground">
-                                      {slot.name}: <span className="italic">(unassigned)</span>
+                                    <div key={slot.id} className="text-xs text-muted-foreground bg-muted/20 px-3 py-2 rounded border border-dashed border-border/50">
+                                      {slot.name}: <span className="italic opacity-50">(unassigned)</span>
                                     </div>
                                   );
                                 }
 
                                 if ((asset.type === "image" || asset.type === "svg") && asset.src) {
                                   return (
-                                    <div key={slot.id} className="space-y-2">
-                                      <p className="text-xs uppercase tracking-widest text-muted-foreground font-bold">
-                                        {slot.name}
-                                      </p>
+                                    <div key={slot.id} className="space-y-3">
                                       <img
                                         src={asset.src}
                                         alt={slot.name}
-                                        className="max-h-[340px] w-full object-contain rounded-md border border-border bg-muted/20"
+                                        className="max-h-[280px] w-auto mx-auto object-contain drop-shadow-2xl"
                                       />
                                     </div>
                                   );
@@ -248,10 +260,7 @@ export default function Home() {
                                 if (asset.type === "text") {
                                   return (
                                     <div key={slot.id} className="space-y-2">
-                                      <p className="text-xs uppercase tracking-widest text-muted-foreground font-bold">
-                                        {slot.name}
-                                      </p>
-                                      <p className="text-3xl font-bold tracking-tight">
+                                      <p className="text-5xl font-black tracking-tighter bg-clip-text text-transparent bg-gradient-to-br from-white to-white/50">
                                         {asset.content || "Text"}
                                       </p>
                                     </div>
@@ -259,8 +268,8 @@ export default function Home() {
                                 }
 
                                 return (
-                                  <div key={slot.id} className="text-sm text-muted-foreground">
-                                    {slot.name}: <span className="font-mono">{asset.id}</span>
+                                  <div key={slot.id} className="text-xs font-mono text-muted-foreground">
+                                    {slot.name}: {asset.id}
                                   </div>
                                 );
                               }
@@ -268,10 +277,7 @@ export default function Home() {
                               if (slot.type === "text") {
                                 return (
                                   <div key={slot.id} className="space-y-2">
-                                    <p className="text-xs uppercase tracking-widest text-muted-foreground font-bold">
-                                      {slot.name}
-                                    </p>
-                                    <p className="text-3xl font-bold tracking-tight">
+                                    <p className="text-5xl font-black tracking-tighter bg-clip-text text-transparent bg-gradient-to-br from-white to-white/50">
                                       {typeof value === "string" && value.trim().length > 0 ? value : "—"}
                                     </p>
                                   </div>
@@ -281,10 +287,7 @@ export default function Home() {
                               if (slot.type === "data-table") {
                                 return (
                                   <div key={slot.id} className="space-y-2">
-                                    <p className="text-xs uppercase tracking-widest text-muted-foreground font-bold">
-                                      {slot.name}
-                                    </p>
-                                    <pre className="text-xs font-mono text-muted-foreground whitespace-pre-wrap rounded-md border border-border bg-muted/20 p-3">
+                                    <pre className="text-[10px] font-mono text-primary/80 bg-black/40 backdrop-blur border border-white/5 p-4 rounded-xl text-left inline-block mx-auto">
                                       {typeof value === "string" ? value : ""}
                                     </pre>
                                   </div>
@@ -296,14 +299,14 @@ export default function Home() {
                           </div>
                         );
                       })()}
-                    </div>
-                 </div>
-              </div>
-            ) : (
-              <p className="text-muted-foreground font-mono tracking-[0.2em] text-sm uppercase">
-                {tracks.length > 0 ? "Scrubbing..." : "Select a template to start"}
-              </p>
-            )}
+                   </div>
+                </div>
+              ) : (
+                <p className="text-muted-foreground/30 font-mono tracking-[0.4em] text-[10px] uppercase">
+                  {tracks.length > 0 ? "System Ready" : "Select a template to initialize"}
+                </p>
+              )}
+            </div>
           </div>
         </div>
       </main>

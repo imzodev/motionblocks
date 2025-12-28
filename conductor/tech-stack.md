@@ -14,6 +14,8 @@
 - **Three.js / React Three Fiber:** Powering 3D animations and spatial depth effects within the motion templates.
 
 ## UI Libraries
+- **@react-three/fiber:** React-bridge for Three.js.
+- **@react-three/drei:** Useful helpers for @react-three/fiber.
 - **react-dropzone:** For handling drag-and-drop file uploads in the Assets Panel.
 - **@dnd-kit:** For implementing reorderable lists in the Sequence UI.
 - **lucide-react:** For consistent iconography.
