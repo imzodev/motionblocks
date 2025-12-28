@@ -1,9 +1,9 @@
 # Track Plan: UI & Animation Foundation
 
 ## Phase 1: Assets Panel & Sequencing Logic
-- [ ] Task: Create `components/AssetsPanel.tsx` with a drag-and-drop uploader.
-    - [ ] Write Tests: Ensure files can be dropped and the upload handler is called.
-    - [ ] Implement Feature: Integrate Shadcn `Dropzone` or similar and update local state.
+- [x] Task: Create `components/AssetsPanel.tsx` with a drag-and-drop uploader. <!-- bd73db9 -->
+    - [x] Write Tests: Ensure files can be dropped and the upload handler is called. <!-- bd73db9 -->
+    - [x] Implement Feature: Integrate Shadcn `Dropzone` or similar and update local state. <!-- bd73db9 -->
 - [ ] Task: Create `components/AssetLibrary.tsx` to display uploaded assets.
     - [ ] Write Tests: Ensure a list of assets renders as a grid of thumbnails.
     - [ ] Implement Feature: Render a grid of assets with selection state.
