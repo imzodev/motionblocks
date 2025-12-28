@@ -20,6 +20,10 @@ import {
 import { CSS } from "@dnd-kit/utilities";
 import type { Track } from "@/types/timeline";
 import { cn } from "@/lib/utils";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
 import { GripVertical, Trash2 } from "lucide-react";
 
 interface SequenceListProps {
@@ -60,23 +64,25 @@ function SortableItem({
   };
 
   return (
-    <div
+    <Card
       ref={setNodeRef}
       style={style}
       className={cn(
-        "flex items-center gap-3 p-3 bg-card border rounded-lg shadow-sm transition-all",
+        "flex items-center gap-3 p-3 shadow-sm transition-all",
         isSelected ? "border-primary ring-1 ring-primary" : "border-border",
         isDragging && "opacity-50 scale-105 shadow-xl"
       )}
       onClick={onSelect}
     >
-      <button
+      <Button
         {...attributes}
         {...listeners}
-        className="cursor-grab active:cursor-grabbing p-1 hover:bg-muted rounded"
+        variant="ghost"
+        size="icon"
+        className="cursor-grab active:cursor-grabbing"
       >
         <GripVertical className="w-4 h-4 text-muted-foreground" />
-      </button>
+      </Button>
 
       <div className="flex-1 min-w-0">
         <p className="text-sm font-medium truncate uppercase tracking-tight">
@@ -87,20 +93,24 @@ function SortableItem({
         </p>
       </div>
 
-      <div className="text-right text-xs tabular-nums text-muted-foreground px-2 border-l">
+      <Separator orientation="vertical" className="h-6" />
+      <Badge variant="secondary" className="tabular-nums">
         {track.duration}f
-      </div>
+      </Badge>
 
-      <button
+      <Button
         onClick={(e) => {
           e.stopPropagation();
           onDelete();
         }}
-        className="p-1 hover:text-destructive transition-colors"
+        variant="ghost"
+        size="icon"
+        className="text-muted-foreground hover:text-destructive"
+        aria-label="Delete block"
       >
         <Trash2 className="w-4 h-4" />
-      </button>
-    </div>
+      </Button>
+    </Card>
   );
 }
 
@@ -156,9 +166,9 @@ export function SequenceList({
         </SortableContext>
       </DndContext>
       {tracks.length === 0 && (
-        <div className="py-12 text-center text-muted-foreground border border-dashed rounded-lg">
+        <Card className="py-10 text-center text-muted-foreground border border-dashed bg-card/60">
           No animation blocks yet. Add an asset to start your sequence.
-        </div>
+        </Card>
       )}
     </div>
   );

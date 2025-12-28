@@ -3,7 +3,9 @@
 import React from "react";
 import type { Asset } from "@/types/timeline";
 import { cn } from "@/lib/utils";
-import { ImageIcon, TypeIcon, FileIcon } from "lucide-react";
+import { TypeIcon, FileIcon } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Card } from "@/components/ui/card";
 
 interface AssetLibraryProps {
   assets: Asset[];
@@ -29,22 +31,22 @@ export function AssetLibrary({
       )}
     >
       {assets.length === 0 ? (
-        <div className="col-span-full py-8 text-center text-muted-foreground border border-dashed rounded-lg">
+        <Card className="col-span-full py-8 text-center text-muted-foreground border border-dashed bg-card/60">
           No assets yet. Upload some to get started.
-        </div>
+        </Card>
       ) : (
         assets.map((asset) => (
-          <div
+          <Card
             key={asset.id}
             onClick={() => onSelect?.(asset)}
             className={cn(
-              "group relative aspect-square bg-muted rounded-lg overflow-hidden border-2 transition-all cursor-pointer",
+              "group relative aspect-square overflow-hidden transition-all cursor-pointer",
               selectedId === asset.id
-                ? "border-primary"
-                : "border-transparent hover:border-primary/40"
+                ? "border-primary ring-1 ring-primary"
+                : "border-border hover:border-primary/40"
             )}
           >
-            <div className="absolute inset-0 flex items-center justify-center p-2">
+            <div className="absolute inset-0 flex items-center justify-center p-2 bg-muted/40">
               {asset.type === "image" && asset.src ? (
                 <img
                   src={asset.src}
@@ -62,12 +64,12 @@ export function AssetLibrary({
                 <FileIcon className="w-8 h-8 text-muted-foreground" />
               )}
             </div>
-            <div className="absolute bottom-0 left-0 right-0 bg-black/60 p-1 opacity-0 group-hover:opacity-100 transition-opacity">
-              <span className="text-[10px] text-white truncate block px-1 capitalize">
+            <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+              <Badge variant="secondary" className="capitalize">
                 {asset.type}
-              </span>
+              </Badge>
             </div>
-          </div>
+          </Card>
         ))
       )}
     </div>

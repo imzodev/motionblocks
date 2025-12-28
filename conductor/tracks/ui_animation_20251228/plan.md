@@ -18,7 +18,7 @@
 - [x] Task: Implement Data Templates (Counter, Timeline Reveal). <!-- e48a750 -->
     - [x] Write Tests: Verify number interpolation and mask progress logic. <!-- e48a750 -->
     - [x] Implement Feature: Create the specialized data-driven animation components. <!-- e48a750 -->
-- [ ] Task: Conductor - User Manual Verification 'Core Animation Templates (2D)' (Protocol in workflow.md)
+- [~] Task: Conductor - User Manual Verification 'Core Animation Templates (2D)' (Protocol in workflow.md)
 
 ## Phase 3: Advanced 3D Templates & Visuals
 - [ ] Task: Setup React Three Fiber environment and `components/Canvas3D.tsx`.

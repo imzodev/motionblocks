@@ -5,15 +5,14 @@ import type { AnimationTemplate, RenderProps } from "../types/template";
 // However, the project is Next.js, so JSX is supported.
 // But to keep it simple and testable without a full React test renderer, I'll essentially make it a functional component.
 
-const FadeInRender = ({ asset, props }: RenderProps<{ duration: number }>) => {
-  // In a real implementation, this would use the frame count to calculate opacity.
-  // For now, we just return the asset.
-  return asset;
+const FadeInRender = ({ assets }: RenderProps) => {
+  return assets.asset;
 };
 
 export const FadeInTemplate: AnimationTemplate = {
   id: "fade-in",
   name: "Fade In",
+  slots: [{ id: "asset", name: "Main Asset", type: "file", required: true }],
   propsSchema: z.object({
     duration: z.number().min(1),
   }),

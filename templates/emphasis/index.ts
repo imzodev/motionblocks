@@ -7,11 +7,12 @@ import type { AnimationTemplate, RenderProps } from "../../types/template";
 export const PulseTemplate: AnimationTemplate = {
   id: "pulse",
   name: "Pulse",
+  slots: [{ id: "asset", name: "Main Asset", type: "file", required: true }],
   propsSchema: z.object({
     intensity: z.number().default(1.1),
     duration: z.number().default(60),
   }),
-  render: ({ asset }: RenderProps) => asset,
+  render: ({ assets }: RenderProps) => assets.asset,
 };
 
 /**
@@ -20,11 +21,12 @@ export const PulseTemplate: AnimationTemplate = {
 export const GlowTemplate: AnimationTemplate = {
   id: "glow",
   name: "Glow",
+  slots: [{ id: "asset", name: "Main Asset", type: "file", required: true }],
   propsSchema: z.object({
     color: z.string().default("#ffffff"),
     radius: z.number().default(20),
   }),
-  render: ({ asset }: RenderProps) => asset,
+  render: ({ assets }: RenderProps) => assets.asset,
 };
 
 /**
@@ -33,10 +35,11 @@ export const GlowTemplate: AnimationTemplate = {
 export const BounceTemplate: AnimationTemplate = {
   id: "bounce",
   name: "Bounce",
+  slots: [{ id: "asset", name: "Main Asset", type: "file", required: true }],
   propsSchema: z.object({
     height: z.number().default(50),
   }),
-  render: ({ asset }: RenderProps) => asset,
+  render: ({ assets }: RenderProps) => assets.asset,
 };
 
 /**
@@ -45,8 +48,9 @@ export const BounceTemplate: AnimationTemplate = {
 export const ShakeTemplate: AnimationTemplate = {
   id: "shake",
   name: "Shake",
+  slots: [{ id: "asset", name: "Main Asset", type: "file", required: true }],
   propsSchema: z.object({
     intensity: z.number().default(5),
   }),
-  render: ({ asset }: RenderProps) => asset,
+  render: ({ assets }: RenderProps) => assets.asset,
 };

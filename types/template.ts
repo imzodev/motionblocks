@@ -1,20 +1,31 @@
 import { z } from "zod";
 import type { ReactNode } from "react";
 
-export interface RenderProps<T = Record<string, any>> {
+export type SlotType = "file" | "text" | "number" | "data-table" | "color";
+
+export interface TemplateSlot {
+  id: string;
+  name: string;
+  type: SlotType;
+  description?: string;
+  required?: boolean;
+}
+
+export interface RenderProps<T = unknown> {
   frame: number;
   duration: number;
-  asset: ReactNode;
+  assets: Record<string, ReactNode>; // Mapped by slot ID
   props: T;
 }
 
-export type RenderComponent<T = Record<string, any>> = (
+export type RenderComponent<T = unknown> = (
   props: RenderProps<T>
 ) => ReactNode;
 
 export interface AnimationTemplate {
   id: string;
   name: string;
-  propsSchema: z.ZodSchema<any>;
-  render: RenderComponent<any>;
+  slots: TemplateSlot[];
+  propsSchema: z.ZodType<unknown>;
+  render: RenderComponent<unknown>;
 }

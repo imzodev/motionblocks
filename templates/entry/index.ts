@@ -1,32 +1,29 @@
 import { z } from "zod";
 import type { AnimationTemplate, RenderProps } from "../../types/template";
 
-/**
- * FadeInTemplate: Simple opacity transition.
- */
 export const FadeInTemplate: AnimationTemplate = {
   id: "fade-in",
   name: "Fade In",
+  slots: [
+    { id: "asset", name: "Main Asset", type: "file", required: true }
+  ],
   propsSchema: z.object({
     duration: z.number().default(30),
   }),
-  render: ({ asset, frame, duration, props }: RenderProps<{ duration: number }>) => {
-    // In actual implementation, we'd use frame/duration to calculate opacity.
-    return asset; 
-  },
+  render: ({ assets }: RenderProps) => assets.asset,
 };
 
-/**
- * SlideTemplate: Directional slide-in.
- */
 export const SlideTemplate: AnimationTemplate = {
   id: "slide-in",
   name: "Slide In",
+  slots: [
+    { id: "asset", name: "Main Asset", type: "file", required: true }
+  ],
   propsSchema: z.object({
     direction: z.enum(["left", "right", "top", "bottom"]).default("left"),
     duration: z.number().default(30),
   }),
-  render: ({ asset }: RenderProps) => asset,
+  render: ({ assets }: RenderProps) => assets.asset,
 };
 
 /**
@@ -35,10 +32,13 @@ export const SlideTemplate: AnimationTemplate = {
 export const ScalePopTemplate: AnimationTemplate = {
   id: "scale-pop",
   name: "Scale Pop",
+  slots: [
+    { id: "asset", name: "Main Asset", type: "file", required: true }
+  ],
   propsSchema: z.object({
     duration: z.number().default(30),
   }),
-  render: ({ asset }: RenderProps) => asset,
+  render: ({ assets }: RenderProps) => assets.asset,
 };
 
 /**
@@ -47,9 +47,12 @@ export const ScalePopTemplate: AnimationTemplate = {
 export const MaskRevealTemplate: AnimationTemplate = {
   id: "mask-reveal",
   name: "Mask Reveal",
+  slots: [
+    { id: "asset", name: "Main Asset", type: "file", required: true }
+  ],
   propsSchema: z.object({
     direction: z.enum(["horizontal", "vertical"]).default("horizontal"),
     duration: z.number().default(30),
   }),
-  render: ({ asset }: RenderProps) => asset,
+  render: ({ assets }: RenderProps) => assets.asset,
 };

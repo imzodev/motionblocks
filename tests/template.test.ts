@@ -3,13 +3,14 @@ import { z } from "zod";
 import type { AnimationTemplate, RenderProps } from "../types/template";
 
 // Mock React component (since we are in a test environment, we just need a function)
-const MockRender = (props: RenderProps<any>) => null;
+const MockRender = (_props: RenderProps) => null;
 
 describe("AnimationTemplate Type Validation", () => {
   test("allows creating a valid template object", () => {
     const validTemplate: AnimationTemplate = {
       id: "test-template",
       name: "Test Template",
+      slots: [],
       propsSchema: z.object({
         opacity: z.number(),
       }),
@@ -24,6 +25,7 @@ describe("AnimationTemplate Type Validation", () => {
     const validTemplate: AnimationTemplate = {
       id: "test-template",
       name: "Test Template",
+      slots: [],
       propsSchema: z.object({
         opacity: z.number().min(0).max(1),
       }),

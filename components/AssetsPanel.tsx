@@ -2,8 +2,9 @@
 
 import React, { useCallback } from "react";
 import { useDropzone } from "react-dropzone";
-import { Upload, FilePlus } from "lucide-react";
+import { Upload } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Card } from "@/components/ui/card";
 
 interface AssetsPanelProps {
   onUpload: (files: File[]) => void;
@@ -31,10 +32,10 @@ export function AssetsPanel({ onUpload, className }: AssetsPanelProps) {
   });
 
   return (
-    <div
+    <Card
       className={cn(
-        "p-4 border-2 border-dashed rounded-lg transition-colors cursor-pointer flex flex-col items-center justify-center gap-2",
-        isDragActive ? "border-primary bg-primary/10" : "border-muted-foreground/25 hover:border-primary/50",
+        "p-4 border-2 border-dashed rounded-lg transition-colors cursor-pointer flex flex-col items-center justify-center gap-2 bg-card/60",
+        isDragActive ? "border-primary bg-primary/10" : "border-border hover:border-primary/50",
         className
       )}
       {...getRootProps()}
@@ -47,10 +48,8 @@ export function AssetsPanel({ onUpload, className }: AssetsPanelProps) {
         <p className="text-sm font-medium">
           {isDragActive ? "Drop files here" : "Click or drag assets here"}
         </p>
-        <p className="text-xs text-muted-foreground mt-1">
-          Supports PNG, JPG, SVG
-        </p>
+        <p className="text-xs text-muted-foreground mt-1">Supports PNG, JPG, SVG</p>
       </div>
-    </div>
+    </Card>
   );
 }
