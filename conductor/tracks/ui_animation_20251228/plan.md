@@ -21,9 +21,9 @@
 - [x] Task: Conductor - User Manual Verification 'Core Animation Templates (2D)' (Protocol in workflow.md) <!-- da2e6d5 -->
 
 ## Phase 3: Advanced 3D Templates & Visuals
-- [x] Task: Setup React Three Fiber environment and `components/Canvas3D.tsx`. <!-- bd73db9 -->
-    - [x] Write Tests: Ensure the 3D canvas mounts and handles basic resize. <!-- bd73db9 -->
-    - [x] Implement Feature: Initialize R3F and create a basic scene wrapper. <!-- bd73db9 -->
+- [x] Task: Setup React Three Fiber environment and `components/Canvas3D.tsx`. <!-- 20816e6 -->
+    - [x] Write Tests: Ensure the 3D canvas mounts and handles basic resize. <!-- 20816e6 -->
+    - [x] Implement Feature: Initialize R3F and create a basic scene wrapper. <!-- 20816e6 -->
 - [ ] Task: Implement the **3D Mind Map** template.
     - [ ] Write Tests: Verify node positioning and relationship rendering in the 3D space.
     - [ ] Implement Feature: Use R3F to create a node-link diagram with depth.
