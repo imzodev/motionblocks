@@ -9,9 +9,9 @@
 - [x] Task: Conductor - User Manual Verification 'Editor Infrastructure' (Protocol in workflow.md) <!-- 0bfe5f3 -->
 
 ## Phase 2: Core Animation Templates (2D)
-- [ ] Task: Implement Entry Templates (Fade In, Slide, Scale Pop, Mask Reveal).
-    - [ ] Write Tests: Verify the `render` function returns the correct motion props/styles for each template.
-    - [ ] Implement Feature: Create the functional components for each entry animation.
+- [x] Task: Implement Entry Templates (Fade In, Slide, Scale Pop, Mask Reveal). <!-- 245287a -->
+    - [x] Write Tests: Verify the `render` function returns the correct motion props/styles for each template. <!-- 245287a -->
+    - [x] Implement Feature: Create the functional components for each entry animation. <!-- 245287a -->
 - [ ] Task: Implement Emphasis Templates (Pulse, Glow, Bounce, Shake).
     - [ ] Write Tests: Verify the animation loops and properties match the schema.
     - [ ] Implement Feature: Create the functional components for each emphasis animation.
