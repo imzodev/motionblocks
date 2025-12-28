@@ -7,9 +7,9 @@
 - [x] Task: Create `components/AssetLibrary.tsx` to display uploaded assets. <!-- f2bf7da -->
     - [x] Write Tests: Ensure a list of assets renders as a grid of thumbnails. <!-- f2bf7da -->
     - [x] Implement Feature: Render a grid of assets with selection state. <!-- f2bf7da -->
-- [ ] Task: Implement `components/SequenceList.tsx` for reorderable blocks.
-    - [ ] Write Tests: Ensure blocks can be reordered and the `Timeline` state updates.
-    - [ ] Implement Feature: Use `@dnd-kit` or similar to create a reorderable list of blocks.
+- [x] Task: Implement `components/SequenceList.tsx` for reorderable blocks. <!-- 70665c3 -->
+    - [x] Write Tests: Ensure blocks can be reordered and the `Timeline` state updates. <!-- 70665c3 -->
+    - [x] Implement Feature: Use `@dnd-kit` or similar to create a reorderable list of blocks. <!-- 70665c3 -->
 - [ ] Task: Implement `components/DetailsPanel.tsx` for computed timing.
     - [ ] Write Tests: Ensure it correctly calculates and displays start frames based on sequence order.
     - [ ] Implement Feature: Create a read-only panel showing Start Frame and Duration for the selected block.
