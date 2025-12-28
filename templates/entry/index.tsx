@@ -1,6 +1,6 @@
 import { z } from "zod";
 import type { AnimationTemplate, RenderProps } from "../../types/template";
-import { Text, Image } from "@react-three/drei";
+import { Text, Image as DreiImage } from "@react-three/drei";
 import React from "react";
 import type { Asset } from "../../types/timeline";
 
@@ -28,7 +28,7 @@ export const FadeInTemplate: AnimationTemplate = {
     const opacity = Math.min(1, frame / 30);
 
     if ((asset.type === "image" || asset.type === "svg") && asset.src) {
-      return <Image url={asset.src} transparent opacity={opacity} scale={[400, 400]} />;
+      return <DreiImage url={asset.src} transparent opacity={opacity} scale={[400, 400]} />;
     }
     return (
       <Text fontSize={60} color="#0f172a" fillOpacity={opacity}>
@@ -56,7 +56,7 @@ export const SlideTemplate: AnimationTemplate = {
     return (
       <group position={[offset, 0, 0]}>
         {(asset.type === "image" || asset.type === "svg") && asset.src ? (
-          <Image url={asset.src} scale={[400, 400]} />
+          <DreiImage url={asset.src} scale={[400, 400]} />
         ) : (
           <Text fontSize={60} color="#0f172a">{asset.content || "Text"}</Text>
         )}
@@ -82,7 +82,7 @@ export const ScalePopTemplate: AnimationTemplate = {
     return (
       <group scale={[scale, scale, scale]}>
         {(asset.type === "image" || asset.type === "svg") && asset.src ? (
-          <Image url={asset.src} scale={[400, 400]} />
+          <DreiImage url={asset.src} scale={[400, 400]} />
         ) : (
           <Text fontSize={60} color="#0f172a">{asset.content || "Text"}</Text>
         )}
@@ -107,7 +107,7 @@ export const MaskRevealTemplate: AnimationTemplate = {
     return (
       <group>
         {(asset.type === "image" || asset.type === "svg") && asset.src ? (
-          <Image url={asset.src} scale={[400, 400]} />
+          <DreiImage url={asset.src} scale={[400, 400]} />
         ) : (
           <Text fontSize={60} color="#0f172a">{asset.content || "Text"}</Text>
         )}

@@ -1,6 +1,6 @@
 import { z } from "zod";
 import type { AnimationTemplate, RenderProps } from "../../types/template";
-import { Text, Image } from "@react-three/drei";
+import { Text, Image as DreiImage } from "@react-three/drei";
 import React from "react";
 import type { Asset } from "../../types/timeline";
 
@@ -74,7 +74,7 @@ export const TimelineRevealTemplate: AnimationTemplate = {
     return (
       <group>
         {(asset.type === "image" || asset.type === "svg") && asset.src ? (
-          <Image url={asset.src} scale={[400, 400]} />
+          <DreiImage url={asset.src} scale={[400, 400]} />
         ) : (
           <Text fontSize={60} color="#0f172a">{asset.content || "Text"}</Text>
         )}

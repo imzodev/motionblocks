@@ -1,6 +1,6 @@
 import { z } from "zod";
 import type { AnimationTemplate, RenderProps } from "../../types/template";
-import { Text, Image } from "@react-three/drei";
+import { Text, Image as DreiImage } from "@react-three/drei";
 import React from "react";
 import type { Asset } from "../../types/timeline";
 
@@ -31,7 +31,7 @@ export const PulseTemplate: AnimationTemplate = {
     return (
       <group scale={[scale, scale, scale]}>
         {(asset.type === "image" || asset.type === "svg") && asset.src ? (
-          <Image url={asset.src} scale={[400, 400]} />
+          <DreiImage url={asset.src} scale={[400, 400]} />
         ) : (
           <Text fontSize={60} color="#0f172a">{asset.content || "Text"}</Text>
         )}
@@ -56,7 +56,7 @@ export const GlowTemplate: AnimationTemplate = {
     return (
       <group>
         {(asset.type === "image" || asset.type === "svg") && asset.src ? (
-          <Image url={asset.src} scale={[400, 400]} />
+          <DreiImage url={asset.src} scale={[400, 400]} />
         ) : (
           <Text fontSize={60} color="#0f172a">{asset.content || "Text"}</Text>
         )}
@@ -82,7 +82,7 @@ export const BounceTemplate: AnimationTemplate = {
     return (
       <group position={[0, y, 0]}>
         {(asset.type === "image" || asset.type === "svg") && asset.src ? (
-          <Image url={asset.src} scale={[400, 400]} />
+          <DreiImage url={asset.src} scale={[400, 400]} />
         ) : (
           <Text fontSize={60} color="#0f172a">{asset.content || "Text"}</Text>
         )}
@@ -110,7 +110,7 @@ export const ShakeTemplate: AnimationTemplate = {
     return (
       <group position={[x, 0, 0]}>
         {(asset.type === "image" || asset.type === "svg") && asset.src ? (
-          <Image url={asset.src} scale={[400, 400]} />
+          <DreiImage url={asset.src} scale={[400, 400]} />
         ) : (
           <Text fontSize={60} color="#0f172a">{asset.content || "Text"}</Text>
         )}
