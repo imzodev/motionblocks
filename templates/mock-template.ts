@@ -6,7 +6,8 @@ import type { AnimationTemplate, RenderProps } from "../types/template";
 // But to keep it simple and testable without a full React test renderer, I'll essentially make it a functional component.
 
 const FadeInRender = ({ assets }: RenderProps) => {
-  return assets.asset;
+  void assets;
+  return null;
 };
 
 export const FadeInTemplate: AnimationTemplate = {

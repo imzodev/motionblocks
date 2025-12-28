@@ -45,7 +45,7 @@ export function Renderer3D({ activeTrack, currentFrame, assets }: Renderer3DProp
   const resolveAssetById = (id: string) => assets.find((a) => a.id === id);
 
   // Resolve slot values
-  const resolvedAssets: Record<string, any> = {};
+  const resolvedAssets: Record<string, unknown> = {};
   template.slots.forEach(slot => {
     const val = activeTrack.templateProps[slot.id];
     if (slot.type === 'file' && typeof val === 'string') {

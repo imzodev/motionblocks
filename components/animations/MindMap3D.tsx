@@ -18,6 +18,15 @@ interface MindMap3DProps {
 
 export function MindMap3D({ rootTopic, nodesData, frame }: MindMap3DProps) {
   const nodes = useMemo(() => {
+    const hashToUnit = (input: string) => {
+      let h = 2166136261;
+      for (let i = 0; i < input.length; i++) {
+        h ^= input.charCodeAt(i);
+        h = Math.imul(h, 16777619);
+      }
+      return (h >>> 0) / 4294967295;
+    };
+
     const list: Node[] = [];
     if (!nodesData) return list;
 
@@ -25,9 +34,13 @@ export function MindMap3D({ rootTopic, nodesData, frame }: MindMap3DProps) {
     lines.forEach((line, i) => {
       const parts = line.split(",").map(s => s.trim());
       const text = parts[0];
-      const x = parseFloat(parts[1]) || (Math.random() - 0.5) * 600;
-      const y = parseFloat(parts[2]) || (Math.random() - 0.5) * 600;
-      const z = parseFloat(parts[3]) || (Math.random() - 0.5) * 200;
+      const seed = `${i}:${text}`;
+      const rx = hashToUnit(`${seed}:x`) - 0.5;
+      const ry = hashToUnit(`${seed}:y`) - 0.5;
+      const rz = hashToUnit(`${seed}:z`) - 0.5;
+      const x = parseFloat(parts[1]) || rx * 600;
+      const y = parseFloat(parts[2]) || ry * 600;
+      const z = parseFloat(parts[3]) || rz * 200;
       
       list.push({
         id: `node-${i}`,

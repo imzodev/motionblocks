@@ -19,14 +19,17 @@ export const HighlightTemplate: AnimationTemplate = {
   render: ({ assets, frame, props }: RenderProps) => {
     const progress = Math.min(1, frame / 30);
     const width = progress * 600;
+    const p = (props ?? {}) as Record<string, unknown>;
+    const color = typeof p.color === "string" ? p.color : "#fde047";
+    const text = typeof assets.text === "string" ? assets.text : "";
     
     return (
       <group>
         <Box args={[width, 80, 10]} position={[-(600 - width) / 2, 0, -5]}>
-          <meshStandardMaterial color={props.color || "#fde047"} transparent opacity={0.8} />
+          <meshStandardMaterial color={color} transparent opacity={0.8} />
         </Box>
         <Text fontSize={60} color="black" position={[0, 0, 0]}>
-          {assets.text || "Highlight Me"}
+          {text || "Highlight Me"}
         </Text>
       </group>
     );

@@ -20,10 +20,12 @@ export const MindMapTemplate: AnimationTemplate = {
     spread: z.number().default(1.5),
   }),
   render: ({ assets, frame }: RenderProps) => {
+    const rootTopic = typeof assets.rootText === "string" ? assets.rootText : "";
+    const nodesData = typeof assets.nodes === "string" ? assets.nodes : undefined;
     return (
       <MindMap3D 
-        rootTopic={assets.rootText}
-        nodesData={assets.nodes}
+        rootTopic={rootTopic}
+        nodesData={nodesData}
         frame={frame}
       />
     );
@@ -46,16 +48,17 @@ export const GraphTemplate: AnimationTemplate = {
     color: z.string().default("#3b82f6"),
   }),
   render: ({ assets, frame }: RenderProps) => {
-    const dataString = assets.data || "";
+    const dataString = typeof assets.data === "string" ? assets.data : "";
     const lines = dataString.split("\n").filter((l: string) => l.trim().length > 0);
+    const title = typeof assets.title === "string" ? assets.title : "";
     
     return (
       <group>
-        {assets.title && (
+        {title ? (
           <Text position={[0, 400, 0]} fontSize={50} color="white" font-weight="bold">
-            {assets.title}
+            {title}
           </Text>
-        )}
+        ) : null}
         <group position={[-(lines.length * 120) / 2, 0, 0]}>
           {lines.map((line: string, i: number) => {
             const parts = line.split(",").map(s => s.trim());

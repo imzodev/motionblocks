@@ -2,6 +2,16 @@ import { z } from "zod";
 import type { AnimationTemplate, RenderProps } from "../../types/template";
 import { Text, Image } from "@react-three/drei";
 import React from "react";
+import type { Asset } from "../../types/timeline";
+
+function isAsset(value: unknown): value is Asset {
+  return (
+    typeof value === "object" &&
+    value !== null &&
+    "id" in value &&
+    "type" in value
+  );
+}
 
 export const PulseTemplate: AnimationTemplate = {
   id: "pulse",
@@ -14,16 +24,17 @@ export const PulseTemplate: AnimationTemplate = {
     duration: z.number().default(60),
   }),
   render: ({ assets, frame }: RenderProps) => {
-    const asset = assets.asset;
+    const asset = isAsset(assets.asset) ? assets.asset : undefined;
     if (!asset) return null;
     const scale = 1 + Math.sin(frame * 0.2) * 0.1;
     
     return (
       <group scale={[scale, scale, scale]}>
-        {asset.type === 'image' || asset.type === 'svg' ? 
-          <Image url={asset.src} scale={[400, 400, 1]} /> : 
-          <Text fontSize={60} color="white">{asset.content || "Text"}</Text>
-        }
+        {(asset.type === "image" || asset.type === "svg") && asset.src ? (
+          <Image url={asset.src} scale={[400, 400]} />
+        ) : (
+          <Text fontSize={60} color="#0f172a">{asset.content || "Text"}</Text>
+        )}
       </group>
     );
   },
@@ -40,14 +51,15 @@ export const GlowTemplate: AnimationTemplate = {
     radius: z.number().default(20),
   }),
   render: ({ assets }: RenderProps) => {
-    const asset = assets.asset;
+    const asset = isAsset(assets.asset) ? assets.asset : undefined;
     if (!asset) return null;
     return (
       <group>
-        {asset.type === 'image' || asset.type === 'svg' ? 
-          <Image url={asset.src} scale={[400, 400, 1]} /> : 
-          <Text fontSize={60} color="white">{asset.content || "Text"}</Text>
-        }
+        {(asset.type === "image" || asset.type === "svg") && asset.src ? (
+          <Image url={asset.src} scale={[400, 400]} />
+        ) : (
+          <Text fontSize={60} color="#0f172a">{asset.content || "Text"}</Text>
+        )}
       </group>
     );
   },
@@ -63,16 +75,17 @@ export const BounceTemplate: AnimationTemplate = {
     height: z.number().default(50),
   }),
   render: ({ assets, frame }: RenderProps) => {
-    const asset = assets.asset;
+    const asset = isAsset(assets.asset) ? assets.asset : undefined;
     if (!asset) return null;
     const y = Math.abs(Math.sin(frame * 0.1)) * 100;
     
     return (
       <group position={[0, y, 0]}>
-        {asset.type === 'image' || asset.type === 'svg' ? 
-          <Image url={asset.src} scale={[400, 400, 1]} /> : 
-          <Text fontSize={60} color="white">{asset.content || "Text"}</Text>
-        }
+        {(asset.type === "image" || asset.type === "svg") && asset.src ? (
+          <Image url={asset.src} scale={[400, 400]} />
+        ) : (
+          <Text fontSize={60} color="#0f172a">{asset.content || "Text"}</Text>
+        )}
       </group>
     );
   },
@@ -87,17 +100,20 @@ export const ShakeTemplate: AnimationTemplate = {
   propsSchema: z.object({
     intensity: z.number().default(5),
   }),
-  render: ({ assets, frame }: RenderProps) => {
-    const asset = assets.asset;
+  render: ({ assets, frame, props }: RenderProps) => {
+    const asset = isAsset(assets.asset) ? assets.asset : undefined;
     if (!asset) return null;
-    const x = (Math.random() - 0.5) * 20;
+    const p = (props ?? {}) as Record<string, unknown>;
+    const intensity = typeof p.intensity === "number" ? p.intensity : 5;
+    const x = Math.sin(frame * 0.9) * intensity;
     
     return (
       <group position={[x, 0, 0]}>
-        {asset.type === 'image' || asset.type === 'svg' ? 
-          <Image url={asset.src} scale={[400, 400, 1]} /> : 
-          <Text fontSize={60} color="white">{asset.content || "Text"}</Text>
-        }
+        {(asset.type === "image" || asset.type === "svg") && asset.src ? (
+          <Image url={asset.src} scale={[400, 400]} />
+        ) : (
+          <Text fontSize={60} color="#0f172a">{asset.content || "Text"}</Text>
+        )}
       </group>
     );
   },

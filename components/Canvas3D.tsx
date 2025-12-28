@@ -15,8 +15,14 @@ interface Canvas3DProps {
  */
 export function Canvas3D({ children, className }: Canvas3DProps) {
   return (
-    <div className={cn("w-full h-full relative bg-zinc-950", className)}>
-      <Canvas shadows gl={{ antialias: true, preserveDrawingBuffer: true }}>
+    <div className={cn("w-full h-full relative bg-background", className)}>
+      <Canvas
+        shadows
+        gl={{ antialias: true, preserveDrawingBuffer: true, alpha: true }}
+        onCreated={({ gl }) => {
+          gl.setClearColor(0x000000, 0)
+        }}
+      >
         <PerspectiveCamera makeDefault position={[0, 0, 1000]} fov={50} />
         <OrbitControls makeDefault enableDamping dampingFactor={0.05} />
         

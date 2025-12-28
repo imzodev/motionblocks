@@ -14,7 +14,7 @@ export interface TemplateSlot {
 export interface RenderProps<T = unknown> {
   frame: number;
   duration: number;
-  assets: Record<string, ReactNode>; // Mapped by slot ID
+  assets: Record<string, unknown>; // Mapped by slot ID
   props: T;
 }
 

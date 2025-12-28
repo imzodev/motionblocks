@@ -17,7 +17,7 @@ import { Badge } from "@/components/ui/badge";
 import { Slider } from "@/components/ui/slider";
 import type { Asset, Track } from "@/types/timeline";
 import type { TemplateSlot } from "@/types/template";
-import { Box, Layers, Play, Pause, Save, Sparkles, AlertCircle, Clock } from "lucide-react";
+import { Box, Layers, Play, Pause, Save, Sparkles, Clock } from "lucide-react";
 
 export default function Home() {
   const [assets, setAssets] = useState<Asset[]>([]);
@@ -34,7 +34,7 @@ export default function Home() {
 
   // Playback Loop
   useEffect(() => {
-    let interval: any;
+    let interval: ReturnType<typeof setInterval> | undefined;
     if (isPlaying && totalDuration > 0) {
       interval = setInterval(() => {
         setCurrentFrame((prev) => {
@@ -47,7 +47,9 @@ export default function Home() {
         });
       }, 1000 / 30);
     }
-    return () => clearInterval(interval);
+    return () => {
+      if (interval) clearInterval(interval);
+    };
   }, [isPlaying, totalDuration]);
 
   const handleFileUpload = (files: File[]) => {
@@ -159,9 +161,9 @@ export default function Home() {
 
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col relative">
-        <main className="flex-1 flex flex-col relative bg-zinc-950">
+        <main className="flex-1 flex flex-col relative bg-background dark:bg-zinc-950">
           <header className="absolute top-0 left-0 right-0 p-6 flex justify-between items-center z-10 pointer-events-none">
-            <div className="bg-black/80 text-white backdrop-blur-2xl px-5 py-2.5 rounded-full border border-white/10 flex items-center gap-8 shadow-2xl">
+            <div className="bg-card/80 text-foreground backdrop-blur-2xl px-5 py-2.5 rounded-full border border-border/60 flex items-center gap-8 shadow-2xl">
               <div className="flex flex-col text-center">
                 <span className="text-[9px] font-black uppercase tracking-[0.2em] opacity-40">Status</span>
                 <Badge variant={isPlaying ? "default" : "secondary"} className="text-[9px] h-4 font-black">
@@ -183,7 +185,7 @@ export default function Home() {
               <Button
                 size="lg"
                 variant="outline"
-                className="rounded-full bg-white/5 text-white border-white/10 backdrop-blur-xl shadow-2xl font-black px-10 tracking-widest hover:bg-white hover:text-black transition-all"
+                className="rounded-full bg-card/40 text-foreground border-border/60 backdrop-blur-xl shadow-2xl font-black px-10 tracking-widest hover:bg-card transition-all dark:bg-white/5 dark:text-white dark:border-white/10 dark:hover:bg-white dark:hover:text-black"
               >
                 <Save className="w-4 h-4 mr-2" /> EXPORT
               </Button>
@@ -191,7 +193,7 @@ export default function Home() {
           </header>
 
           <div className="flex-1 flex items-center justify-center p-12">
-            <div className="aspect-video w-full max-w-5xl bg-black shadow-[0_0_120px_rgba(0,0,0,0.8)] ring-1 ring-white/10 relative overflow-hidden rounded-2xl border border-white/5">
+            <div className="aspect-video w-full max-w-5xl bg-card shadow-[0_0_120px_rgba(0,0,0,0.18)] ring-1 ring-border relative overflow-hidden rounded-2xl border border-border">
               <Canvas3D>
                 <Renderer3D 
                   activeTrack={activeTrack} 
@@ -201,10 +203,10 @@ export default function Home() {
               </Canvas3D>
 
               {!activeTrack && (
-                <div className="absolute inset-0 flex items-center justify-center pointer-events-none bg-black/40 backdrop-blur-[2px]">
+                <div className="absolute inset-0 flex items-center justify-center pointer-events-none bg-background/55 backdrop-blur-[2px] dark:bg-black/40">
                   <div className="text-center space-y-4 opacity-40">
                     <Sparkles className="w-12 h-12 mx-auto text-primary" />
-                    <p className="text-white font-mono tracking-[0.4em] text-[10px] uppercase font-bold">Waiting for Sequence</p>
+                    <p className="text-foreground font-mono tracking-[0.4em] text-[10px] uppercase font-bold">Waiting for Sequence</p>
                   </div>
                 </div>
               )}

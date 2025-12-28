@@ -2,6 +2,16 @@ import { z } from "zod";
 import type { AnimationTemplate, RenderProps } from "../../types/template";
 import { Text, Image } from "@react-three/drei";
 import React from "react";
+import type { Asset } from "../../types/timeline";
+
+function isAsset(value: unknown): value is Asset {
+  return (
+    typeof value === "object" &&
+    value !== null &&
+    "id" in value &&
+    "type" in value
+  );
+}
 
 /**
  * CounterTemplate: Animated number interpolation.
@@ -20,20 +30,26 @@ export const CounterTemplate: AnimationTemplate = {
     suffix: z.string().optional(),
   }),
   render: ({ assets, frame, props }: RenderProps) => {
-    const { startValue = 0, endValue = 100, duration = 60, prefix = "", suffix = "" } = props;
+    const p = (props ?? {}) as Record<string, unknown>;
+    const startValue = typeof p.startValue === "number" ? p.startValue : 0;
+    const endValue = typeof p.endValue === "number" ? p.endValue : 100;
+    const duration = typeof p.duration === "number" ? p.duration : 60;
+    const prefix = typeof p.prefix === "string" ? p.prefix : "";
+    const suffix = typeof p.suffix === "string" ? p.suffix : "";
     const progress = Math.min(1, frame / duration);
     const value = Math.floor(startValue + (endValue - startValue) * progress);
+    const label = typeof assets.label === "string" ? assets.label : "";
     
     return (
       <group>
-        <Text fontSize={80} color="white" position={[0, 0, 0]}>
+        <Text fontSize={80} color="#0f172a" position={[0, 0, 0]}>
           {`${prefix}${value}${suffix}`}
         </Text>
-        {assets.label && (
+        {label ? (
           <Text fontSize={30} color="#60a5fa" position={[0, -80, 0]}>
-            {assets.label}
+            {label}
           </Text>
-        )}
+        ) : null}
       </group>
     );
   },
@@ -53,14 +69,15 @@ export const TimelineRevealTemplate: AnimationTemplate = {
     duration: z.number().default(60),
   }),
   render: ({ assets }: RenderProps) => {
-    const asset = assets.asset;
+    const asset = isAsset(assets.asset) ? assets.asset : undefined;
     if (!asset) return null;
     return (
       <group>
-        {asset.type === 'image' || asset.type === 'svg' ? 
-          <Image url={asset.src} scale={[400, 400, 1]} /> : 
-          <Text fontSize={60} color="white">{asset.content || "Text"}</Text>
-        }
+        {(asset.type === "image" || asset.type === "svg") && asset.src ? (
+          <Image url={asset.src} scale={[400, 400]} />
+        ) : (
+          <Text fontSize={60} color="#0f172a">{asset.content || "Text"}</Text>
+        )}
       </group>
     );
   },
