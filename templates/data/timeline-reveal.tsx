@@ -131,6 +131,7 @@ export const TimelineRevealTemplate: AnimationTemplate = {
     accentColor: z.string().default("#6366f1"),
     lineColor: z.string().default("#94a3b8"),
     textColor: z.string().default("#0b1220"),
+    labelColor: z.string().optional(),
     glowStrength: z.number().min(0).max(1).default(0.45),
     spacing: z.number().min(120).max(360).default(180),
     nodeRadius: z.number().min(10).max(40).default(26),
@@ -154,6 +155,8 @@ export const TimelineRevealTemplate: AnimationTemplate = {
     const accentColor = typeof p.accentColor === "string" ? p.accentColor : "#6366f1";
     const lineColor = typeof p.lineColor === "string" ? p.lineColor : "#94a3b8";
     const textColor = typeof p.textColor === "string" ? p.textColor : "#0b1220";
+    const labelColorRaw = typeof p.labelColor === "string" ? p.labelColor : undefined;
+    const labelColor = labelColorRaw ?? textColor;
     const glowStrength = typeof p.glowStrength === "number" ? p.glowStrength : 0.45;
     const spacing = typeof p.spacing === "number" ? p.spacing : 180;
     const nodeRadius = typeof p.nodeRadius === "number" ? p.nodeRadius : 26;
@@ -426,7 +429,7 @@ export const TimelineRevealTemplate: AnimationTemplate = {
                   {hasLabel ? (
                     <Text
                       fontSize={labelSize}
-                      color={textColor}
+                      color={labelColor}
                       anchorX="center"
                       anchorY="middle"
                       position={[0, hasImg ? -(imageSize * 0.72) : 0, 3]}

@@ -587,6 +587,26 @@ export function DetailsPanel({
                 </div>
               </div>
 
+              <div className="space-y-1.5">
+                <label className="text-xs font-medium">Label color</label>
+                <div className="flex items-center gap-2 rounded-xl border bg-card/60 px-2 py-1.5">
+                  <input
+                    type="color"
+                    className="h-7 w-8 bg-transparent"
+                    value={String(
+                      selectedTrack.templateProps.labelColor || selectedTrack.templateProps.textColor || "#0b1220"
+                    )}
+                    onChange={(e) => handleSlotUpdate("labelColor", e.target.value)}
+                  />
+                  <Input
+                    value={String(
+                      selectedTrack.templateProps.labelColor || selectedTrack.templateProps.textColor || "#0b1220"
+                    )}
+                    onChange={(e) => handleSlotUpdate("labelColor", e.target.value)}
+                  />
+                </div>
+              </div>
+
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <label className="text-xs font-medium">Background</label>
