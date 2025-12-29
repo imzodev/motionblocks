@@ -119,6 +119,7 @@ export const CounterTemplate: AnimationTemplate = {
   }),
   render: ({ assets, frame, duration, props }: RenderProps) => {
     const p = (props ?? {}) as Record<string, unknown>;
+    const globalFontUrl = typeof p.globalFontUrl === "string" ? p.globalFontUrl : undefined;
     const startValue = typeof p.startValue === "number" && Number.isFinite(p.startValue) ? p.startValue : 0;
     const endValue = typeof p.endValue === "number" && Number.isFinite(p.endValue) ? p.endValue : 100;
     const digits = typeof p.digits === "number" ? p.digits : 3;
@@ -263,6 +264,7 @@ export const CounterTemplate: AnimationTemplate = {
                 <group rotation={[rotCurrent, 0, 0]} position={[0, 0, zPop]}>
                   <Text
                     fontSize={fontSize}
+                    font={globalFontUrl}
                     color={textColor}
                     anchorX="center"
                     anchorY="middle"
@@ -280,6 +282,7 @@ export const CounterTemplate: AnimationTemplate = {
                   <group rotation={[rotNext, 0, 0]} position={[0, 0, -flipDepth + zPop]}>
                     <Text
                       fontSize={fontSize}
+                      font={globalFontUrl}
                       color={textColor}
                       anchorX="center"
                       anchorY="middle"

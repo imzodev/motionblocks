@@ -31,12 +31,13 @@ interface Renderer3DProps {
   activeTrack?: Track;
   currentFrame: number;
   assets: Asset[];
+  globalFontUrl?: string;
 }
 
 /**
  * Renderer3D component handles the logical mapping between tracks and animation templates.
  */
-export function Renderer3D({ activeTrack, currentFrame, assets }: Renderer3DProps) {
+export function Renderer3D({ activeTrack, currentFrame, assets, globalFontUrl }: Renderer3DProps) {
   if (!activeTrack) return null;
 
   const template = TEMPLATE_REGISTRY[activeTrack.template];
@@ -61,7 +62,10 @@ export function Renderer3D({ activeTrack, currentFrame, assets }: Renderer3DProp
         frame: currentFrame - activeTrack.startFrame,
         duration: activeTrack.duration,
         assets: resolvedAssets,
-        props: activeTrack.templateProps
+        props: {
+          ...(activeTrack.templateProps as Record<string, unknown>),
+          globalFontUrl,
+        }
       })}
     </group>
   );

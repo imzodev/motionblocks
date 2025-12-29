@@ -20,6 +20,7 @@ export const HighlightTemplate: AnimationTemplate = {
     const progress = Math.min(1, frame / 30);
     const width = progress * 600;
     const p = (props ?? {}) as Record<string, unknown>;
+    const globalFontUrl = typeof p.globalFontUrl === "string" ? p.globalFontUrl : undefined;
     const color = typeof p.color === "string" ? p.color : "#fde047";
     const text = typeof assets.text === "string" ? assets.text : "";
     
@@ -28,7 +29,7 @@ export const HighlightTemplate: AnimationTemplate = {
         <Box args={[width, 80, 10]} position={[-(600 - width) / 2, 0, -5]}>
           <meshStandardMaterial color={color} transparent opacity={0.8} />
         </Box>
-        <Text fontSize={60} color="black" position={[0, 0, 0]}>
+        <Text font={globalFontUrl} fontSize={60} color="black" position={[0, 0, 0]}>
           {text || "Highlight Me"}
         </Text>
       </group>

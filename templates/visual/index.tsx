@@ -47,7 +47,9 @@ export const GraphTemplate: AnimationTemplate = {
       .default("bar"),
     color: z.string().default("#3b82f6"),
   }),
-  render: ({ assets, frame }: RenderProps) => {
+  render: ({ assets, frame, props }: RenderProps) => {
+    const p = (props ?? {}) as Record<string, unknown>;
+    const globalFontUrl = typeof p.globalFontUrl === "string" ? p.globalFontUrl : undefined;
     const dataString = typeof assets.data === "string" ? assets.data : "";
     const lines = dataString.split("\n").filter((l: string) => l.trim().length > 0);
     const title = typeof assets.title === "string" ? assets.title : "";
@@ -55,7 +57,7 @@ export const GraphTemplate: AnimationTemplate = {
     return (
       <group>
         {title ? (
-          <Text position={[0, 400, 0]} fontSize={50} color="white" font-weight="bold">
+          <Text font={globalFontUrl} position={[0, 400, 0]} fontSize={50} color="white" font-weight="bold">
             {title}
           </Text>
         ) : null}
@@ -73,10 +75,10 @@ export const GraphTemplate: AnimationTemplate = {
                   <boxGeometry args={[80, height, 80]} />
                   <meshStandardMaterial color="#3b82f6" roughness={0.2} metalness={0.8} />
                 </mesh>
-                <Text position={[0, -40, 0]} fontSize={20} color="#94a3b8">
+                <Text font={globalFontUrl} position={[0, -40, 0]} fontSize={20} color="#94a3b8">
                   {label}
                 </Text>
-                <Text position={[0, height + 40, 0]} fontSize={24} color="white" font-weight="black">
+                <Text font={globalFontUrl} position={[0, height + 40, 0]} fontSize={24} color="white" font-weight="black">
                   {Math.floor(progress * value)}
                 </Text>
               </group>

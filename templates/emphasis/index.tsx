@@ -23,7 +23,9 @@ export const PulseTemplate: AnimationTemplate = {
     intensity: z.number().default(1.1),
     duration: z.number().default(60),
   }),
-  render: ({ assets, frame }: RenderProps) => {
+  render: ({ assets, frame, props }: RenderProps) => {
+    const p = (props ?? {}) as Record<string, unknown>;
+    const globalFontUrl = typeof p.globalFontUrl === "string" ? p.globalFontUrl : undefined;
     const asset = isAsset(assets.asset) ? assets.asset : undefined;
     if (!asset) return null;
     const scale = 1 + Math.sin(frame * 0.2) * 0.1;
@@ -33,7 +35,7 @@ export const PulseTemplate: AnimationTemplate = {
         {(asset.type === "image" || asset.type === "svg") && asset.src ? (
           <DreiImage url={asset.src} scale={[400, 400]} />
         ) : (
-          <Text fontSize={60} color="#0f172a">{asset.content || "Text"}</Text>
+          <Text font={globalFontUrl} fontSize={60} color="#0f172a">{asset.content || "Text"}</Text>
         )}
       </group>
     );
@@ -50,7 +52,9 @@ export const GlowTemplate: AnimationTemplate = {
     color: z.string().default("#ffffff"),
     radius: z.number().default(20),
   }),
-  render: ({ assets }: RenderProps) => {
+  render: ({ assets, props }: RenderProps) => {
+    const p = (props ?? {}) as Record<string, unknown>;
+    const globalFontUrl = typeof p.globalFontUrl === "string" ? p.globalFontUrl : undefined;
     const asset = isAsset(assets.asset) ? assets.asset : undefined;
     if (!asset) return null;
     return (
@@ -58,7 +62,7 @@ export const GlowTemplate: AnimationTemplate = {
         {(asset.type === "image" || asset.type === "svg") && asset.src ? (
           <DreiImage url={asset.src} scale={[400, 400]} />
         ) : (
-          <Text fontSize={60} color="#0f172a">{asset.content || "Text"}</Text>
+          <Text font={globalFontUrl} fontSize={60} color="#0f172a">{asset.content || "Text"}</Text>
         )}
       </group>
     );
@@ -74,7 +78,9 @@ export const BounceTemplate: AnimationTemplate = {
   propsSchema: z.object({
     height: z.number().default(50),
   }),
-  render: ({ assets, frame }: RenderProps) => {
+  render: ({ assets, frame, props }: RenderProps) => {
+    const p = (props ?? {}) as Record<string, unknown>;
+    const globalFontUrl = typeof p.globalFontUrl === "string" ? p.globalFontUrl : undefined;
     const asset = isAsset(assets.asset) ? assets.asset : undefined;
     if (!asset) return null;
     const y = Math.abs(Math.sin(frame * 0.1)) * 100;
@@ -84,7 +90,7 @@ export const BounceTemplate: AnimationTemplate = {
         {(asset.type === "image" || asset.type === "svg") && asset.src ? (
           <DreiImage url={asset.src} scale={[400, 400]} />
         ) : (
-          <Text fontSize={60} color="#0f172a">{asset.content || "Text"}</Text>
+          <Text font={globalFontUrl} fontSize={60} color="#0f172a">{asset.content || "Text"}</Text>
         )}
       </group>
     );
@@ -104,6 +110,7 @@ export const ShakeTemplate: AnimationTemplate = {
     const asset = isAsset(assets.asset) ? assets.asset : undefined;
     if (!asset) return null;
     const p = (props ?? {}) as Record<string, unknown>;
+    const globalFontUrl = typeof p.globalFontUrl === "string" ? p.globalFontUrl : undefined;
     const intensity = typeof p.intensity === "number" ? p.intensity : 5;
     const x = Math.sin(frame * 0.9) * intensity;
     
@@ -112,7 +119,7 @@ export const ShakeTemplate: AnimationTemplate = {
         {(asset.type === "image" || asset.type === "svg") && asset.src ? (
           <DreiImage url={asset.src} scale={[400, 400]} />
         ) : (
-          <Text fontSize={60} color="#0f172a">{asset.content || "Text"}</Text>
+          <Text font={globalFontUrl} fontSize={60} color="#0f172a">{asset.content || "Text"}</Text>
         )}
       </group>
     );

@@ -11,6 +11,7 @@ import { Canvas3D } from "@/components/Canvas3D";
 import { Renderer3D, TEMPLATE_REGISTRY } from "@/components/Renderer3D";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
@@ -27,6 +28,9 @@ export default function Home() {
 
   const previewRef = useRef<HTMLDivElement | null>(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
+
+  const [globalFontUrl, setGlobalFontUrl] = useState<string>("");
+  const [globalFontPreset, setGlobalFontPreset] = useState<string>("custom");
   
   // Playback State
   const [isPlaying, setIsPlaying] = useState(false);
@@ -171,6 +175,50 @@ export default function Home() {
                     selectedId={selectedAssetId}
                   />
                 </section>
+
+                <Separator className="opacity-50" />
+
+                <section className="space-y-3">
+                  <h2 className="text-[10px] font-black uppercase text-muted-foreground tracking-[0.2em]">Global</h2>
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-medium">Font preset</label>
+                    <select
+                      className="h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
+                      value={globalFontPreset}
+                      onChange={(e) => {
+                        const next = e.target.value;
+                        setGlobalFontPreset(next);
+                        if (next === "custom") return;
+                        if (next === "") {
+                          setGlobalFontUrl("");
+                          return;
+                        }
+                        setGlobalFontUrl(next);
+                      }}
+                    >
+                      <option value="">Default</option>
+                      <option value="custom">Custom URL…</option>
+                      <option value="https://raw.githubusercontent.com/google/fonts/main/ofl/bebasneue/BebasNeue-Regular.ttf">Bebas Neue</option>
+                      <option value="https://raw.githubusercontent.com/google/fonts/main/ofl/bangers/Bangers-Regular.ttf">Bangers</option>
+                      <option value="https://raw.githubusercontent.com/google/fonts/main/ofl/lobster/Lobster-Regular.ttf">Lobster</option>
+                      <option value="https://raw.githubusercontent.com/google/fonts/main/ofl/pacifico/Pacifico-Regular.ttf">Pacifico</option>
+                      <option value="https://raw.githubusercontent.com/google/fonts/main/ofl/orbitron/Orbitron%5Bwght%5D.ttf">Orbitron</option>
+                      <option value="https://raw.githubusercontent.com/google/fonts/main/ofl/pressstart2p/PressStart2P-Regular.ttf">Press Start 2P</option>
+                      <option value="https://raw.githubusercontent.com/google/fonts/main/ofl/anton/Anton-Regular.ttf">Anton</option>
+                      <option value="https://raw.githubusercontent.com/google/fonts/main/ofl/abrilfatface/AbrilFatface-Regular.ttf">Abril Fatface</option>
+                    </select>
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-medium">Font URL</label>
+                    <Input
+                      value={globalFontUrl}
+                      placeholder="https://.../font.woff"
+                      onChange={(e) => setGlobalFontUrl(e.target.value)}
+                      disabled={globalFontPreset !== "custom"}
+                    />
+                  </div>
+                </section>
               </div>
             </ScrollArea>
           </CardContent>
@@ -248,6 +296,7 @@ export default function Home() {
                   activeTrack={activeTrack} 
                   currentFrame={currentFrame} 
                   assets={assets} 
+                  globalFontUrl={globalFontUrl.trim().length > 0 ? globalFontUrl.trim() : undefined}
                 />
               </Canvas3D>
 

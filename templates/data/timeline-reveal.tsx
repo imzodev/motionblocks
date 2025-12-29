@@ -152,6 +152,7 @@ export const TimelineRevealTemplate: AnimationTemplate = {
   }),
   render: ({ assets, frame, duration, props }: RenderProps) => {
     const p = (props ?? {}) as Record<string, unknown>;
+    const globalFontUrl = typeof p.globalFontUrl === "string" ? p.globalFontUrl : undefined;
 
     const itemCountCap = typeof p.itemCount === "number" ? Math.max(1, Math.min(5, p.itemCount)) : 5;
     const accentColor = typeof p.accentColor === "string" ? p.accentColor : "#6366f1";
@@ -434,6 +435,7 @@ export const TimelineRevealTemplate: AnimationTemplate = {
                   {hasLabel ? (
                     <Text
                       fontSize={labelSize}
+                      font={globalFontUrl}
                       color={labelColor}
                       anchorX="center"
                       anchorY="middle"

@@ -22,7 +22,9 @@ export const FadeInTemplate: AnimationTemplate = {
   propsSchema: z.object({
     duration: z.number().default(30),
   }),
-  render: ({ assets, frame }: RenderProps) => {
+  render: ({ assets, frame, props }: RenderProps) => {
+    const p = (props ?? {}) as Record<string, unknown>;
+    const globalFontUrl = typeof p.globalFontUrl === "string" ? p.globalFontUrl : undefined;
     const asset = isAsset(assets.asset) ? assets.asset : undefined;
     if (!asset) return null;
     const opacity = Math.min(1, frame / 30);
@@ -31,7 +33,7 @@ export const FadeInTemplate: AnimationTemplate = {
       return <DreiImage url={asset.src} transparent opacity={opacity} scale={[400, 400]} />;
     }
     return (
-      <Text fontSize={60} color="#0f172a" fillOpacity={opacity}>
+      <Text font={globalFontUrl} fontSize={60} color="#0f172a" fillOpacity={opacity}>
         {asset.content || "Text"}
       </Text>
     );
@@ -48,7 +50,9 @@ export const SlideTemplate: AnimationTemplate = {
     direction: z.enum(["left", "right", "top", "bottom"]).default("left"),
     duration: z.number().default(30),
   }),
-  render: ({ assets, frame }: RenderProps) => {
+  render: ({ assets, frame, props }: RenderProps) => {
+    const p = (props ?? {}) as Record<string, unknown>;
+    const globalFontUrl = typeof p.globalFontUrl === "string" ? p.globalFontUrl : undefined;
     const asset = isAsset(assets.asset) ? assets.asset : undefined;
     if (!asset) return null;
     const offset = Math.max(0, 1 - frame / 30) * 800;
@@ -58,7 +62,7 @@ export const SlideTemplate: AnimationTemplate = {
         {(asset.type === "image" || asset.type === "svg") && asset.src ? (
           <DreiImage url={asset.src} scale={[400, 400]} />
         ) : (
-          <Text fontSize={60} color="#0f172a">{asset.content || "Text"}</Text>
+          <Text font={globalFontUrl} fontSize={60} color="#0f172a">{asset.content || "Text"}</Text>
         )}
       </group>
     );
@@ -74,7 +78,9 @@ export const ScalePopTemplate: AnimationTemplate = {
   propsSchema: z.object({
     duration: z.number().default(30),
   }),
-  render: ({ assets, frame }: RenderProps) => {
+  render: ({ assets, frame, props }: RenderProps) => {
+    const p = (props ?? {}) as Record<string, unknown>;
+    const globalFontUrl = typeof p.globalFontUrl === "string" ? p.globalFontUrl : undefined;
     const asset = isAsset(assets.asset) ? assets.asset : undefined;
     if (!asset) return null;
     const scale = Math.min(1, frame / 15) * 1.2; // Quick pop
@@ -84,7 +90,7 @@ export const ScalePopTemplate: AnimationTemplate = {
         {(asset.type === "image" || asset.type === "svg") && asset.src ? (
           <DreiImage url={asset.src} scale={[400, 400]} />
         ) : (
-          <Text fontSize={60} color="#0f172a">{asset.content || "Text"}</Text>
+          <Text font={globalFontUrl} fontSize={60} color="#0f172a">{asset.content || "Text"}</Text>
         )}
       </group>
     );
@@ -101,7 +107,9 @@ export const MaskRevealTemplate: AnimationTemplate = {
     direction: z.enum(["horizontal", "vertical"]).default("horizontal"),
     duration: z.number().default(30),
   }),
-  render: ({ assets }: RenderProps) => {
+  render: ({ assets, props }: RenderProps) => {
+    const p = (props ?? {}) as Record<string, unknown>;
+    const globalFontUrl = typeof p.globalFontUrl === "string" ? p.globalFontUrl : undefined;
     const asset = isAsset(assets.asset) ? assets.asset : undefined;
     if (!asset) return null;
     return (
@@ -109,7 +117,7 @@ export const MaskRevealTemplate: AnimationTemplate = {
         {(asset.type === "image" || asset.type === "svg") && asset.src ? (
           <DreiImage url={asset.src} scale={[400, 400]} />
         ) : (
-          <Text fontSize={60} color="#0f172a">{asset.content || "Text"}</Text>
+          <Text font={globalFontUrl} fontSize={60} color="#0f172a">{asset.content || "Text"}</Text>
         )}
       </group>
     );
