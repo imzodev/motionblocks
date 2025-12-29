@@ -210,7 +210,7 @@ export function DetailsPanel({
                 </div>
                 <Slider
                   min={0}
-                  max={1.2}
+                  max={2}
                   step={0.01}
                   value={[
                     typeof selectedTrack.templateProps.itemZoom === "number"
