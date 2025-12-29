@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useRef } from "react";
 import { AssetsPanel } from "@/components/AssetsPanel";
 import { AssetLibrary } from "@/components/AssetLibrary";
 import { TemplatesPanel } from "@/components/TemplatesPanel";
@@ -17,13 +17,16 @@ import { Badge } from "@/components/ui/badge";
 import { Slider } from "@/components/ui/slider";
 import type { Asset, Track } from "@/types/timeline";
 import type { TemplateSlot } from "@/types/template";
-import { Box, Layers, Play, Pause, Save, Sparkles, Clock } from "lucide-react";
+import { Box, Layers, Play, Pause, Save, Sparkles, Clock, Maximize2, Minimize2 } from "lucide-react";
 
 export default function Home() {
   const [assets, setAssets] = useState<Asset[]>([]);
   const [tracks, setTracks] = useState<Track[]>([]);
   const [selectedAssetId, setSelectedAssetId] = useState<string>();
   const [selectedTrackId, setSelectedTrackId] = useState<string>();
+
+  const previewRef = useRef<HTMLDivElement | null>(null);
+  const [isFullscreen, setIsFullscreen] = useState(false);
   
   // Playback State
   const [isPlaying, setIsPlaying] = useState(false);
@@ -51,6 +54,16 @@ export default function Home() {
       if (interval) clearInterval(interval);
     };
   }, [isPlaying, totalDuration]);
+
+  useEffect(() => {
+    const onFsChange = () => {
+      setIsFullscreen(!!document.fullscreenElement);
+    };
+
+    document.addEventListener("fullscreenchange", onFsChange);
+    onFsChange();
+    return () => document.removeEventListener("fullscreenchange", onFsChange);
+  }, []);
 
   const handleFileUpload = (files: File[]) => {
     const newAssets: Asset[] = files.map((file) => ({
@@ -179,6 +192,24 @@ export default function Home() {
             
             <div className="flex gap-3 pointer-events-auto">
               <Button
+                size="icon-lg"
+                variant="outline"
+                className="rounded-full bg-card/40 text-foreground border-border/60 backdrop-blur-xl shadow-2xl hover:bg-card transition-all dark:bg-white/5 dark:text-white dark:border-white/10 dark:hover:bg-white dark:hover:text-black"
+                onClick={async () => {
+                  if (document.fullscreenElement) {
+                    await document.exitFullscreen();
+                    return;
+                  }
+
+                  const el = previewRef.current;
+                  if (!el) return;
+                  await el.requestFullscreen();
+                }}
+              >
+                {isFullscreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
+              </Button>
+
+              <Button
                 size="lg"
                 variant={isPlaying ? "destructive" : "default"}
                 onClick={() => {
@@ -208,7 +239,10 @@ export default function Home() {
           </header>
 
           <div className="flex-1 flex items-center justify-center p-12">
-            <div className="aspect-video w-full max-w-5xl bg-card shadow-[0_0_120px_rgba(0,0,0,0.18)] ring-1 ring-border relative overflow-hidden rounded-2xl border border-border">
+            <div
+              ref={previewRef}
+              className="aspect-video w-full max-w-5xl bg-card shadow-[0_0_120px_rgba(0,0,0,0.18)] ring-1 ring-border relative overflow-hidden rounded-2xl border border-border"
+            >
               <Canvas3D>
                 <Renderer3D 
                   activeTrack={activeTrack} 
