@@ -640,6 +640,39 @@ export function DetailsPanel({
                       />
                     </div>
 
+                    <div className="grid grid-cols-2 gap-2">
+                      <div className="space-y-1.5">
+                        <label className="text-xs font-medium">Background scale</label>
+                        <Input
+                          type="number"
+                          min={1000}
+                          max={12000}
+                          value={String(
+                            typeof selectedTrack.templateProps.backgroundScale === "number"
+                              ? selectedTrack.templateProps.backgroundScale
+                              : 6000
+                          )}
+                          onChange={(e) => handleSlotUpdate("backgroundScale", Number(e.target.value))}
+                        />
+                      </div>
+
+                      <div className="space-y-1.5">
+                        <label className="text-xs font-medium">Video aspect</label>
+                        <Input
+                          type="number"
+                          min={0.2}
+                          max={5}
+                          step={0.01}
+                          value={String(
+                            typeof selectedTrack.templateProps.backgroundVideoAspect === "number"
+                              ? selectedTrack.templateProps.backgroundVideoAspect
+                              : 16 / 9
+                          )}
+                          onChange={(e) => handleSlotUpdate("backgroundVideoAspect", Number(e.target.value))}
+                        />
+                      </div>
+                    </div>
+
                     <div className="space-y-2">
                       <div className="flex items-center justify-between">
                         <label className="text-xs font-medium">Background opacity</label>

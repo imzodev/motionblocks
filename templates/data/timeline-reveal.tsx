@@ -147,6 +147,8 @@ export const TimelineRevealTemplate: AnimationTemplate = {
     backgroundEnabled: z.boolean().default(false),
     backgroundColor: z.string().default("#ffffff"),
     backgroundOpacity: z.number().min(0).max(1).default(1),
+    backgroundScale: z.number().min(1000).max(12000).default(6000),
+    backgroundVideoAspect: z.number().min(0.2).max(5).default(16 / 9),
   }),
   render: ({ assets, frame, duration, props }: RenderProps) => {
     const p = (props ?? {}) as Record<string, unknown>;
@@ -172,6 +174,9 @@ export const TimelineRevealTemplate: AnimationTemplate = {
     const backgroundEnabled = typeof p.backgroundEnabled === "boolean" ? p.backgroundEnabled : false;
     const backgroundColor = typeof p.backgroundColor === "string" ? p.backgroundColor : "#ffffff";
     const backgroundOpacity = typeof p.backgroundOpacity === "number" ? p.backgroundOpacity : 1;
+    const backgroundScale = typeof p.backgroundScale === "number" ? p.backgroundScale : 6000;
+    const backgroundVideoAspectRaw = typeof p.backgroundVideoAspect === "number" ? p.backgroundVideoAspect : 16 / 9;
+    const backgroundVideoAspect = Math.max(0.2, Math.min(5, backgroundVideoAspectRaw));
 
     const { nodeGlowTexture, nodeDiscTexture } = getNodeTextures();
 
@@ -249,7 +254,7 @@ export const TimelineRevealTemplate: AnimationTemplate = {
           <group position={[0, 0, -60]}>
             <DreiImage
               url={bgAsset.src}
-              scale={[6000, 6000]}
+              scale={[backgroundScale, backgroundScale]}
               transparent
               opacity={clamp01(backgroundOpacity)}
             />
@@ -258,7 +263,7 @@ export const TimelineRevealTemplate: AnimationTemplate = {
 
         {backgroundEnabled && bgAsset?.src && bgAsset.type === "video" ? (
           <mesh position={[0, 0, -60]}>
-            <planeGeometry args={[6000, 6000]} />
+            <planeGeometry args={[backgroundScale, backgroundScale / backgroundVideoAspect]} />
             <meshBasicMaterial
               map={getVideoTexture(bgAsset.src)}
               transparent={backgroundOpacity < 1}
