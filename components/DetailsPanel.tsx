@@ -759,6 +759,99 @@ export function DetailsPanel({
                   />
                 </div>
               </div>
+
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <label className="text-xs font-medium">Background</label>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="h-7 px-2 text-xs"
+                    onClick={() =>
+                      handleSlotUpdate(
+                        "backgroundEnabled",
+                        !(selectedTrack.templateProps.backgroundEnabled === true)
+                      )
+                    }
+                  >
+                    {selectedTrack.templateProps.backgroundEnabled === true ? "On" : "Off"}
+                  </Button>
+                </div>
+
+                {selectedTrack.templateProps.backgroundEnabled === true && (
+                  <>
+                    <div className="flex items-center gap-2 rounded-xl border bg-card/60 px-2 py-1.5">
+                      <input
+                        type="color"
+                        className="h-7 w-8 bg-transparent"
+                        value={String(selectedTrack.templateProps.backgroundColor || "#ffffff")}
+                        onChange={(e) => handleSlotUpdate("backgroundColor", e.target.value)}
+                      />
+                      <Input
+                        value={String(selectedTrack.templateProps.backgroundColor || "#ffffff")}
+                        onChange={(e) => handleSlotUpdate("backgroundColor", e.target.value)}
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-2">
+                      <div className="space-y-1.5">
+                        <label className="text-xs font-medium">Background scale</label>
+                        <Input
+                          type="number"
+                          min={1000}
+                          max={12000}
+                          value={String(
+                            typeof selectedTrack.templateProps.backgroundScale === "number"
+                              ? selectedTrack.templateProps.backgroundScale
+                              : 6000
+                          )}
+                          onChange={(e) => handleSlotUpdate("backgroundScale", Number(e.target.value))}
+                        />
+                      </div>
+
+                      <div className="space-y-1.5">
+                        <label className="text-xs font-medium">Video aspect</label>
+                        <Input
+                          type="number"
+                          min={0.2}
+                          max={5}
+                          step={0.01}
+                          value={String(
+                            typeof selectedTrack.templateProps.backgroundVideoAspect === "number"
+                              ? selectedTrack.templateProps.backgroundVideoAspect
+                              : 16 / 9
+                          )}
+                          onChange={(e) => handleSlotUpdate("backgroundVideoAspect", Number(e.target.value))}
+                        />
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <label className="text-xs font-medium">Background opacity</label>
+                        <Badge variant="secondary" className="tabular-nums text-[10px] px-2 py-0 leading-none">
+                          {(
+                            typeof selectedTrack.templateProps.backgroundOpacity === "number"
+                              ? selectedTrack.templateProps.backgroundOpacity
+                              : 1
+                          ).toFixed(2)}
+                        </Badge>
+                      </div>
+                      <Slider
+                        min={0}
+                        max={1}
+                        step={0.01}
+                        value={[
+                          typeof selectedTrack.templateProps.backgroundOpacity === "number"
+                            ? selectedTrack.templateProps.backgroundOpacity
+                            : 1,
+                        ]}
+                        onValueChange={(v) => handleSlotUpdate("backgroundOpacity", v[0])}
+                      />
+                    </div>
+                  </>
+                )}
+              </div>
             </div>
           </>
         )}

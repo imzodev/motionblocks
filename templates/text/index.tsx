@@ -1,7 +1,46 @@
 import { z } from "zod";
 import type { AnimationTemplate, RenderProps } from "../../types/template";
-import { Text } from "@react-three/drei";
+import { Text, Image as DreiImage } from "@react-three/drei";
 import React, { useMemo, useState } from "react";
+import type { Asset } from "../../types/timeline";
+import * as THREE from "three";
+
+function isAsset(value: unknown): value is Asset {
+  return (
+    typeof value === "object" &&
+    value !== null &&
+    "id" in value &&
+    "type" in value
+  );
+}
+
+type CachedVideo = {
+  el: HTMLVideoElement;
+  tex: THREE.VideoTexture;
+};
+
+const cachedVideos = new Map<string, CachedVideo>();
+
+function getVideoTexture(url: string) {
+  if (typeof document === "undefined") return new THREE.Texture();
+  const existing = cachedVideos.get(url);
+  if (existing) return existing.tex;
+
+  const el = document.createElement("video");
+  el.src = url;
+  el.crossOrigin = "anonymous";
+  el.muted = true;
+  el.loop = true;
+  el.playsInline = true;
+  void el.play().catch(() => {});
+
+  const tex = new THREE.VideoTexture(el);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  tex.minFilter = THREE.LinearFilter;
+  tex.magFilter = THREE.LinearFilter;
+  cachedVideos.set(url, { el, tex });
+  return tex;
+}
 
 function readTextWidth(obj: unknown): number {
   if (typeof obj !== "object" || obj === null) return 0;
@@ -32,6 +71,12 @@ function HighlightScene(props: {
   fontColor: string;
   fontSize: number;
   globalFontUrl?: string;
+  backgroundEnabled: boolean;
+  backgroundOpacity: number;
+  backgroundScale: number;
+  backgroundVideoAspect: number;
+  backgroundColor: string;
+  backgroundAsset?: Asset;
 }) {
   const {
     frame,
@@ -42,6 +87,12 @@ function HighlightScene(props: {
     fontColor,
     fontSize,
     globalFontUrl,
+    backgroundEnabled,
+    backgroundOpacity,
+    backgroundScale,
+    backgroundVideoAspect,
+    backgroundColor,
+    backgroundAsset,
   } = props;
 
   const { prefix, highlighted, suffix } = useMemo(() => {
@@ -90,6 +141,41 @@ function HighlightScene(props: {
 
   return (
     <group>
+      {backgroundEnabled && backgroundAsset?.src && (backgroundAsset.type === "image" || backgroundAsset.type === "svg") ? (
+        <group position={[0, 0, -120]}>
+          <DreiImage
+            url={backgroundAsset.src}
+            scale={[backgroundScale, backgroundScale]}
+            transparent
+            opacity={clamp01(backgroundOpacity)}
+          />
+        </group>
+      ) : null}
+
+      {backgroundEnabled && backgroundAsset?.src && backgroundAsset.type === "video" ? (
+        <mesh position={[0, 0, -120]} renderOrder={-10}>
+          <planeGeometry args={[backgroundScale, backgroundScale / backgroundVideoAspect]} />
+          <meshBasicMaterial
+            map={getVideoTexture(backgroundAsset.src)}
+            transparent={backgroundOpacity < 1}
+            opacity={clamp01(backgroundOpacity)}
+            depthWrite={false}
+          />
+        </mesh>
+      ) : null}
+
+      {backgroundEnabled && !backgroundAsset ? (
+        <mesh position={[0, 0, -120]} renderOrder={-10}>
+          <planeGeometry args={[backgroundScale, backgroundScale]} />
+          <meshBasicMaterial
+            color={backgroundColor}
+            transparent={backgroundOpacity < 1}
+            opacity={clamp01(backgroundOpacity)}
+            depthWrite={false}
+          />
+        </mesh>
+      ) : null}
+
       {highlighted ? (
         <mesh position={[boxX, 0, -6]}>
           <boxGeometry args={[Math.max(0.001, boxW), boxH, 6]} />
@@ -185,6 +271,7 @@ export const HighlightTemplate: AnimationTemplate = {
   id: "highlight",
   name: "Text Highlight",
   slots: [
+    { id: "background", name: "Background (Image/Video)", type: "file" },
     { id: "text", name: "Full Text", type: "text", required: true },
     { id: "highlight", name: "Text to Highlight", type: "text", required: true }
   ],
@@ -192,6 +279,11 @@ export const HighlightTemplate: AnimationTemplate = {
     highlightColor: z.string().default("#fde047"),
     fontColor: z.string().default("#0f172a"),
     fontSize: z.number().min(18).max(140).default(60),
+    backgroundEnabled: z.boolean().default(false),
+    backgroundColor: z.string().default("#ffffff"),
+    backgroundOpacity: z.number().min(0).max(1).default(1),
+    backgroundScale: z.number().min(1000).max(12000).default(6000),
+    backgroundVideoAspect: z.number().min(0.2).max(5).default(16 / 9),
   }),
   render: ({ assets, frame, duration, props }: RenderProps) => {
     const p = (props ?? {}) as Record<string, unknown>;
@@ -199,6 +291,15 @@ export const HighlightTemplate: AnimationTemplate = {
     const highlightColor = typeof p.highlightColor === "string" ? p.highlightColor : "#fde047";
     const fontColor = typeof p.fontColor === "string" ? p.fontColor : "#0f172a";
     const fontSize = typeof p.fontSize === "number" ? p.fontSize : 60;
+
+    const backgroundEnabled = typeof p.backgroundEnabled === "boolean" ? p.backgroundEnabled : false;
+    const backgroundColor = typeof p.backgroundColor === "string" ? p.backgroundColor : "#ffffff";
+    const backgroundOpacity = typeof p.backgroundOpacity === "number" ? p.backgroundOpacity : 1;
+    const backgroundScale = typeof p.backgroundScale === "number" ? p.backgroundScale : 6000;
+    const backgroundVideoAspectRaw = typeof p.backgroundVideoAspect === "number" ? p.backgroundVideoAspect : 16 / 9;
+    const backgroundVideoAspect = Math.max(0.2, Math.min(5, backgroundVideoAspectRaw));
+
+    const backgroundAsset = isAsset(assets.background) ? assets.background : undefined;
 
     const fullText = typeof assets.text === "string" ? assets.text : "";
     const highlightText = typeof assets.highlight === "string" ? assets.highlight : "";
@@ -213,6 +314,12 @@ export const HighlightTemplate: AnimationTemplate = {
         fontColor={fontColor}
         fontSize={fontSize}
         globalFontUrl={globalFontUrl}
+        backgroundEnabled={backgroundEnabled}
+        backgroundOpacity={backgroundOpacity}
+        backgroundScale={backgroundScale}
+        backgroundVideoAspect={backgroundVideoAspect}
+        backgroundColor={backgroundColor}
+        backgroundAsset={backgroundAsset}
       />
     );
   },
