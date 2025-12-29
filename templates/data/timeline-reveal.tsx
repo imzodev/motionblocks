@@ -79,6 +79,34 @@ function isAsset(value: unknown): value is Asset {
   );
 }
 
+type CachedVideo = {
+  el: HTMLVideoElement;
+  tex: THREE.VideoTexture;
+};
+
+const cachedVideos = new Map<string, CachedVideo>();
+
+function getVideoTexture(url: string) {
+  if (typeof document === "undefined") return new THREE.Texture();
+  const existing = cachedVideos.get(url);
+  if (existing) return existing.tex;
+
+  const el = document.createElement("video");
+  el.src = url;
+  el.crossOrigin = "anonymous";
+  el.muted = true;
+  el.loop = true;
+  el.playsInline = true;
+  void el.play().catch(() => {});
+
+  const tex = new THREE.VideoTexture(el);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  tex.minFilter = THREE.LinearFilter;
+  tex.magFilter = THREE.LinearFilter;
+  cachedVideos.set(url, { el, tex });
+  return tex;
+}
+
 /**
  * TimelineRevealTemplate: Progressive horizontal/vertical reveal.
  */
@@ -86,6 +114,7 @@ export const TimelineRevealTemplate: AnimationTemplate = {
   id: "timeline-reveal",
   name: "Timeline Reveal",
   slots: [
+    { id: "background", name: "Background (Image/Video)", type: "file" },
     { id: "label1", name: "Item 1 Label", type: "text" },
     { id: "image1", name: "Item 1 Image", type: "file" },
     { id: "label2", name: "Item 2 Label", type: "text" },
@@ -209,9 +238,34 @@ export const TimelineRevealTemplate: AnimationTemplate = {
 
     const glowAlpha = clamp01(glowStrength);
 
+    const bgAsset = isAsset(assets.background) ? assets.background : undefined;
+
     return (
       <group scale={[zoom, zoom, 1]} position={[panX * introEase, 0, 0]}>
-        {backgroundEnabled && (
+        {backgroundEnabled && bgAsset?.src && (bgAsset.type === "image" || bgAsset.type === "svg") ? (
+          <group position={[0, 0, -60]}>
+            <DreiImage
+              url={bgAsset.src}
+              scale={[6000, 6000]}
+              transparent
+              opacity={clamp01(backgroundOpacity)}
+            />
+          </group>
+        ) : null}
+
+        {backgroundEnabled && bgAsset?.src && bgAsset.type === "video" ? (
+          <mesh position={[0, 0, -60]}>
+            <planeGeometry args={[6000, 6000]} />
+            <meshBasicMaterial
+              map={getVideoTexture(bgAsset.src)}
+              transparent={backgroundOpacity < 1}
+              opacity={clamp01(backgroundOpacity)}
+              depthWrite={false}
+            />
+          </mesh>
+        ) : null}
+
+        {backgroundEnabled && !bgAsset && (
           <mesh position={[0, 0, -50]}>
             <planeGeometry args={[6000, 6000]} />
             <meshBasicMaterial

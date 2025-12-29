@@ -41,7 +41,7 @@ export default function Home() {
           const next = prev + 1;
           if (next >= totalDuration) {
             setIsPlaying(false);
-            return 0;
+            return Math.max(0, totalDuration - 1);
           }
           return next;
         });
@@ -55,7 +55,7 @@ export default function Home() {
   const handleFileUpload = (files: File[]) => {
     const newAssets: Asset[] = files.map((file) => ({
       id: Math.random().toString(36).substr(2, 9),
-      type: file.type.includes("svg") ? "svg" : "image",
+      type: file.type.startsWith("video/") ? "video" : file.type.includes("svg") ? "svg" : "image",
       src: URL.createObjectURL(file),
     }));
     setAssets((prev) => [...prev, ...newAssets]);
@@ -141,7 +141,12 @@ export default function Home() {
                       if (selectedTrackId) {
                         const currentTrack = tracks.find(t => t.id === selectedTrackId);
                         const template = TEMPLATE_REGISTRY[currentTrack?.template || ""];
-                        const fileSlot = template?.slots.find((s: TemplateSlot) => s.type === "file");
+                        const bgEnabled = currentTrack?.templateProps?.backgroundEnabled === true;
+                        const backgroundSlot = bgEnabled
+                          ? template?.slots.find((s: TemplateSlot) => s.type === "file" && s.id === "background")
+                          : undefined;
+                        const fileSlot =
+                          backgroundSlot ?? template?.slots.find((s: TemplateSlot) => s.type === "file");
                         if (fileSlot) {
                           handleUpdateTrack({
                             ...currentTrack!,
@@ -176,7 +181,17 @@ export default function Home() {
               <Button
                 size="lg"
                 variant={isPlaying ? "destructive" : "default"}
-                onClick={() => setIsPlaying(!isPlaying)}
+                onClick={() => {
+                  if (isPlaying) {
+                    setIsPlaying(false);
+                    return;
+                  }
+
+                  if (totalDuration > 0 && currentFrame >= totalDuration - 1) {
+                    setCurrentFrame(0);
+                  }
+                  setIsPlaying(true);
+                }}
                 className="rounded-full shadow-2xl font-black px-10 tracking-widest transition-all active:scale-95"
               >
                 {isPlaying ? <Pause className="w-4 h-4 mr-2" /> : <Play className="w-4 h-4 mr-2" />} 

@@ -28,6 +28,7 @@ export function AssetsPanel({ onUpload, className }: AssetsPanelProps) {
     onDrop,
     accept: {
       "image/*": [".png", ".jpg", ".jpeg", ".svg"],
+      "video/*": [".mp4", ".webm", ".mov"],
     },
   });
 
@@ -50,7 +51,7 @@ export function AssetsPanel({ onUpload, className }: AssetsPanelProps) {
             {isDragActive ? "Drop to upload" : "Click or drag assets"}
           </p>
           <p className="text-[10px] text-muted-foreground uppercase font-black tracking-widest opacity-60">
-            PNG • JPG • SVG
+            PNG • JPG • SVG • MP4 • WEBM
           </p>
         </div>
       </CardContent>

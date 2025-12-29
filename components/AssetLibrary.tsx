@@ -3,7 +3,7 @@
 import React from "react";
 import type { Asset } from "@/types/timeline";
 import { cn } from "@/lib/utils";
-import { TypeIcon, FileIcon } from "lucide-react";
+import { TypeIcon, FileIcon, VideoIcon } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 
@@ -53,6 +53,13 @@ export function AssetLibrary({
                   alt={asset.id}
                   className="w-full h-full object-contain"
                 />
+              ) : asset.type === "video" ? (
+                <div className="flex flex-col items-center gap-1">
+                  <VideoIcon className="w-8 h-8 text-muted-foreground" />
+                  <span className="text-[10px] uppercase font-bold text-muted-foreground line-clamp-1 px-1 text-center">
+                    Video
+                  </span>
+                </div>
               ) : asset.type === "text" ? (
                 <div className="flex flex-col items-center gap-1">
                   <TypeIcon className="w-8 h-8 text-muted-foreground" />
