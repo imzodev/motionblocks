@@ -703,6 +703,66 @@ export function DetailsPanel({
           </>
         )}
 
+        {selectedTrack.template === "highlight" && (
+          <>
+            <Separator />
+            <div className="space-y-3">
+              <div className="flex items-center gap-2">
+                <h4 className="text-[10px] font-bold uppercase text-muted-foreground tracking-widest">Template</h4>
+              </div>
+
+              <div className="grid grid-cols-2 gap-2">
+                <div className="space-y-1.5">
+                  <label className="text-xs font-medium">Font size</label>
+                  <Input
+                    type="number"
+                    min={18}
+                    max={140}
+                    value={String(
+                      typeof selectedTrack.templateProps.fontSize === "number"
+                        ? selectedTrack.templateProps.fontSize
+                        : 60
+                    )}
+                    onChange={(e) => handleSlotUpdate("fontSize", Number(e.target.value))}
+                  />
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-xs font-medium">Font color</label>
+                  <div className="flex items-center gap-2 rounded-xl border bg-card/60 px-2 py-1.5">
+                    <input
+                      type="color"
+                      className="h-7 w-8 bg-transparent"
+                      value={String(selectedTrack.templateProps.fontColor || "#0f172a")}
+                      onChange={(e) => handleSlotUpdate("fontColor", e.target.value)}
+                    />
+                    <Input
+                      value={String(selectedTrack.templateProps.fontColor || "#0f172a")}
+                      onChange={(e) => handleSlotUpdate("fontColor", e.target.value)}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-xs font-medium">Highlight color</label>
+                <div className="flex items-center gap-2 rounded-xl border bg-card/60 px-2 py-1.5">
+                  <input
+                    type="color"
+                    className="h-7 w-8 bg-transparent"
+                    value={String(selectedTrack.templateProps.highlightColor || "#fde047")}
+                    onChange={(e) => handleSlotUpdate("highlightColor", e.target.value)}
+                  />
+                  <Input
+                    value={String(selectedTrack.templateProps.highlightColor || "#fde047")}
+                    onChange={(e) => handleSlotUpdate("highlightColor", e.target.value)}
+                  />
+                </div>
+              </div>
+            </div>
+          </>
+        )}
+
         <Separator />
 
         <div className="space-y-2.5">
