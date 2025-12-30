@@ -23,6 +23,7 @@ const TEMPLATES = [
   { id: "mind-map", name: "3D Mind Map", type: "visual", icon: Share2 },
   { id: "graph", name: "3D Graph", type: "visual", icon: BarChart3 },
   { id: "highlight", name: "Text Highlight", type: "text", icon: Type },
+  { id: "kinetic-text", name: "Kinetic Text", type: "text", icon: Type },
 ];
 
 interface TemplatesPanelProps {

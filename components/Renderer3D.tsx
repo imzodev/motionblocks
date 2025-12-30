@@ -9,7 +9,7 @@ import { FadeInTemplate, SlideTemplate, ScalePopTemplate, MaskRevealTemplate } f
 import { PulseTemplate, GlowTemplate, BounceTemplate, ShakeTemplate } from "@/templates/emphasis";
 import { CounterTemplate, TimelineRevealTemplate } from "@/templates/data";
 import { MindMapTemplate, GraphTemplate } from "@/templates/visual";
-import { HighlightTemplate } from "@/templates/text";
+import { HighlightTemplate, KineticTextSequenceTemplate } from "@/templates/text";
 
 export const TEMPLATE_REGISTRY: Record<string, AnimationTemplate> = {
   "fade-in": FadeInTemplate,
@@ -25,6 +25,7 @@ export const TEMPLATE_REGISTRY: Record<string, AnimationTemplate> = {
   "mind-map": MindMapTemplate,
   graph: GraphTemplate,
   highlight: HighlightTemplate,
+  "kinetic-text": KineticTextSequenceTemplate,
 };
 
 interface Renderer3DProps {
