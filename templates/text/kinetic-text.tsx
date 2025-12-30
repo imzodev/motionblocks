@@ -3,62 +3,18 @@ import type { AnimationTemplate, RenderProps } from "../../types/template";
 import { Text, Image as DreiImage } from "@react-three/drei";
 import React, { useState } from "react";
 import type { Asset } from "../../types/timeline";
-import { getVideoTexture, isAsset, preserveEdgeSpaces, readTextWidth } from "./shared";
-
-function easeOutBack(t: number, overshoot = 1.35) {
-  const x = Math.min(1, Math.max(0, t));
-  const c1 = overshoot;
-  const c3 = c1 + 1;
-  return 1 + c3 * Math.pow(x - 1, 3) + c1 * Math.pow(x - 1, 2);
-}
-
-function easeInOutCubic(t: number) {
-  const x = Math.min(1, Math.max(0, t));
-  return x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2;
-}
-
-function clamp01(v: number) {
-  return Math.min(1, Math.max(0, v));
-}
-
-type KineticEffect =
-  | "pop_bounce"
-  | "zoom_back"
-  | "slide_left"
-  | "slide_right"
-  | "typewriter"
-  | "pop_then_type"
-  | "slide_then_type";
-
-function splitWordsForContinuation(text: string): { a: string; b: string } {
-  const tokens = (text || "")
-    .trim()
-    .split(/\s+/)
-    .filter((t) => t.length > 0);
-
-  if (tokens.length <= 1) return { a: tokens.join(" "), b: "" };
-  const aCount = Math.ceil(tokens.length / 2);
-  return {
-    a: tokens.slice(0, aCount).join(" "),
-    b: tokens.slice(aCount).join(" "),
-  };
-}
-
-function parseTwoPartSegment(text: string, effect: KineticEffect): { a: string; b: string } {
-  const raw = text || "";
-  const idx = raw.indexOf("|");
-  if (idx >= 0) {
-    const a = raw.slice(0, idx).trim();
-    const b = raw.slice(idx + 1).trim();
-    return { a, b };
-  }
-
-  if (effect === "pop_then_type" || effect === "slide_then_type") {
-    return splitWordsForContinuation(raw);
-  }
-
-  return { a: raw.trim(), b: "" };
-}
+import { getVideoTexture, preserveEdgeSpaces, readTextWidth } from "./shared";
+import { CameraRig } from "./kinetic-text.camera";
+import { buildKineticTextRenderModel } from "./kinetic-text.render";
+import {
+  clamp,
+  clamp01,
+  easeInOutCubic,
+  easeOutBack,
+  type KineticEffect,
+  computeKineticStyle,
+  parseTwoPartSegment,
+} from "./kinetic-text.utils";
 
 function KineticTextScene(props: {
   frame: number;
@@ -73,6 +29,18 @@ function KineticTextScene(props: {
   continuationDelayFrames: number;
   continuationTypeFrames: number;
   slidePx: number;
+  cameraMotionEnabled: boolean;
+  cameraDrift: number;
+  cameraPunch: number;
+  cameraWhip: number;
+  cameraPan: number;
+  cameraSmooth: number;
+  cameraOrbit: number;
+  cameraOrbitSpeed: number;
+  cameraDolly: number;
+  cameraDollySpeed: number;
+  cameraZBase: number;
+  cameraFovBase: number;
   backgroundEnabled: boolean;
   backgroundOpacity: number;
   backgroundScale: number;
@@ -93,6 +61,18 @@ function KineticTextScene(props: {
     continuationDelayFrames,
     continuationTypeFrames,
     slidePx,
+    cameraMotionEnabled,
+    cameraDrift,
+    cameraPunch,
+    cameraWhip,
+    cameraPan,
+    cameraSmooth,
+    cameraOrbit,
+    cameraOrbitSpeed,
+    cameraDolly,
+    cameraDollySpeed,
+    cameraZBase,
+    cameraFovBase,
     backgroundEnabled,
     backgroundOpacity,
     backgroundScale,
@@ -102,6 +82,7 @@ function KineticTextScene(props: {
   } = props;
 
   const safePer = Math.max(12, Math.floor(perSegmentFrames));
+
   const count = Math.max(1, segments.length);
   const idx = Math.min(count - 1, Math.floor(frame / safePer));
   const local = frame - idx * safePer;
@@ -118,37 +99,14 @@ function KineticTextScene(props: {
 
   const [aW, setAW] = useState(0);
 
-  let scale = 1;
-  let posX = 0;
-  let posY = 0;
-  let opacity = aliveAlpha;
-
-  if (seg.effect === "pop_bounce") {
-    scale = easeOutBack(enterT, 1.7);
-    posY = (1 - enterT) * -24;
-    opacity = easeInOutCubic(enterT) * aliveAlpha;
-  } else if (seg.effect === "zoom_back") {
-    scale = 0.55 + 0.45 * easeInOutCubic(enterT);
-    posY = (1 - enterT) * 10;
-    opacity = easeInOutCubic(enterT) * aliveAlpha;
-  } else if (seg.effect === "slide_left") {
-    scale = 0.9 + 0.1 * easeInOutCubic(enterT);
-    posX = (1 - enterT) * 140;
-    opacity = easeInOutCubic(enterT) * aliveAlpha;
-  } else if (seg.effect === "slide_right") {
-    scale = 0.9 + 0.1 * easeInOutCubic(enterT);
-    posX = (1 - enterT) * -140;
-    opacity = easeInOutCubic(enterT) * aliveAlpha;
-  } else if (seg.effect === "typewriter") {
-    scale = 1;
-    opacity = aliveAlpha;
-  } else if (seg.effect === "pop_then_type" || seg.effect === "slide_then_type") {
-    const t0 = enterT;
-    scale = seg.effect === "pop_then_type" ? easeOutBack(t0, 1.65) : 0.9 + 0.1 * easeInOutCubic(t0);
-    posY = seg.effect === "pop_then_type" ? (1 - t0) * -18 : 0;
-    posX = seg.effect === "slide_then_type" ? (1 - t0) * 120 : 0;
-    opacity = easeInOutCubic(t0) * aliveAlpha;
-  }
+  const { scale, posX, posY, rotZ, opacity } = computeKineticStyle({
+    effect: seg.effect,
+    enterT,
+    localFrame: local,
+    safePer,
+    aliveAlpha,
+    frame,
+  });
 
   const typeT = seg.effect === "typewriter" ? clamp01((local - 2) / Math.max(1, safePer - 6)) : 1;
   const typeChars = Math.floor(typeT * base.trim().length);
@@ -166,6 +124,27 @@ function KineticTextScene(props: {
 
   return (
     <group>
+      <CameraRig
+        enabled={cameraMotionEnabled}
+        frame={frame}
+        segIndex={idx}
+        localFrame={local}
+        enterT={enterT}
+        effect={seg.effect}
+        cameraDrift={cameraDrift}
+        cameraPunch={cameraPunch}
+        cameraWhip={cameraWhip}
+        cameraPan={cameraPan}
+        cameraSmooth={cameraSmooth}
+        cameraOrbit={cameraOrbit}
+        cameraOrbitSpeed={cameraOrbitSpeed}
+        cameraDolly={cameraDolly}
+        cameraDollySpeed={cameraDollySpeed}
+        cameraZBase={cameraZBase}
+        cameraFovBase={cameraFovBase}
+        backgroundScale={backgroundScale}
+        backgroundPlaneAspect={backgroundAsset?.type === "video" ? backgroundVideoAspect : 1}
+      />
       {backgroundEnabled && backgroundAsset?.src && (backgroundAsset.type === "image" || backgroundAsset.type === "svg") ? (
         <group position={[0, 0, -120]}>
           <DreiImage
@@ -177,33 +156,49 @@ function KineticTextScene(props: {
         </group>
       ) : null}
 
-      {backgroundEnabled && backgroundAsset?.src && backgroundAsset.type === "video" ? (
-        <mesh position={[0, 0, -120]} renderOrder={-10}>
-          <planeGeometry args={[backgroundScale, backgroundScale / backgroundVideoAspect]} />
-          <meshBasicMaterial
-            map={getVideoTexture(backgroundAsset.src)}
-            transparent={backgroundOpacity < 1}
-            opacity={Math.min(1, Math.max(0, backgroundOpacity))}
-            depthWrite={false}
-          />
-        </mesh>
-      ) : null}
+    {backgroundEnabled && backgroundAsset?.src && backgroundAsset.type === "video" ? (
+      <mesh position={[0, 0, -120]} renderOrder={-10}>
+        <planeGeometry args={[backgroundScale, backgroundScale / backgroundVideoAspect]} />
+        <meshBasicMaterial
+          map={getVideoTexture(backgroundAsset.src)}
+          transparent={backgroundOpacity < 1}
+          opacity={Math.min(1, Math.max(0, backgroundOpacity))}
+          depthWrite={false}
+        />
+      </mesh>
+    ) : null}
 
-      {backgroundEnabled && !backgroundAsset ? (
-        <mesh position={[0, 0, -120]} renderOrder={-10}>
-          <planeGeometry args={[backgroundScale, backgroundScale]} />
-          <meshBasicMaterial
-            color={backgroundColor}
-            transparent={backgroundOpacity < 1}
-            opacity={Math.min(1, Math.max(0, backgroundOpacity))}
-            depthWrite={false}
-          />
-        </mesh>
-      ) : null}
+    {backgroundEnabled && !backgroundAsset ? (
+      <mesh position={[0, 0, -120]} renderOrder={-10}>
+        <planeGeometry args={[backgroundScale, backgroundScale]} />
+        <meshBasicMaterial
+          color={backgroundColor}
+          transparent={backgroundOpacity < 1}
+          opacity={Math.min(1, Math.max(0, backgroundOpacity))}
+          depthWrite={false}
+        />
+      </mesh>
+    ) : null}
 
-      <group scale={[scale, scale, 1]} position={[posX, posY, 0]}>
-        <group position={[-aW / 2, 0, 0]}>
-          {seg.effect === "typewriter" ? (
+    <group scale={[scale, scale, 1]} position={[posX, posY, 0]} rotation={[0, 0, rotZ]}>
+      <group position={[-aW / 2, 0, 0]}>
+        {seg.effect === "typewriter" ? (
+          <Text
+            font={globalFontUrl}
+            fontSize={fontSize}
+            color={fontColor}
+            anchorX="left"
+            anchorY="middle"
+            fillOpacity={opacity}
+            onSync={(tObj) => {
+              const w = readTextWidth(tObj);
+              if (w !== aW) setAW(w);
+            }}
+          >
+            {preserveEdgeSpaces(typeShown)}
+          </Text>
+        ) : (
+          <>
             <Text
               font={globalFontUrl}
               fontSize={fontSize}
@@ -216,43 +211,27 @@ function KineticTextScene(props: {
                 if (w !== aW) setAW(w);
               }}
             >
-              {preserveEdgeSpaces(typeShown)}
+              {aDisplay}
             </Text>
-          ) : (
-            <>
+
+            {(seg.effect === "pop_then_type" || seg.effect === "slide_then_type") && bText ? (
               <Text
                 font={globalFontUrl}
                 fontSize={fontSize}
-                color={fontColor}
+                color={accentColor}
                 anchorX="left"
                 anchorY="middle"
+                position={[aW + contX, 0, 0]}
                 fillOpacity={opacity}
-                onSync={(tObj) => {
-                  const w = readTextWidth(tObj);
-                  if (w !== aW) setAW(w);
-                }}
               >
-                {aDisplay}
+                {bDisplay}
               </Text>
-
-              {(seg.effect === "pop_then_type" || seg.effect === "slide_then_type") && bText ? (
-                <Text
-                  font={globalFontUrl}
-                  fontSize={fontSize}
-                  color={accentColor}
-                  anchorX="left"
-                  anchorY="middle"
-                  position={[aW + contX, 0, 0]}
-                  fillOpacity={opacity}
-                >
-                  {bDisplay}
-                </Text>
-              ) : null}
-            </>
-          )}
-        </group>
+            ) : null}
+          </>
+        )}
       </group>
     </group>
+  </group>
   );
 }
 
@@ -279,69 +258,54 @@ export const KineticTextSequenceTemplate: AnimationTemplate = {
     backgroundOpacity: z.number().min(0).max(1).default(1),
     backgroundScale: z.number().min(1000).max(12000).default(6000),
     backgroundVideoAspect: z.number().min(0.2).max(5).default(16 / 9),
+    cameraMotionEnabled: z.boolean().default(true),
+    cameraDrift: z.number().min(0).max(120).default(14),
+    cameraPunch: z.number().min(0).max(600).default(260),
+    cameraWhip: z.number().min(0).max(1000).default(320),
+    cameraPan: z.number().min(0).max(800).default(220),
+    cameraSmooth: z.number().min(0.02).max(0.6).default(0.2),
+    cameraOrbit: z.number().min(0).max(1200).default(320),
+    cameraOrbitSpeed: z.number().min(0).max(0.2).default(0.008),
+    cameraDolly: z.number().min(0).max(1200).default(360),
+    cameraDollySpeed: z.number().min(0).max(0.2).default(0.006),
+    cameraZBase: z.number().min(200).max(4000).default(1000),
+    cameraFovBase: z.number().min(20).max(100).default(36),
   }),
   render: ({ assets, frame, duration, props }: RenderProps) => {
-    const p = (props ?? {}) as Record<string, unknown>;
-    const globalFontUrl = typeof p.globalFontUrl === "string" ? p.globalFontUrl : undefined;
-
-    const fontSize = typeof p.fontSize === "number" ? p.fontSize : 78;
-    const fontColor = typeof p.fontColor === "string" ? p.fontColor : "#ffffff";
-    const accentColor = typeof p.accentColor === "string" ? p.accentColor : "#ffffff";
-    const perSegmentFrames = typeof p.perSegmentFrames === "number" ? p.perSegmentFrames : 45;
-    const enterFrames = typeof p.enterFrames === "number" ? p.enterFrames : 14;
-    const exitFrames = typeof p.exitFrames === "number" ? p.exitFrames : 10;
-    const continuationDelayFrames = typeof p.continuationDelayFrames === "number" ? p.continuationDelayFrames : 10;
-    const continuationTypeFrames = typeof p.continuationTypeFrames === "number" ? p.continuationTypeFrames : 16;
-    const slidePx = typeof p.slidePx === "number" ? p.slidePx : 32;
-
-    const backgroundEnabled = typeof p.backgroundEnabled === "boolean" ? p.backgroundEnabled : false;
-    const backgroundColor = typeof p.backgroundColor === "string" ? p.backgroundColor : "#0b1220";
-    const backgroundOpacity = typeof p.backgroundOpacity === "number" ? p.backgroundOpacity : 1;
-    const backgroundScale = typeof p.backgroundScale === "number" ? p.backgroundScale : 6000;
-    const backgroundVideoAspectRaw = typeof p.backgroundVideoAspect === "number" ? p.backgroundVideoAspect : 16 / 9;
-    const backgroundVideoAspect = Math.max(0.2, Math.min(5, backgroundVideoAspectRaw));
-    const backgroundAsset = isAsset(assets.background) ? assets.background : undefined;
-
-    const script = typeof assets.script === "string" ? (assets.script as string) : "";
-    const rawLines = script.split(/\r?\n/);
-    const lines = rawLines
-      .map((l) => l.trim())
-      .filter((l) => l.length > 0);
-
-    const rawEffects = Array.isArray(p.segmentEffects) ? (p.segmentEffects as unknown[]) : [];
-    const segments: Array<{ text: string; effect: KineticEffect }> = lines.map((text, i) => {
-      const eff = typeof rawEffects[i] === "string" ? (rawEffects[i] as string) : "pop_bounce";
-      const effect = (eff as KineticEffect) || "pop_bounce";
-      return { text, effect };
-    });
-
-    if (segments.length === 0) {
-      segments.push({ text: "text animation | just works", effect: "pop_then_type" });
-      segments.push({ text: "In this video", effect: "zoom_back" });
-      segments.push({ text: "we will break down", effect: "slide_left" });
-      segments.push({ text: "the essentials", effect: "typewriter" });
-    }
+    const model = buildKineticTextRenderModel({ assets, props });
 
     return (
       <KineticTextScene
         frame={frame}
-        segments={segments}
-        globalFontUrl={globalFontUrl}
-        fontSize={fontSize}
-        fontColor={fontColor}
-        accentColor={accentColor}
-        perSegmentFrames={perSegmentFrames}
-        enterFrames={enterFrames}
-        exitFrames={exitFrames}
-        continuationDelayFrames={continuationDelayFrames}
-        continuationTypeFrames={continuationTypeFrames}
-        slidePx={slidePx}
-        backgroundEnabled={backgroundEnabled}
-        backgroundOpacity={backgroundOpacity}
-        backgroundScale={backgroundScale}
-        backgroundVideoAspect={backgroundVideoAspect}
-        backgroundColor={backgroundColor}
-        backgroundAsset={backgroundAsset}
+        segments={model.segments}
+        globalFontUrl={model.globalFontUrl}
+        fontSize={model.fontSize}
+        fontColor={model.fontColor}
+        accentColor={model.accentColor}
+        perSegmentFrames={model.perSegmentFrames}
+        enterFrames={model.enterFrames}
+        exitFrames={model.exitFrames}
+        continuationDelayFrames={model.continuationDelayFrames}
+        continuationTypeFrames={model.continuationTypeFrames}
+        slidePx={model.slidePx}
+        cameraMotionEnabled={model.cameraMotionEnabled}
+        cameraDrift={model.cameraDrift}
+        cameraPunch={model.cameraPunch}
+        cameraWhip={model.cameraWhip}
+        cameraPan={model.cameraPan}
+        cameraSmooth={model.cameraSmooth}
+        cameraOrbit={model.cameraOrbit}
+        cameraOrbitSpeed={model.cameraOrbitSpeed}
+        cameraDolly={model.cameraDolly}
+        cameraDollySpeed={model.cameraDollySpeed}
+        cameraZBase={model.cameraZBase}
+        cameraFovBase={model.cameraFovBase}
+        backgroundEnabled={model.backgroundEnabled}
+        backgroundOpacity={model.backgroundOpacity}
+        backgroundScale={model.backgroundScale}
+        backgroundVideoAspect={model.backgroundVideoAspect}
+        backgroundColor={model.backgroundColor}
+        backgroundAsset={model.backgroundAsset}
       />
     );
   },

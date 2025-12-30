@@ -1077,6 +1077,25 @@ export function DetailsPanel({
 
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
+                  <label className="text-xs font-medium">Camera motion</label>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="h-7 px-2 text-xs"
+                    onClick={() =>
+                      handleSlotUpdate(
+                        "cameraMotionEnabled",
+                        !(selectedTrack.templateProps.cameraMotionEnabled === true)
+                      )
+                    }
+                  >
+                    {selectedTrack.templateProps.cameraMotionEnabled === true ? "On" : "Off"}
+                  </Button>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
                   <label className="text-xs font-medium">Segments</label>
                   <Badge variant="secondary" className="tabular-nums text-[10px] px-2 py-0 leading-none">
                     {
@@ -1118,9 +1137,15 @@ export function DetailsPanel({
                           >
                             <option value="pop_bounce">Pop + Bounce</option>
                             <option value="zoom_back">Zoom from Back</option>
+                            <option value="zoom_punch">Zoom Punch</option>
+                            <option value="slam_zoom">Slam Zoom</option>
                             <option value="slide_left">Slide Left</option>
                             <option value="slide_right">Slide Right</option>
+                            <option value="whip_left">Whip Left</option>
+                            <option value="whip_right">Whip Right</option>
                             <option value="typewriter">Typewriter</option>
+                            <option value="spin_pop">Spin Pop</option>
+                            <option value="glitch_shake">Glitch Shake</option>
                             <option value="pop_then_type">Pop + Continuation Type</option>
                             <option value="slide_then_type">Slide + Continuation Type</option>
                           </select>
