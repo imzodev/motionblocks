@@ -17,9 +17,28 @@ export const MindMapTemplate: AnimationTemplate = {
     depth: z.number().default(200),
     spread: z.number().default(1.5),
   }),
-  render: ({ assets, frame }: RenderProps) => {
+  render: ({ assets, frame, props }: RenderProps) => {
     const rootTopic = typeof assets.rootText === "string" ? assets.rootText : "";
     const nodesData = typeof assets.nodes === "string" ? assets.nodes : undefined;
-    return <MindMap3D rootTopic={rootTopic} nodesData={nodesData} frame={frame} />;
+    const p = (props ?? {}) as Record<string, unknown>;
+    const globalFontUrl = typeof p.globalFontUrl === "string" ? p.globalFontUrl : undefined;
+    const spread = typeof p.spread === "number" ? p.spread : 1.5;
+    const depth = typeof p.depth === "number" ? p.depth : 200;
+    const focusZoomFrames = typeof p.focusZoomFrames === "number" ? p.focusZoomFrames : undefined;
+    const focusZoomStrength = typeof p.focusZoomStrength === "number" ? p.focusZoomStrength : undefined;
+    const introHoldFrames = typeof p.introHoldFrames === "number" ? p.introHoldFrames : undefined;
+    return (
+      <MindMap3D
+        rootTopic={rootTopic}
+        nodesData={nodesData}
+        frame={frame}
+        globalFontUrl={globalFontUrl}
+        spread={spread}
+        depth={depth}
+        focusZoomFrames={focusZoomFrames}
+        focusZoomStrength={focusZoomStrength}
+        introHoldFrames={introHoldFrames}
+      />
+    );
   },
 };

@@ -13,6 +13,7 @@ import { CounterTemplateSection } from "@/components/details-panel/CounterTempla
 import { TimelineRevealTemplateSection } from "@/components/details-panel/TimelineRevealTemplateSection";
 import { HighlightTemplateSection } from "@/components/details-panel/HighlightTemplateSection";
 import { KineticTextTemplateSection } from "@/components/details-panel/KineticTextTemplateSection";
+import { MindMapTemplateSection } from "@/components/details-panel/MindMapTemplateSection";
 
 interface DetailsPanelProps {
   selectedTrack?: Track;
@@ -101,6 +102,7 @@ export function DetailsPanel({
 
         <CounterTemplateSection selectedTrack={selectedTrack} onSlotUpdate={handleSlotUpdate} />
         <TimelineRevealTemplateSection selectedTrack={selectedTrack} onSlotUpdate={handleSlotUpdate} />
+        <MindMapTemplateSection selectedTrack={selectedTrack} onSlotUpdate={handleSlotUpdate} />
         <HighlightTemplateSection selectedTrack={selectedTrack} onSlotUpdate={handleSlotUpdate} />
         <KineticTextTemplateSection
           selectedTrack={selectedTrack}
