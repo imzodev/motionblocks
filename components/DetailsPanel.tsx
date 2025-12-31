@@ -66,6 +66,29 @@ export function DetailsPanel({
       nextDuration = Math.max(80, Math.min(600, intro + outro + segments * perItemFrames));
     }
 
+    if (selectedTrack.template === "mind-map") {
+      const rawNodes = typeof nextTemplateProps.nodes === "string" ? nextTemplateProps.nodes : "";
+      const lines = rawNodes
+        .split(/\r?\n/)
+        .map((l) => l.trim())
+        .filter((l) => l.length > 0);
+
+      const headerLike =
+        lines.length > 0 &&
+        (() => {
+          const h = lines[0].toLowerCase();
+          return h.includes("text") || h.includes("label") || h.includes("topic") || h.includes("node");
+        })();
+
+      const nodeCount = Math.max(0, lines.length - (headerLike ? 1 : 0));
+      const intro = typeof nextTemplateProps.introHoldFrames === "number" ? nextTemplateProps.introHoldFrames : 24;
+      const per = typeof nextTemplateProps.perNodeFrames === "number" ? nextTemplateProps.perNodeFrames : 50;
+      const zoom = typeof nextTemplateProps.focusZoomFrames === "number" ? nextTemplateProps.focusZoomFrames : 12;
+      const tail = 24;
+
+      nextDuration = Math.max(60, Math.floor(intro) + nodeCount * (Math.max(1, Math.floor(per)) + Math.max(0, Math.floor(zoom))) + tail);
+    }
+
     if (selectedTrack.template === "kinetic-text") {
       const script = typeof nextTemplateProps.script === "string" ? nextTemplateProps.script : "";
       const lines = script
