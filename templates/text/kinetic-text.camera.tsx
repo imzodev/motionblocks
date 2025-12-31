@@ -54,6 +54,8 @@ export function CameraRig(props: {
   } = props;
 
   const { camera, controls } = useThree();
+  const cameraRef = useRef<typeof camera | null>(null);
+  const controlsRef = useRef<typeof controls | null>(null);
   const baseCamPos = useRef<{ x: number; y: number; z: number } | null>(null);
   const baseCamFov = useRef<number | null>(null);
   const baseControlsEnabled = useRef<boolean | null>(null);
@@ -62,6 +64,9 @@ export function CameraRig(props: {
   const phaseState = useRef<number>(0);
 
   useEffect(() => {
+    cameraRef.current = camera;
+    controlsRef.current = controls ?? null;
+
     if (!baseCamPos.current) {
       baseCamPos.current = { x: camera.position.x, y: camera.position.y, z: camera.position.z };
     }
@@ -78,7 +83,7 @@ export function CameraRig(props: {
         fov: typeof camAny.fov === "number" ? camAny.fov : cameraFovBase,
       };
     }
-    const cAny = controls as unknown as { enabled?: boolean } | undefined;
+    const cAny = (controlsRef.current ?? undefined) as unknown as { enabled?: boolean } | undefined;
     if (baseControlsEnabled.current === null) {
       baseControlsEnabled.current = typeof cAny?.enabled === "boolean" ? cAny.enabled : null;
     }
@@ -98,7 +103,7 @@ export function CameraRig(props: {
         camAny.updateProjectionMatrix?.();
       }
 
-      const cAny2 = controls as unknown as { enabled?: boolean } | undefined;
+      const cAny2 = (controlsRef.current ?? undefined) as unknown as { enabled?: boolean } | undefined;
       if (typeof cAny2?.enabled === "boolean" && typeof baseControlsEnabled.current === "boolean") {
         cAny2.enabled = baseControlsEnabled.current;
       }
@@ -108,8 +113,11 @@ export function CameraRig(props: {
   useFrame((_state, dt) => {
     if (!enabled) return;
 
+    const cam = cameraRef.current;
+    if (!cam) return;
+
     const base = baseCamPos.current ?? { x: 0, y: 0, z: cameraZBase };
-    const state = camState.current ?? { x: base.x, y: base.y, z: base.z, fov: cameraFovBase };
+    const prevState = camState.current ?? { x: base.x, y: base.y, z: base.z, fov: cameraFovBase };
 
     const driftX = Math.sin(frame * KINETIC_TEXT_CONSTANTS.camera.driftXFreq) * cameraDrift;
     const driftY =
@@ -264,7 +272,7 @@ export function CameraRig(props: {
     // the view rectangle at that depth stays inside the plane.
     const planeZ = KINETIC_TEXT_CONSTANTS.camera.safeFraming.planeZ;
     const d = Math.max(1, targetZ - planeZ);
-    const camAnyForAspect = camera as unknown as { aspect?: number; fov?: number };
+    const camAnyForAspect = cam as unknown as { aspect?: number; fov?: number };
     const aspect = typeof camAnyForAspect.aspect === "number" ? camAnyForAspect.aspect : 16 / 9;
     // Use the intended target FOV (including breath/kicks) for safety computations.
     // Using the current camera.fov here can lag due to damping and let edges slip in.
@@ -324,19 +332,21 @@ export function CameraRig(props: {
     const lambdaFov =
       KINETIC_TEXT_CONSTANTS.camera.damping.lambdaFovBase *
       Math.max(KINETIC_TEXT_CONSTANTS.camera.damping.smoothMin, cameraSmooth);
-    state.x = expDamp(state.x, targetX, lambdaPos, dt);
-    state.y = expDamp(state.y, targetY, lambdaPos, dt);
-    state.z = expDamp(state.z, targetZ, lambdaPos, dt);
-    state.fov = expDamp(state.fov, targetFov, lambdaFov, dt);
-    camState.current = state;
+    const nextState = {
+      x: expDamp(prevState.x, targetX, lambdaPos, dt),
+      y: expDamp(prevState.y, targetY, lambdaPos, dt),
+      z: expDamp(prevState.z, targetZ, lambdaPos, dt),
+      fov: expDamp(prevState.fov, targetFov, lambdaFov, dt),
+    };
+    camState.current = nextState;
 
-    camera.position.set(state.x, state.y, state.z);
+    cam.position.set(nextState.x, nextState.y, nextState.z);
     // LookAt also moves smoothly (parallax composition), no hard target jumps.
-    camera.lookAt(lookXRaw, lookYRaw, 0);
+    cam.lookAt(lookXRaw, lookYRaw, 0);
 
-    const camAny = camera as unknown as { fov?: number; updateProjectionMatrix?: () => void };
+    const camAny = cam as unknown as { fov?: number; updateProjectionMatrix?: () => void };
     if (typeof camAny.fov === "number") {
-      camAny.fov = state.fov;
+      camAny.fov = nextState.fov;
       camAny.updateProjectionMatrix?.();
     }
   });
