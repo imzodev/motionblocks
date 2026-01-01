@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useMemo, useRef } from "react";
+import React, { useState, useEffect, useMemo, useRef, useCallback } from "react";
 import { AssetsPanel } from "@/components/AssetsPanel";
 import { AssetLibrary } from "@/components/AssetLibrary";
 import { TemplatesPanel } from "@/components/TemplatesPanel";
@@ -9,6 +9,8 @@ import { DetailsPanel } from "@/components/DetailsPanel";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { Canvas3D } from "@/components/Canvas3D";
 import { Renderer3D, TEMPLATE_REGISTRY } from "@/components/Renderer3D";
+import { ProjectManager } from "@/components/project/ProjectManager";
+import { projectService, initializeProjectService } from "@/lib/services/project-service.factory";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -18,13 +20,18 @@ import { Badge } from "@/components/ui/badge";
 import { Slider } from "@/components/ui/slider";
 import type { Asset, Track } from "@/types/timeline";
 import type { TemplateSlot } from "@/types/template";
-import { Box, Layers, Play, Pause, Save, Sparkles, Clock, Maximize2, Minimize2 } from "lucide-react";
+import { Box, Layers, Play, Pause, Save, Sparkles, Clock, Maximize2, Minimize2, FolderOpen, X } from "lucide-react";
 
 export default function Home() {
+  // Project state
+  const [showProjectManager, setShowProjectManager] = useState(false);
+  const [currentProjectLoaded, setCurrentProjectLoaded] = useState(false);
+
   const [assets, setAssets] = useState<Asset[]>([]);
   const [tracks, setTracks] = useState<Track[]>([]);
   const [selectedAssetId, setSelectedAssetId] = useState<string>();
   const [selectedTrackId, setSelectedTrackId] = useState<string>();
+  const [currentProjectName, setCurrentProjectName] = useState<string>("");
 
   const previewRef = useRef<HTMLDivElement | null>(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
@@ -38,6 +45,30 @@ export default function Home() {
 
   // Computed total duration
   const totalDuration = useMemo(() => tracks.reduce((acc, t) => acc + t.duration, 0), [tracks]);
+
+  // Initialize project service on mount
+  useEffect(() => {
+    initializeProjectService();
+  }, []);
+
+  // Load current project state
+  useEffect(() => {
+    const loadProject = async () => {
+      const current = projectService.getCurrent();
+      if (current) {
+        setAssets(current.assets);
+        setTracks(current.tracks);
+        setGlobalFontUrl(current.settings.globalFontUrl || "");
+        setGlobalFontPreset(current.settings.globalFontPreset || "custom");
+        setCurrentProjectName(current.metadata.name);
+        setCurrentProjectLoaded(true);
+      } else {
+        setCurrentProjectName("");
+      }
+    };
+
+    loadProject();
+  }, [showProjectManager]);
 
   // Playback Loop
   useEffect(() => {
@@ -69,16 +100,16 @@ export default function Home() {
     return () => document.removeEventListener("fullscreenchange", onFsChange);
   }, []);
 
-  const handleFileUpload = (files: File[]) => {
+  const handleFileUpload = useCallback((files: File[]) => {
     const newAssets: Asset[] = files.map((file) => ({
       id: Math.random().toString(36).substr(2, 9),
       type: file.type.startsWith("video/") ? "video" : file.type.includes("svg") ? "svg" : "image",
       src: URL.createObjectURL(file),
     }));
     setAssets((prev) => [...prev, ...newAssets]);
-  };
+  }, []);
 
-  const addTemplateToSequence = (templateId: string) => {
+  const addTemplateToSequence = useCallback((templateId: string) => {
     setTracks((prev) => {
       const startFrame = prev.reduce((acc, t) => acc + t.duration, 0);
       const newTrack: Track = {
@@ -92,9 +123,9 @@ export default function Home() {
       };
       return [...prev, newTrack];
     });
-  };
+  }, []);
 
-  const handleUpdateTrack = (updatedTrack: Track) => {
+  const handleUpdateTrack = useCallback((updatedTrack: Track) => {
     setTracks((prev) => {
       const newTracks = prev.map((t) => (t.id === updatedTrack.id ? updatedTrack : t));
       let currentStart = 0;
@@ -104,9 +135,9 @@ export default function Home() {
         return tWithUpdatedStart;
       });
     });
-  };
+  }, []);
 
-  const handleReorderTracks = (newOrder: Track[]) => {
+  const handleReorderTracks = useCallback((newOrder: Track[]) => {
     let currentStart = 0;
     const sequenced = newOrder.map(t => {
       const tWithUpdatedStart = { ...t, startFrame: currentStart };
@@ -114,15 +145,71 @@ export default function Home() {
       return tWithUpdatedStart;
     });
     setTracks(sequenced);
-  };
+  }, []);
 
   const selectedTrack = tracks.find((t) => t.id === selectedTrackId);
   const activeTrack = useMemo(() => {
     return tracks.find(t => currentFrame >= t.startFrame && currentFrame < t.startFrame + t.duration);
   }, [tracks, currentFrame]);
 
+  // Save project
+  const handleSaveProject = useCallback(async () => {
+    const current = projectService.getCurrent();
+    if (!current) return;
+
+    try {
+      await projectService.update({
+        settings: {
+          globalFontUrl,
+          globalFontPreset,
+        },
+      });
+
+      // Update current project reference with current state
+      const updated = projectService.getCurrent();
+      if (updated) {
+        updated.assets = assets;
+        updated.tracks = tracks;
+        await projectService.save();
+      }
+    } catch (error) {
+      console.error("Error saving project:", error);
+    }
+  }, [assets, tracks, globalFontUrl, globalFontPreset]);
+
+  const handleProjectLoaded = useCallback(() => {
+    setShowProjectManager(false);
+    // Project data will be loaded via useEffect
+  }, []);
+
   return (
-    <div className="flex h-screen overflow-hidden bg-background text-foreground font-sans">
+    <>
+      {/* Project Manager Overlay */}
+      {showProjectManager && (
+        <div className="fixed inset-0 z-50 bg-background/95 backdrop-blur-sm">
+          <div className="h-full max-w-2xl mx-auto p-8">
+            <div className="flex items-center justify-between mb-6">
+              <div>
+                <h1 className="text-3xl font-black tracking-tight">MotionBlocks</h1>
+                <p className="text-muted-foreground mt-1">Create, manage, and edit your animation projects</p>
+              </div>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setShowProjectManager(false)}
+              >
+                <X className="h-5 w-5" />
+              </Button>
+            </div>
+            <ProjectManager
+              projectService={projectService}
+              onProjectLoaded={handleProjectLoaded}
+            />
+          </div>
+        </div>
+      )}
+
+      <div className="flex h-screen overflow-hidden bg-background text-foreground font-sans">
       {/* Left Sidebar */}
       <aside className="w-80 border-r border-border bg-background flex flex-col">
         <Card className="h-full rounded-none border-0 bg-card/50 backdrop-blur-sm flex flex-col">
@@ -132,7 +219,18 @@ export default function Home() {
                 <Box className="w-5 h-5 text-primary" />
                 <CardTitle className="text-base font-black uppercase">Assets</CardTitle>
               </div>
-              <ThemeToggle />
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8"
+                  onClick={() => setShowProjectManager(true)}
+                  title="Open Project Manager"
+                >
+                  <FolderOpen className="h-4 w-4" />
+                </Button>
+                <ThemeToggle />
+              </div>
             </div>
           </CardHeader>
           <CardContent className="p-0 flex-1 min-h-0">
@@ -230,6 +328,12 @@ export default function Home() {
         <main className="flex-1 flex flex-col relative bg-background dark:bg-zinc-950">
           <header className="absolute top-0 left-0 right-0 p-6 flex justify-between items-center z-10 pointer-events-none">
             <div className="bg-card/80 text-foreground backdrop-blur-2xl px-5 py-2.5 rounded-full border border-border/60 flex items-center gap-8 shadow-2xl">
+              {currentProjectName && (
+                <div className="flex flex-col text-center">
+                  <span className="text-[9px] font-black uppercase tracking-[0.2em] opacity-40">Project</span>
+                  <span className="text-sm font-bold truncate max-w-[200px]">{currentProjectName}</span>
+                </div>
+              )}
               <div className="flex flex-col text-center">
                 <span className="text-[9px] font-black uppercase tracking-[0.2em] opacity-40">Status</span>
                 <Badge variant={isPlaying ? "default" : "secondary"} className="text-[9px] h-4 font-black">
@@ -280,8 +384,9 @@ export default function Home() {
                 size="lg"
                 variant="outline"
                 className="rounded-full bg-card/40 text-foreground border-border/60 backdrop-blur-xl shadow-2xl font-black px-10 tracking-widest hover:bg-card transition-all dark:bg-white/5 dark:text-white dark:border-white/10 dark:hover:bg-white dark:hover:text-black"
+                onClick={handleSaveProject}
               >
-                <Save className="w-4 h-4 mr-2" /> EXPORT
+                <Save className="w-4 h-4 mr-2" /> SAVE
               </Button>
             </div>
           </header>
@@ -374,6 +479,7 @@ export default function Home() {
           </CardContent>
         </Card>
       </aside>
-    </div>
+      </div>
+    </>
   );
 }
