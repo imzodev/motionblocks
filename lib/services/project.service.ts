@@ -90,6 +90,13 @@ export class ProjectService {
   }
 
   /**
+   * Get a project by ID without setting it as current
+   */
+  async getById(id: string): Promise<Project | null> {
+    return await this.repository.getById(id);
+  }
+
+  /**
    * Update the current project
    */
   async update(params: UpdateProjectParams): Promise<Project> {
@@ -119,7 +126,7 @@ export class ProjectService {
   }
 
   /**
-   * Save the current project state
+   * Save the current project state (for external state management)
    */
   async save(): Promise<Project> {
     if (!this.currentProject) {
@@ -129,6 +136,15 @@ export class ProjectService {
     const saved = await this.repository.save(this.currentProject);
     this.currentProject = saved;
 
+    return saved;
+  }
+
+  /**
+   * Save a project state object (for Zustand store integration)
+   */
+  async saveProjectState(project: Project): Promise<Project> {
+    const saved = await this.repository.save(project);
+    this.currentProject = saved;
     return saved;
   }
 

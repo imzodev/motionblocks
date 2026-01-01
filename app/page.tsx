@@ -10,7 +10,9 @@ import { ThemeToggle } from "@/components/ThemeToggle";
 import { Canvas3D } from "@/components/Canvas3D";
 import { Renderer3D, TEMPLATE_REGISTRY } from "@/components/Renderer3D";
 import { ProjectManager } from "@/components/project/ProjectManager";
+import { SaveStatusIndicator } from "@/components/project/SaveStatusIndicator";
 import { projectService, initializeProjectService } from "@/lib/services/project-service.factory";
+import { useProjectStore, useUIStore, useTimelineStore } from "@/lib/stores";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -23,32 +25,65 @@ import type { TemplateSlot } from "@/types/template";
 import { Box, Layers, Play, Pause, Save, Sparkles, Clock, Maximize2, Minimize2, FolderOpen, X } from "lucide-react";
 
 export default function Home() {
-  // Project state
-  const [showProjectManager, setShowProjectManager] = useState(false);
-  const [currentProjectLoaded, setCurrentProjectLoaded] = useState(false);
+  // Zustand stores
+  const {
+    project,
+    setProject,
+    updateSettings,
+    addAssets,
+    addTrack,
+    updateTrack,
+    removeTrack,
+    reorderTracks,
+    forceSave,
+  } = useProjectStore();
 
-  const [assets, setAssets] = useState<Asset[]>([]);
-  const [tracks, setTracks] = useState<Track[]>([]);
-  const [selectedAssetId, setSelectedAssetId] = useState<string>();
-  const [selectedTrackId, setSelectedTrackId] = useState<string>();
-  const [currentProjectName, setCurrentProjectName] = useState<string>("");
+  const {
+    showProjectManager,
+    setShowProjectManager,
+  } = useUIStore();
+
+  const {
+    isPlaying,
+    currentFrame,
+    totalFrames,
+    selectedAssetId,
+    selectedTrackId,
+    setIsPlaying,
+    setCurrentFrame,
+    incrementFrame,
+    setTotalFrames,
+    setSelectedAssetId,
+    setSelectedTrackId,
+    play,
+    pause,
+    togglePlay,
+    seekToFrame,
+  } = useTimelineStore();
 
   const previewRef = useRef<HTMLDivElement | null>(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [currentProjectName, setCurrentProjectName] = useState<string>("");
+  const [isInitialized, setIsInitialized] = useState(false);
 
-  const [globalFontUrl, setGlobalFontUrl] = useState<string>("");
-  const [globalFontPreset, setGlobalFontPreset] = useState<string>("custom");
+  // Get assets and tracks from project
+  const assets = project?.assets || [];
+  const tracks = project?.tracks || [];
   
-  // Playback State
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [currentFrame, setCurrentFrame] = useState(0);
+  // Global font settings
+  const globalFontUrl = project?.settings.globalFontUrl || "";
+  const globalFontPreset = project?.settings.globalFontPreset || "custom";
 
   // Computed total duration
   const totalDuration = useMemo(() => tracks.reduce((acc, t) => acc + t.duration, 0), [tracks]);
 
   // Initialize project service on mount
   useEffect(() => {
-    initializeProjectService();
+    const init = async () => {
+      await initializeProjectService();
+      setIsInitialized(true);
+    };
+    init();
   }, []);
 
   // Load current project state
@@ -56,39 +91,37 @@ export default function Home() {
     const loadProject = async () => {
       const current = projectService.getCurrent();
       if (current) {
-        setAssets(current.assets);
-        setTracks(current.tracks);
-        setGlobalFontUrl(current.settings.globalFontUrl || "");
-        setGlobalFontPreset(current.settings.globalFontPreset || "custom");
+        setProject(current);
         setCurrentProjectName(current.metadata.name);
-        setCurrentProjectLoaded(true);
+        setTotalFrames(current.tracks.reduce((acc, t) => acc + t.duration, 0));
       } else {
         setCurrentProjectName("");
       }
     };
 
-    loadProject();
-  }, [showProjectManager]);
+    if (isInitialized) {
+      loadProject();
+    }
+  }, [showProjectManager, isInitialized, setProject, setTotalFrames]);
 
   // Playback Loop
   useEffect(() => {
     let interval: ReturnType<typeof setInterval> | undefined;
     if (isPlaying && totalDuration > 0) {
       interval = setInterval(() => {
-        setCurrentFrame((prev) => {
-          const next = prev + 1;
-          if (next >= totalDuration) {
-            setIsPlaying(false);
-            return Math.max(0, totalDuration - 1);
-          }
-          return next;
-        });
+        const next = currentFrame + 1;
+        if (next >= totalDuration) {
+          pause();
+          setCurrentFrame(Math.max(0, totalDuration - 1));
+        } else {
+          incrementFrame();
+        }
       }, 1000 / 30);
     }
     return () => {
       if (interval) clearInterval(interval);
     };
-  }, [isPlaying, totalDuration]);
+  }, [isPlaying, totalDuration, currentFrame, pause, incrementFrame, setCurrentFrame]);
 
   useEffect(() => {
     const onFsChange = () => {
@@ -106,46 +139,49 @@ export default function Home() {
       type: file.type.startsWith("video/") ? "video" : file.type.includes("svg") ? "svg" : "image",
       src: URL.createObjectURL(file),
     }));
-    setAssets((prev) => [...prev, ...newAssets]);
-  }, []);
+    
+    addAssets(newAssets);
+  }, [addAssets]);
 
-  const addTemplateToSequence = useCallback((templateId: string) => {
-    setTracks((prev) => {
-      const startFrame = prev.reduce((acc, t) => acc + t.duration, 0);
-      const newTrack: Track = {
-        id: Math.random().toString(36).substr(2, 9),
-        assetId: "", 
-        template: templateId,
-        startFrame: startFrame,
-        duration: templateId === "timeline-reveal" ? 240 : 60,
-        position: { x: 0, y: 0 },
-        templateProps: {},
-      };
-      return [...prev, newTrack];
-    });
-  }, []);
+  const addTemplateToSequence = useCallback(async (templateId: string) => {
+    // If no project exists, create a default one
+    let currentProject = project || await projectService.getCurrent();
+    
+    if (!currentProject) {
+      const newProject = await projectService.create({
+        name: "Untitled Project",
+        description: "",
+        settings: {},
+      });
+      setProject(newProject);
+      setCurrentProjectName(newProject.metadata.name);
+      currentProject = newProject;
+    }
+    
+    const startFrame = currentProject.tracks.reduce((acc, t) => acc + t.duration, 0);
+    const newTrack: Track = {
+      id: Math.random().toString(36).substr(2, 9),
+      assetId: "", 
+      template: templateId,
+      startFrame: startFrame,
+      duration: templateId === "timeline-reveal" ? 240 : 60,
+      position: { x: 0, y: 0 },
+      templateProps: {},
+    };
+    
+    addTrack(newTrack);
+    
+    // Force save to ensure persistence
+    await forceSave();
+  }, [project, setProject, addTrack, forceSave, setCurrentProjectName]);
 
   const handleUpdateTrack = useCallback((updatedTrack: Track) => {
-    setTracks((prev) => {
-      const newTracks = prev.map((t) => (t.id === updatedTrack.id ? updatedTrack : t));
-      let currentStart = 0;
-      return newTracks.map(t => {
-        const tWithUpdatedStart = { ...t, startFrame: currentStart };
-        currentStart += t.duration;
-        return tWithUpdatedStart;
-      });
-    });
-  }, []);
+    updateTrack(updatedTrack.id, updatedTrack);
+  }, [updateTrack]);
 
   const handleReorderTracks = useCallback((newOrder: Track[]) => {
-    let currentStart = 0;
-    const sequenced = newOrder.map(t => {
-      const tWithUpdatedStart = { ...t, startFrame: currentStart };
-      currentStart += t.duration;
-      return tWithUpdatedStart;
-    });
-    setTracks(sequenced);
-  }, []);
+    reorderTracks(newOrder);
+  }, [reorderTracks]);
 
   const selectedTrack = tracks.find((t) => t.id === selectedTrackId);
   const activeTrack = useMemo(() => {
@@ -154,28 +190,12 @@ export default function Home() {
 
   // Save project
   const handleSaveProject = useCallback(async () => {
-    const current = projectService.getCurrent();
-    if (!current) return;
-
     try {
-      await projectService.update({
-        settings: {
-          globalFontUrl,
-          globalFontPreset,
-        },
-      });
-
-      // Update current project reference with current state
-      const updated = projectService.getCurrent();
-      if (updated) {
-        updated.assets = assets;
-        updated.tracks = tracks;
-        await projectService.save();
-      }
+      await forceSave();
     } catch (error) {
       console.error("Error saving project:", error);
     }
-  }, [assets, tracks, globalFontUrl, globalFontPreset]);
+  }, [forceSave]);
 
   const handleProjectLoaded = useCallback(() => {
     setShowProjectManager(false);
@@ -285,13 +305,13 @@ export default function Home() {
                       value={globalFontPreset}
                       onChange={(e) => {
                         const next = e.target.value;
-                        setGlobalFontPreset(next);
+                        updateSettings({ globalFontPreset: next });
                         if (next === "custom") return;
                         if (next === "") {
-                          setGlobalFontUrl("");
+                          updateSettings({ globalFontUrl: "" });
                           return;
                         }
-                        setGlobalFontUrl(next);
+                        updateSettings({ globalFontUrl: next });
                       }}
                     >
                       <option value="">Default</option>
@@ -312,7 +332,7 @@ export default function Home() {
                     <Input
                       value={globalFontUrl}
                       placeholder="https://.../font.woff"
-                      onChange={(e) => setGlobalFontUrl(e.target.value)}
+                      onChange={(e) => updateSettings({ globalFontUrl: e.target.value })}
                       disabled={globalFontPreset !== "custom"}
                     />
                   </div>
@@ -340,6 +360,7 @@ export default function Home() {
                   {isPlaying ? "RENDERING" : "READY"}
                 </Badge>
               </div>
+              <SaveStatusIndicator />
             </div>
             
             <div className="flex gap-3 pointer-events-auto">
@@ -366,14 +387,14 @@ export default function Home() {
                 variant={isPlaying ? "destructive" : "default"}
                 onClick={() => {
                   if (isPlaying) {
-                    setIsPlaying(false);
+                    pause();
                     return;
                   }
 
                   if (totalDuration > 0 && currentFrame >= totalDuration - 1) {
-                    setCurrentFrame(0);
+                    seekToFrame(0);
                   }
-                  setIsPlaying(true);
+                  play();
                 }}
                 className="rounded-full shadow-2xl font-black px-10 tracking-widest transition-all active:scale-95"
               >
@@ -433,8 +454,7 @@ export default function Home() {
               max={totalDuration > 0 ? totalDuration - 1 : 0}
               step={1}
               onValueChange={([val]) => {
-                setIsPlaying(false);
-                setCurrentFrame(val);
+                seekToFrame(val);
               }}
               className="py-4"
             />
@@ -460,7 +480,7 @@ export default function Home() {
                     tracks={tracks}
                     onReorder={handleReorderTracks}
                     onSelect={(t) => setSelectedTrackId(t.id)}
-                    onDelete={(id) => setTracks((prev) => prev.filter((t) => t.id !== id))}
+                    onDelete={(id) => removeTrack(id)}
                     selectedId={selectedTrackId}
                   />
                 </section>
