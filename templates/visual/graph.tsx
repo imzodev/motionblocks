@@ -1,9 +1,16 @@
 import { z } from "zod";
 import type { AnimationTemplate, RenderProps } from "../../types/template";
-import { Text } from "@react-three/drei";
+import { 
+  Graph3D, 
+  GraphDataPoint, 
+  GraphType,
+  DEFAULT_GRAPH_INTRO_FRAMES,
+  DEFAULT_GRAPH_PER_ITEM_FRAMES,
+  DEFAULT_GRAPH_BUFFER_FRAMES
+} from "../../components/animations/Graph3D";
 
 /**
- * GraphTemplate: 3D Bar graph.
+ * GraphTemplate: 3D Graph visualization (Bar, Line, Pie).
  */
 export const GraphTemplate: AnimationTemplate = {
   id: "graph",
@@ -13,55 +20,56 @@ export const GraphTemplate: AnimationTemplate = {
     { id: "data", name: "Labels & Values", type: "data-table", required: true },
   ],
   propsSchema: z.object({
-    type: z.enum(["bar", "line"]).default("bar"),
-    color: z.string().default("#3b82f6"),
+    type: z.enum(["bar", "line", "pie"]).default("bar"),
+    barWidth: z.number().min(10).max(200).default(60),
+    barGap: z.number().min(0).max(200).default(40),
+    lineThickness: z.number().min(1).max(50).default(8),
+    pieRadius: z.number().min(50).max(500).default(200),
+    pieHeight: z.number().min(5).max(200).default(40),
+    colors: z.string().default("#3b82f6,#60a5fa,#93c5fd,#2563eb,#1d4ed8"),
+    textColor: z.string().default("#ffffff"),
+    glowStrength: z.number().min(0).max(3).default(1.0),
+    introFrames: z.number().min(0).max(120).default(DEFAULT_GRAPH_INTRO_FRAMES),
+    perItemFrames: z.number().min(10).max(120).default(DEFAULT_GRAPH_PER_ITEM_FRAMES),
   }),
   render: ({ assets, frame, props }: RenderProps) => {
     const p = (props ?? {}) as Record<string, unknown>;
     const globalFontUrl = typeof p.globalFontUrl === "string" ? p.globalFontUrl : undefined;
-
-    const dataString = typeof assets.data === "string" ? assets.data : "";
-    const lines = dataString.split("\n").filter((l: string) => l.trim().length > 0);
     const title = typeof assets.title === "string" ? assets.title : "";
 
-    return (
-      <group>
-        {title ? (
-          <Text font={globalFontUrl} position={[0, 400, 0]} fontSize={50} color="white" font-weight="bold">
-            {title}
-          </Text>
-        ) : null}
-        <group position={[-(lines.length * 120) / 2, 0, 0]}>
-          {lines.map((line: string, i: number) => {
-            const parts = line.split(",").map((s) => s.trim());
-            const label = parts[0];
-            const value = parseFloat(parts[1]) || 0;
-            const progress = Math.min(1, frame / 45);
-            const height = progress * value * 3;
+    // Parse Data
+    const dataString = typeof assets.data === "string" ? assets.data : "";
+    const lines = dataString.split("\n").filter((l: string) => l.trim().length > 0);
+    const data: GraphDataPoint[] = lines.map((line: string) => {
+      const parts = line.split(",").map((s) => s.trim());
+      const label = parts[0] || "";
+      const value = parseFloat(parts[1]) || 0;
+      return { label, value };
+    });
 
-            return (
-              <group key={i} position={[i * 150, 0, 0]}>
-                <mesh position={[0, height / 2, 0]} castShadow receiveShadow>
-                  <boxGeometry args={[80, height, 80]} />
-                  <meshStandardMaterial color="#3b82f6" roughness={0.2} metalness={0.8} />
-                </mesh>
-                <Text font={globalFontUrl} position={[0, -40, 0]} fontSize={20} color="#94a3b8">
-                  {label}
-                </Text>
-                <Text
-                  font={globalFontUrl}
-                  position={[0, height + 40, 0]}
-                  fontSize={24}
-                  color="white"
-                  font-weight="black"
-                >
-                  {Math.floor(progress * value)}
-                </Text>
-              </group>
-            );
-          })}
-        </group>
-      </group>
+    // Parse Props
+    const type = (p.type as GraphType) || "bar";
+    const colors = (typeof p.colors === "string" ? p.colors : "#3b82f6").split(",");
+    
+    return (
+      <Graph3D
+        data={data}
+        type={type}
+        frame={frame}
+        title={title}
+        globalFontUrl={globalFontUrl}
+        // Config
+        introFrames={Number(p.introFrames ?? DEFAULT_GRAPH_INTRO_FRAMES)}
+        perItemFrames={Number(p.perItemFrames ?? DEFAULT_GRAPH_PER_ITEM_FRAMES)}
+        barWidth={Number(p.barWidth ?? 60)}
+        barGap={Number(p.barGap ?? 40)}
+        lineThickness={Number(p.lineThickness ?? 8)}
+        pieRadius={Number(p.pieRadius ?? 200)}
+        pieHeight={Number(p.pieHeight ?? 40)}
+        colors={colors}
+        textColor={String(p.textColor ?? "#ffffff")}
+        glowStrength={Number(p.glowStrength ?? 1.0)}
+      />
     );
   },
 };

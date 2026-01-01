@@ -14,6 +14,12 @@ import { TimelineRevealTemplateSection } from "@/components/details-panel/Timeli
 import { HighlightTemplateSection } from "@/components/details-panel/HighlightTemplateSection";
 import { KineticTextTemplateSection } from "@/components/details-panel/KineticTextTemplateSection";
 import { MindMapTemplateSection } from "@/components/details-panel/MindMapTemplateSection";
+import { GraphTemplateSection } from "@/components/details-panel/GraphTemplateSection";
+import { 
+  DEFAULT_GRAPH_INTRO_FRAMES, 
+  DEFAULT_GRAPH_PER_ITEM_FRAMES, 
+  DEFAULT_GRAPH_BUFFER_FRAMES 
+} from "@/components/animations/Graph3D";
 
 interface DetailsPanelProps {
   selectedTrack?: Track;
@@ -103,6 +109,17 @@ export function DetailsPanel({
       nextDuration = Math.max(60, count * Math.max(12, Math.floor(per)));
     }
 
+    if (selectedTrack.template === "graph") {
+      const data = typeof nextTemplateProps.data === "string" ? nextTemplateProps.data : "";
+      const lines = data.split(/\r?\n/).filter((l) => l.trim().length > 0);
+      const count = Math.max(1, lines.length);
+      const intro = typeof nextTemplateProps.introFrames === "number" ? nextTemplateProps.introFrames : DEFAULT_GRAPH_INTRO_FRAMES;
+      const per = typeof nextTemplateProps.perItemFrames === "number" ? nextTemplateProps.perItemFrames : DEFAULT_GRAPH_PER_ITEM_FRAMES;
+      
+      // Intro + (Count * PerItem) + Buffer
+      nextDuration = Math.max(90, intro + count * per + DEFAULT_GRAPH_BUFFER_FRAMES);
+    }
+
     onUpdateTrack({
       ...selectedTrack,
       duration: nextDuration,
@@ -126,6 +143,7 @@ export function DetailsPanel({
         <CounterTemplateSection selectedTrack={selectedTrack} onSlotUpdate={handleSlotUpdate} />
         <TimelineRevealTemplateSection selectedTrack={selectedTrack} onSlotUpdate={handleSlotUpdate} />
         <MindMapTemplateSection selectedTrack={selectedTrack} onSlotUpdate={handleSlotUpdate} />
+        <GraphTemplateSection selectedTrack={selectedTrack} onSlotUpdate={handleSlotUpdate} />
         <HighlightTemplateSection selectedTrack={selectedTrack} onSlotUpdate={handleSlotUpdate} />
         <KineticTextTemplateSection
           selectedTrack={selectedTrack}
