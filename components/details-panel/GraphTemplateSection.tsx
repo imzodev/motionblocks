@@ -76,22 +76,7 @@ export function GraphTemplateSection({
           </div>
         </div>
 
-        {/* Glow Strength */}
-        <div className="space-y-2">
-          <div className="flex items-center justify-between">
-            <label className="text-xs font-medium">Glow Strength</label>
-            <Badge variant="secondary" className="tabular-nums text-[10px] px-2 py-0 leading-none">
-              {Number(props.glowStrength ?? 1.0).toFixed(2)}
-            </Badge>
-          </div>
-          <Slider
-            min={0}
-            max={3}
-            step={0.1}
-            value={[Number(props.glowStrength ?? 1.0)]}
-            onValueChange={(v) => onSlotUpdate("glowStrength", v[0])}
-          />
-        </div>
+
 
         {/* Type Specific Settings */}
         {type === "bar" && (

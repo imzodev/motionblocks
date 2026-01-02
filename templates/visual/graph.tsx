@@ -28,7 +28,6 @@ export const GraphTemplate: AnimationTemplate = {
     pieHeight: z.number().min(5).max(200).default(40),
     colors: z.string().default("#3b82f6,#60a5fa,#93c5fd,#2563eb,#1d4ed8"),
     textColor: z.string().default("#ffffff"),
-    glowStrength: z.number().min(0).max(3).default(1.0),
     introFrames: z.number().min(0).max(120).default(DEFAULT_GRAPH_INTRO_FRAMES),
     perItemFrames: z.number().min(10).max(120).default(DEFAULT_GRAPH_PER_ITEM_FRAMES),
   }),
@@ -68,7 +67,6 @@ export const GraphTemplate: AnimationTemplate = {
         pieHeight={Number(p.pieHeight ?? 40)}
         colors={colors}
         textColor={String(p.textColor ?? "#ffffff")}
-        glowStrength={Number(p.glowStrength ?? 1.0)}
       />
     );
   },

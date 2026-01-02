@@ -4,7 +4,7 @@ import React, { useMemo, useRef, useState } from "react";
 import { Text, Float, Line, Extrude, RoundedBox } from "@react-three/drei";
 import { useFrame, useThree } from "@react-three/fiber";
 import * as THREE from "three";
-import { EffectComposer, Bloom } from "@react-three/postprocessing";
+
 
 // Constants for defaults to avoid magic numbers
 export const DEFAULT_GRAPH_INTRO_FRAMES = 15;
@@ -39,7 +39,6 @@ export interface Graph3DProps {
   pieHeight?: number;
   colors?: string[];
   textColor?: string;
-  glowStrength?: number;
 }
 
 // --- Utils ---
@@ -429,7 +428,6 @@ export function Graph3D({
   pieHeight,
   colors,
   textColor = "#ffffff",
-  glowStrength = 1.0,
 }: Graph3DProps) {
   const { camera } = useThree();
   const controls = useThree((state) => state.controls) as any;
@@ -532,16 +530,6 @@ export function Graph3D({
             )}
         </group>
       </group>
-
-      {/* Post Processing for Glows */}
-      <EffectComposer>
-        <Bloom 
-            luminanceThreshold={1} // Only very bright things glow
-            mipmapBlur 
-            intensity={glowStrength} 
-            radius={0.4}
-        />
-      </EffectComposer>
     </>
   );
 }
