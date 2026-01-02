@@ -12,6 +12,7 @@ function HighlightScene(props: {
   highlightText: string;
   highlightColor: string;
   fontColor: string;
+  highlightFontColor: string;
   fontSize: number;
   globalFontUrl?: string;
   backgroundEnabled: boolean;
@@ -28,6 +29,7 @@ function HighlightScene(props: {
     highlightText,
     highlightColor,
     fontColor,
+    highlightFontColor,
     fontSize,
     globalFontUrl,
     backgroundEnabled,
@@ -176,7 +178,7 @@ function HighlightScene(props: {
         <Text
           font={globalFontUrl}
           fontSize={fontSize}
-          color={fontColor}
+          color={highlightFontColor}
           anchorX="left"
           anchorY="middle"
           position={[prefixW, 0, 0]}
@@ -221,6 +223,7 @@ export const HighlightTemplate: AnimationTemplate = {
   propsSchema: z.object({
     highlightColor: z.string().default("#fde047"),
     fontColor: z.string().default("#0f172a"),
+    highlightFontColor: z.string().default("#0f172a"),
     fontSize: z.number().min(18).max(140).default(60),
     backgroundEnabled: z.boolean().default(false),
     backgroundColor: z.string().default("#ffffff"),
@@ -233,6 +236,7 @@ export const HighlightTemplate: AnimationTemplate = {
     const globalFontUrl = typeof p.globalFontUrl === "string" ? p.globalFontUrl : undefined;
     const highlightColor = typeof p.highlightColor === "string" ? p.highlightColor : "#fde047";
     const fontColor = typeof p.fontColor === "string" ? p.fontColor : "#0f172a";
+    const highlightFontColor = typeof p.highlightFontColor === "string" ? p.highlightFontColor : "#0f172a";
     const fontSize = typeof p.fontSize === "number" ? p.fontSize : 60;
 
     const backgroundEnabled = typeof p.backgroundEnabled === "boolean" ? p.backgroundEnabled : false;
@@ -255,6 +259,7 @@ export const HighlightTemplate: AnimationTemplate = {
         highlightText={highlightText}
         highlightColor={highlightColor}
         fontColor={fontColor}
+        highlightFontColor={highlightFontColor}
         fontSize={fontSize}
         globalFontUrl={globalFontUrl}
         backgroundEnabled={backgroundEnabled}

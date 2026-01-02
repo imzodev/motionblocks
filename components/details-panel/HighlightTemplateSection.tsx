@@ -58,19 +58,37 @@ export function HighlightTemplateSection({
           </div>
         </div>
 
-        <div className="space-y-1.5">
-          <label className="text-xs font-medium">Highlight color</label>
-          <div className="flex items-center gap-2 rounded-xl border bg-card/60 px-2 py-1.5">
-            <input
-              type="color"
-              className="h-7 w-8 bg-transparent"
-              value={String(selectedTrack.templateProps.highlightColor || "#fde047")}
-              onChange={(e) => onSlotUpdate("highlightColor", e.target.value)}
-            />
-            <Input
-              value={String(selectedTrack.templateProps.highlightColor || "#fde047")}
-              onChange={(e) => onSlotUpdate("highlightColor", e.target.value)}
-            />
+        <div className="grid grid-cols-2 gap-2">
+          <div className="space-y-1.5">
+            <label className="text-xs font-medium">Highlight color</label>
+            <div className="flex items-center gap-2 rounded-xl border bg-card/60 px-2 py-1.5">
+              <input
+                type="color"
+                className="h-7 w-8 bg-transparent"
+                value={String(selectedTrack.templateProps.highlightColor || "#fde047")}
+                onChange={(e) => onSlotUpdate("highlightColor", e.target.value)}
+              />
+              <Input
+                value={String(selectedTrack.templateProps.highlightColor || "#fde047")}
+                onChange={(e) => onSlotUpdate("highlightColor", e.target.value)}
+              />
+            </div>
+          </div>
+
+          <div className="space-y-1.5">
+            <label className="text-xs font-medium">Hl. font color</label>
+            <div className="flex items-center gap-2 rounded-xl border bg-card/60 px-2 py-1.5">
+              <input
+                type="color"
+                className="h-7 w-8 bg-transparent"
+                value={String(selectedTrack.templateProps.highlightFontColor || "#0f172a")}
+                onChange={(e) => onSlotUpdate("highlightFontColor", e.target.value)}
+              />
+              <Input
+                value={String(selectedTrack.templateProps.highlightFontColor || "#0f172a")}
+                onChange={(e) => onSlotUpdate("highlightFontColor", e.target.value)}
+              />
+            </div>
           </div>
         </div>
 
