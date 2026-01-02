@@ -1,7 +1,8 @@
 import { z } from "zod";
 import type { AnimationTemplate, RenderProps } from "../../types/template";
 import { Text, Image as DreiImage } from "@react-three/drei";
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState, useEffect } from "react";
+import { useThree } from "@react-three/fiber";
 import type { Asset } from "../../types/timeline";
 import { getVideoTexture, isAsset, preserveEdgeSpaces, readTextWidth } from "./shared";
 
@@ -24,6 +25,8 @@ function HighlightScene(props: {
   backgroundVideoAspect: number;
   backgroundColor: string;
   backgroundAsset?: Asset;
+  cameraPosition?: [number, number, number];
+  cameraTarget?: [number, number, number];
 }) {
   const {
     frame,
@@ -44,6 +47,8 @@ function HighlightScene(props: {
     backgroundVideoAspect,
     backgroundColor,
     backgroundAsset,
+    cameraPosition,
+    cameraTarget,
   } = props;
 
   const { prefix, highlighted, suffix } = useMemo(() => {
@@ -95,6 +100,29 @@ function HighlightScene(props: {
   const prefixDisplay = preserveEdgeSpaces(prefix);
   const highlightedDisplay = preserveEdgeSpaces(highlighted);
   const suffixDisplay = preserveEdgeSpaces(suffix);
+
+  const { camera, controls } = useThree();
+
+  useEffect(() => {
+    if (cameraPosition && camera) {
+      camera.position.set(...cameraPosition);
+    }
+    if (cameraTarget && controls) {
+      (controls as any).target.set(...cameraTarget);
+      (controls as any).update();
+    }
+
+    // Cleanup: Restore to scene defaults [0, 0, 1000]
+    return () => {
+      if (cameraPosition && camera) {
+        camera.position.set(0, 0, 1000);
+      }
+      if (cameraTarget && controls) {
+        (controls as any).target.set(0, 0, 0);
+        (controls as any).update();
+      }
+    };
+  }, [cameraPosition, cameraTarget, camera, controls]);
 
   return (
     <group>
@@ -245,6 +273,8 @@ export const HighlightTemplate: AnimationTemplate = {
     backgroundOpacity: z.number().min(0).max(1).default(1),
     backgroundScale: z.number().min(1000).max(12000).default(6000),
     backgroundVideoAspect: z.number().min(0.2).max(5).default(16 / 9),
+    cameraPosition: z.array(z.number()).length(3).optional(),
+    cameraTarget: z.array(z.number()).length(3).optional(),
   }),
   render: ({ assets, frame, duration, props }: RenderProps) => {
     const p = (props ?? {}) as Record<string, unknown>;
@@ -289,6 +319,8 @@ export const HighlightTemplate: AnimationTemplate = {
         backgroundVideoAspect={backgroundVideoAspect}
         backgroundColor={backgroundColor}
         backgroundAsset={backgroundAsset}
+        cameraPosition={p.cameraPosition as [number, number, number] | undefined}
+        cameraTarget={p.cameraTarget as [number, number, number] | undefined}
       />
     );
   },

@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Slider } from "@/components/ui/slider";
 import { Separator } from "@/components/ui/separator";
+import { X } from "lucide-react";
 
 interface HighlightTemplateSectionProps {
   selectedTrack: Track;
@@ -126,6 +127,41 @@ export function HighlightTemplateSection({
               />
             </div>
           </div>
+        </div>
+        
+        <div className="space-y-1.5">
+          <label className="text-xs font-medium">Camera</label>
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              className="flex-1 h-8 text-xs font-bold"
+              onClick={() => {
+                window.dispatchEvent(new CustomEvent("motionblocks:save-camera"));
+              }}
+            >
+              Save Camera
+            </Button>
+            {selectedTrack.templateProps.cameraPosition && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-8 w-8 px-0 text-muted-foreground hover:text-destructive"
+                onClick={() => {
+                  onSlotUpdate("cameraPosition", undefined);
+                  onSlotUpdate("cameraTarget", undefined);
+                }}
+                title="Reset Camera"
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            )}
+          </div>
+          <p className="text-[10px] text-muted-foreground leading-snug">
+            {selectedTrack.templateProps.cameraPosition 
+              ? "✓ Custom camera saved" 
+              : "Using default scene camera"}
+          </p>
         </div>
 
         <div className="space-y-2">

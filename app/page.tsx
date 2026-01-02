@@ -183,6 +183,22 @@ export default function Home() {
     reorderTracks(newOrder);
   }, [reorderTracks]);
 
+  const handleCameraSave = useCallback((pos: [number, number, number], target: [number, number, number]) => {
+    if (selectedTrackId) {
+      const track = (project?.tracks || []).find(t => t.id === selectedTrackId);
+      if (track) {
+        updateTrack(track.id, {
+          ...track,
+          templateProps: {
+            ...track.templateProps,
+            cameraPosition: pos,
+            cameraTarget: target,
+          }
+        });
+      }
+    }
+  }, [selectedTrackId, project?.tracks, updateTrack]);
+
   const selectedTrack = tracks.find((t) => t.id === selectedTrackId);
   const activeTrack = useMemo(() => {
     return tracks.find(t => currentFrame >= t.startFrame && currentFrame < t.startFrame + t.duration);
@@ -417,7 +433,7 @@ export default function Home() {
               ref={previewRef}
               className="aspect-video w-full max-w-5xl bg-card shadow-[0_0_120px_rgba(0,0,0,0.18)] ring-1 ring-border relative overflow-hidden rounded-2xl border border-border"
             >
-              <Canvas3D>
+              <Canvas3D onCameraSave={handleCameraSave}>
                 <Renderer3D 
                   activeTrack={activeTrack} 
                   currentFrame={currentFrame} 
