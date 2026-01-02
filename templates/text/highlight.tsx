@@ -14,6 +14,9 @@ function HighlightScene(props: {
   fontColor: string;
   highlightFontColor: string;
   fontSize: number;
+  highlightPadding: number;
+  highlightXOffset: number;
+  highlightYOffset: number;
   globalFontUrl?: string;
   backgroundEnabled: boolean;
   backgroundOpacity: number;
@@ -31,6 +34,9 @@ function HighlightScene(props: {
     fontColor,
     highlightFontColor,
     fontSize,
+    highlightPadding,
+    highlightXOffset,
+    highlightYOffset,
     globalFontUrl,
     backgroundEnabled,
     backgroundOpacity,
@@ -70,15 +76,21 @@ function HighlightScene(props: {
   const totalW = prefixW + hlW + suffixW;
   const leftX = -totalW / 2;
 
-  const padLeft = 0;
-  const padRight = 0;
+  const padLeft = highlightPadding;
+  const padRight = highlightPadding;
   const boxH = Math.max(32, fontSize * 0.92);
   const highlightCore = highlighted.trim();
   const highlightLeftPad = highlighted.slice(0, highlighted.length - highlighted.trimStart().length);
 
   const boxWTarget = highlighted ? Math.max(0, hlCoreW + padLeft + padRight) : 0;
   const boxW = boxWTarget * reveal;
-  const boxX = leftX + prefixW + hlLeftPadW + boxW / 2;
+
+  // Position logic for left-to-right reveal:
+  // 1. Identify where the highlight starts (its left edge).
+  // 2. The center of the box (boxX) must move as boxW grows to keep the left edge fixed.
+  const highlightStart = leftX + prefixW + hlLeftPadW - padLeft + highlightXOffset;
+  const boxX = highlightStart + boxW / 2;
+  const boxY = 0 + highlightYOffset;
 
   const prefixDisplay = preserveEdgeSpaces(prefix);
   const highlightedDisplay = preserveEdgeSpaces(highlighted);
@@ -122,7 +134,7 @@ function HighlightScene(props: {
       ) : null}
 
       {highlighted ? (
-        <mesh position={[boxX, 0, -6]}>
+        <mesh position={[boxX, boxY, -6]}>
           <boxGeometry args={[Math.max(0.001, boxW), boxH, 6]} />
           <meshBasicMaterial color={highlightColor} transparent opacity={0.85} toneMapped={false} />
         </mesh>
@@ -225,6 +237,9 @@ export const HighlightTemplate: AnimationTemplate = {
     fontColor: z.string().default("#0f172a"),
     highlightFontColor: z.string().default("#0f172a"),
     fontSize: z.number().min(18).max(140).default(60),
+    highlightPadding: z.number().min(0).max(100).default(12),
+    highlightXOffset: z.number().default(0),
+    highlightYOffset: z.number().default(0),
     backgroundEnabled: z.boolean().default(false),
     backgroundColor: z.string().default("#ffffff"),
     backgroundOpacity: z.number().min(0).max(1).default(1),
@@ -238,6 +253,9 @@ export const HighlightTemplate: AnimationTemplate = {
     const fontColor = typeof p.fontColor === "string" ? p.fontColor : "#0f172a";
     const highlightFontColor = typeof p.highlightFontColor === "string" ? p.highlightFontColor : "#0f172a";
     const fontSize = typeof p.fontSize === "number" ? p.fontSize : 60;
+    const highlightPadding = typeof p.highlightPadding === "number" ? p.highlightPadding : 12;
+    const highlightXOffset = typeof p.highlightXOffset === "number" ? p.highlightXOffset : 0;
+    const highlightYOffset = typeof p.highlightYOffset === "number" ? p.highlightYOffset : 0;
 
     const backgroundEnabled = typeof p.backgroundEnabled === "boolean" ? p.backgroundEnabled : false;
     const backgroundColor = typeof p.backgroundColor === "string" ? p.backgroundColor : "#ffffff";
@@ -261,6 +279,9 @@ export const HighlightTemplate: AnimationTemplate = {
         fontColor={fontColor}
         highlightFontColor={highlightFontColor}
         fontSize={fontSize}
+        highlightPadding={highlightPadding}
+        highlightXOffset={highlightXOffset}
+        highlightYOffset={highlightYOffset}
         globalFontUrl={globalFontUrl}
         backgroundEnabled={backgroundEnabled}
         backgroundOpacity={backgroundOpacity}

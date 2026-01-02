@@ -56,6 +56,42 @@ export function HighlightTemplateSection({
               />
             </div>
           </div>
+          <div className="space-y-1.5">
+            <label className="text-xs font-medium">Hl. padding</label>
+            <Input
+              type="number"
+              min={0}
+              max={100}
+              value={String(
+                typeof selectedTrack.templateProps.highlightPadding === "number" ? selectedTrack.templateProps.highlightPadding : 12
+              )}
+              onChange={(e) => onSlotUpdate("highlightPadding", Number(e.target.value))}
+            />
+          </div>
+        </div>
+
+        <div className="grid grid-cols-2 gap-2">
+          <div className="space-y-1.5">
+            <label className="text-xs font-medium">X Offset</label>
+            <Input
+              type="number"
+              value={String(
+                typeof selectedTrack.templateProps.highlightXOffset === "number" ? selectedTrack.templateProps.highlightXOffset : 0
+              )}
+              onChange={(e) => onSlotUpdate("highlightXOffset", Number(e.target.value))}
+            />
+          </div>
+
+          <div className="space-y-1.5">
+            <label className="text-xs font-medium">Y Offset</label>
+            <Input
+              type="number"
+              value={String(
+                typeof selectedTrack.templateProps.highlightYOffset === "number" ? selectedTrack.templateProps.highlightYOffset : 0
+              )}
+              onChange={(e) => onSlotUpdate("highlightYOffset", Number(e.target.value))}
+            />
+          </div>
         </div>
 
         <div className="grid grid-cols-2 gap-2">
