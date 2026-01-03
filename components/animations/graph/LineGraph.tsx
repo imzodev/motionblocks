@@ -32,7 +32,6 @@ export interface LineGraphProps {
   frame: number;
   introFrames: number;
   perItemFrames: number;
-  bufferFrames: number;
   colors?: string[];
   fontUrl?: string;
   textColor?: string;
@@ -154,7 +153,6 @@ export function LineGraph({
   frame,
   introFrames,
   perItemFrames,
-  bufferFrames,
   colors = ["#3b82f6"],
   fontUrl,
   textColor = "white",
@@ -178,16 +176,13 @@ export function LineGraph({
 
   // Animate line drawing
   const totalPoints = points.length;
-  // Make drawing duration depend on perItemFrames, plus buffer to fill track
-  const drawDuration = Math.max(totalPoints * perItemFrames + bufferFrames, 1);
+  // Total animation duration: intro + segments drawing (no buffer for line graph)
+  const segmentsToDraw = totalPoints - 1;
+  const drawDuration = introFrames + segmentsToDraw * perItemFrames;
   const drawT = clamp01((frame - introFrames) / drawDuration);
-  const currentDrawIndex = Math.floor(drawT * (totalPoints - 1));
 
-  // Create visible points subset for the line
-  const visiblePoints = points.slice(0, currentDrawIndex + 2); // +2 to include the one being drawn to
-
-  // Only render if we have points
-  if (visiblePoints.length < 2) return null;
+  // Only render if we have at least 2 points
+  if (totalPoints < 2) return null;
 
   const color = colors[0];
   const effectiveAxisColor = axisColor || textColor;
@@ -218,13 +213,13 @@ export function LineGraph({
       {points.slice(0, -1).map((pt, i) => {
         const next = points[i + 1];
         // Calculate progress for this specific segment
-        // The total animation covers indices 0 to totalPoints-1
-        // This segment is index i.
-        const segStart = i / (totalPoints - 1);
-        const segEnd = (i + 1) / (totalPoints - 1);
+        // Each segment has its own time window based on perItemFrames
+        const segStartFrame = introFrames + i * perItemFrames;
+        const segEndFrame = introFrames + (i + 1) * perItemFrames;
 
-        // Map drawT (0..1) to local segment progress (0..1)
-        let localProgress = (drawT - segStart) / (segEnd - segStart);
+        // Map current frame to local segment progress (0..1)
+        // Clamp to 0..1 to handle frames after segment is complete
+        let localProgress = (frame - segStartFrame) / (segEndFrame - segStartFrame);
         localProgress = clamp01(localProgress);
         localProgress = easeInOutCubic(localProgress);
 
@@ -259,9 +254,9 @@ export function LineGraph({
       {/* Labels and values (pop up as line passes) */}
       {data.map((item, i) => {
         // Trigger when the line reaches this point
-        const ptProgress = i / (totalPoints - 1);
-        const isReached = drawT >= ptProgress;
-        const localFrame = frame - (introFrames + ptProgress * drawDuration);
+        const ptStartFrame = introFrames + i * perItemFrames;
+        const isReached = frame >= ptStartFrame;
+        const localFrame = frame - ptStartFrame;
 
         if (!isReached) return null;
 

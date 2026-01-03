@@ -1,12 +1,11 @@
 import { z } from "zod";
 import type { AnimationTemplate, RenderProps } from "../../types/template";
-import { 
-  Graph3D, 
-  GraphDataPoint, 
+import {
+  Graph3D,
+  GraphDataPoint,
   GraphType,
   DEFAULT_GRAPH_INTRO_FRAMES,
-  DEFAULT_GRAPH_PER_ITEM_FRAMES,
-  DEFAULT_GRAPH_BUFFER_FRAMES
+  DEFAULT_GRAPH_PER_ITEM_FRAMES
 } from "../../components/animations/Graph3D";
 
 /**

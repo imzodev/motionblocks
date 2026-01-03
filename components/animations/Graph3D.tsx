@@ -12,7 +12,6 @@ import { BarGraph } from "./graph/BarGraph";
 // Constants for defaults to avoid magic numbers
 export const DEFAULT_GRAPH_INTRO_FRAMES = 15;
 export const DEFAULT_GRAPH_PER_ITEM_FRAMES = 20;
-export const DEFAULT_GRAPH_BUFFER_FRAMES = 60;
 
 // --- Types ---
 
@@ -33,7 +32,6 @@ export interface Graph3DProps {
   // Animation config
   introFrames?: number;
   perItemFrames?: number;
-  bufferFrames?: number;
   // Visual config
   barWidth?: number;
   barGap?: number;
@@ -73,7 +71,6 @@ const PieGraph = ({
   frame,
   introFrames,
   perItemFrames,
-  bufferFrames,
   colors = ["#3b82f6", "#60a5fa", "#93c5fd"],
   fontUrl,
   textColor = "white",
@@ -84,7 +81,6 @@ const PieGraph = ({
   frame: number;
   introFrames: number;
   perItemFrames: number;
-  bufferFrames: number;
   colors?: string[];
   fontUrl?: string;
   textColor?: string;
@@ -96,8 +92,8 @@ const PieGraph = ({
   let currentAngle = 0;
 
   // Intro animation: Spin and expand
-  // Scale duration by number of items to respect "per item" setting, plus buffer to fill track
-  const duration = Math.max(perItemFrames * data.length + bufferFrames, 30);
+  // Scale duration by number of items to respect "per item" setting
+  const duration = Math.max(perItemFrames * data.length, 30);
   const introT = clamp01((frame - introFrames) / duration);
   const expand = easeOutBack(introT);
   const spin = (1 - easeInOutCubic(introT)) * Math.PI * 2;
@@ -182,7 +178,6 @@ export function Graph3D({
   globalFontUrl,
   introFrames = 30,
   perItemFrames = 45,
-  bufferFrames = DEFAULT_GRAPH_BUFFER_FRAMES,
   barWidth,
   barGap,
   lineThickness,
@@ -258,7 +253,6 @@ export function Graph3D({
                 frame={frame}
                 introFrames={introFrames}
                 perItemFrames={perItemFrames}
-                bufferFrames={bufferFrames}
                 barWidth={barWidth}
                 barGap={barGap}
                 colors={colors}
@@ -272,7 +266,6 @@ export function Graph3D({
                 frame={frame}
                 introFrames={introFrames}
                 perItemFrames={perItemFrames}
-                bufferFrames={bufferFrames}
                 thickness={lineThickness}
                 colors={colors}
                 fontUrl={globalFontUrl}
@@ -288,7 +281,6 @@ export function Graph3D({
                 frame={frame}
                 introFrames={introFrames}
                 perItemFrames={perItemFrames}
-                bufferFrames={bufferFrames}
                 radius={pieRadius}
                 height={pieHeight}
                 colors={colors}

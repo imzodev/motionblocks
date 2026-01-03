@@ -19,7 +19,6 @@ export interface BarGraphProps {
   frame: number;
   introFrames: number;
   perItemFrames: number;
-  bufferFrames: number;
   barWidth?: number;
   barGap?: number;
   colors?: string[];
@@ -34,7 +33,6 @@ export function BarGraph({
   frame,
   introFrames,
   perItemFrames,
-  bufferFrames,
   barWidth = 60,
   barGap = 40,
   colors = ["#3b82f6"],
@@ -46,8 +44,8 @@ export function BarGraph({
   const startX = -totalWidth / 2;
 
   // Animation constants derived from perItemFrames
-  // Duration includes the buffer from the track calculation to ensure smooth settling until the end
-  const duration = perItemFrames + bufferFrames;
+  // Duration does NOT include buffer for bar graph (completes within set frame duration)
+  const duration = perItemFrames;
   // Stagger equal to perItemFrames keeps the sequence rhythm matching the configuration
   const stagger = perItemFrames;
 

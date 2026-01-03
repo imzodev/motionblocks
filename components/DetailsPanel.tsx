@@ -15,10 +15,9 @@ import { HighlightTemplateSection } from "@/components/details-panel/HighlightTe
 import { KineticTextTemplateSection } from "@/components/details-panel/KineticTextTemplateSection";
 import { MindMapTemplateSection } from "@/components/details-panel/MindMapTemplateSection";
 import { GraphTemplateSection } from "@/components/details-panel/GraphTemplateSection";
-import { 
-  DEFAULT_GRAPH_INTRO_FRAMES, 
-  DEFAULT_GRAPH_PER_ITEM_FRAMES, 
-  DEFAULT_GRAPH_BUFFER_FRAMES 
+import {
+  DEFAULT_GRAPH_INTRO_FRAMES,
+  DEFAULT_GRAPH_PER_ITEM_FRAMES
 } from "@/components/animations/Graph3D";
 
 interface DetailsPanelProps {
@@ -116,8 +115,8 @@ export function DetailsPanel({
       const intro = typeof nextTemplateProps.introFrames === "number" ? nextTemplateProps.introFrames : DEFAULT_GRAPH_INTRO_FRAMES;
       const per = typeof nextTemplateProps.perItemFrames === "number" ? nextTemplateProps.perItemFrames : DEFAULT_GRAPH_PER_ITEM_FRAMES;
       
-      // Intro + (Count * PerItem) + Buffer
-      nextDuration = Math.max(90, intro + count * per + DEFAULT_GRAPH_BUFFER_FRAMES);
+      // Intro + (Count - 1) * PerItem
+      nextDuration = Math.max(90, intro + count * per);
     }
 
     onUpdateTrack({
