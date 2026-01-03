@@ -39,6 +39,10 @@ export interface Graph3DProps {
   pieHeight?: number;
   colors?: string[];
   textColor?: string;
+  // Axis config
+  showAxes?: boolean;
+  axisColor?: string;
+  yAxisTickCount?: number;
 }
 
 // --- Utils ---
@@ -157,6 +161,107 @@ const BarGraph = ({
   );
 };
 
+// --- Axis Components ---
+
+const YAxis = ({
+  maxValue,
+  startX,
+  totalWidth,
+  fontUrl,
+  axisColor = "white",
+  tickCount = 5,
+  padding = 80,
+}: {
+  maxValue: number;
+  startX: number;
+  totalWidth: number;
+  fontUrl?: string;
+  axisColor?: string;
+  tickCount?: number;
+  padding?: number;
+}) => {
+  const axisX = startX - padding;
+  const axisHeight = 400;
+
+  return (
+    <group>
+      {/* Vertical axis line */}
+      <Line
+        points={[
+          new THREE.Vector3(axisX, 0, 0),
+          new THREE.Vector3(axisX, axisHeight, 0),
+        ]}
+        color={axisColor}
+        lineWidth={2}
+      />
+
+      {/* Ticks and labels */}
+      {Array.from({ length: tickCount }).map((_, i) => {
+        const value = (maxValue * i) / (tickCount - 1);
+        const y = (axisHeight * i) / (tickCount - 1);
+        const labelValue = Math.round(value * 10) / 10; // Round to 1 decimal place
+
+        return (
+          <group key={i}>
+            {/* Tick mark */}
+            <Line
+              points={[
+                new THREE.Vector3(axisX, y, 0),
+                new THREE.Vector3(axisX - 10, y, 0),
+              ]}
+              color={axisColor}
+              lineWidth={2}
+            />
+            {/* Label */}
+            <Text
+              font={fontUrl}
+              position={[axisX - 20, y, 0]}
+              fontSize={16}
+              color={axisColor}
+              anchorX="right"
+              anchorY="middle"
+            >
+              {labelValue}
+            </Text>
+          </group>
+        );
+      })}
+    </group>
+  );
+};
+
+const XAxis = ({
+  startX,
+  totalWidth,
+  fontUrl,
+  axisColor = "white",
+  padding = 80,
+}: {
+  startX: number;
+  totalWidth: number;
+  fontUrl?: string;
+  axisColor?: string;
+  padding?: number;
+}) => {
+  const axisY = -20;
+  const axisStartX = startX - padding;
+  const axisEndX = startX + totalWidth + padding;
+
+  return (
+    <group>
+      {/* Horizontal axis line */}
+      <Line
+        points={[
+          new THREE.Vector3(axisStartX, axisY, 0),
+          new THREE.Vector3(axisEndX, axisY, 0),
+        ]}
+        color={axisColor}
+        lineWidth={2}
+      />
+    </group>
+  );
+};
+
 const LineGraph = ({
   data,
   frame,
@@ -167,6 +272,9 @@ const LineGraph = ({
   fontUrl,
   textColor = "white",
   thickness = 8,
+  showAxes = true,
+  axisColor,
+  yAxisTickCount = 5,
 }: {
   data: GraphDataPoint[];
   frame: number;
@@ -177,6 +285,9 @@ const LineGraph = ({
   fontUrl?: string;
   textColor?: string;
   thickness?: number;
+  showAxes?: boolean;
+  axisColor?: string;
+  yAxisTickCount?: number;
 }) => {
   const maxValue = useMemo(() => Math.max(...data.map((d) => d.value), 1), [data]);
   const widthPerPoint = 150;
@@ -205,9 +316,30 @@ const LineGraph = ({
   if (visiblePoints.length < 2) return null;
 
   const color = colors[0];
+  const effectiveAxisColor = axisColor || textColor;
 
   return (
     <group>
+      {/* Axes - appear immediately */}
+      {showAxes && (
+        <>
+          <YAxis
+            maxValue={maxValue}
+            startX={startX}
+            totalWidth={totalWidth}
+            fontUrl={fontUrl}
+            axisColor={effectiveAxisColor}
+            tickCount={yAxisTickCount}
+          />
+          <XAxis
+            startX={startX}
+            totalWidth={totalWidth}
+            fontUrl={fontUrl}
+            axisColor={effectiveAxisColor}
+          />
+        </>
+      )}
+
       {/* The Line */}
       {points.slice(0, -1).map((pt, i) => {
         const next = points[i + 1];
@@ -428,6 +560,9 @@ export function Graph3D({
   pieHeight,
   colors,
   textColor = "#ffffff",
+  showAxes = true,
+  axisColor,
+  yAxisTickCount = 5,
 }: Graph3DProps) {
   const { camera } = useThree();
   const controls = useThree((state) => state.controls) as any;
@@ -512,6 +647,9 @@ export function Graph3D({
                 colors={colors}
                 fontUrl={globalFontUrl}
                 textColor={textColor}
+                showAxes={showAxes}
+                axisColor={axisColor}
+                yAxisTickCount={yAxisTickCount}
             />
             )}
             {type === "pie" && (

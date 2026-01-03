@@ -105,16 +105,61 @@ export function GraphTemplateSection({
         )}
 
         {type === "line" && (
-          <div className="space-y-1.5">
-            <label className="text-xs font-medium">Line Thickness</label>
-            <Input
-              type="number"
-              min={1}
-              max={50}
-              value={Number(props.lineThickness ?? 8)}
-              onChange={(e) => onSlotUpdate("lineThickness", Number(e.target.value))}
-            />
-          </div>
+          <>
+            <div className="space-y-1.5">
+              <label className="text-xs font-medium">Line Thickness</label>
+              <Input
+                type="number"
+                min={1}
+                max={50}
+                value={Number(props.lineThickness ?? 8)}
+                onChange={(e) => onSlotUpdate("lineThickness", Number(e.target.value))}
+              />
+            </div>
+
+            {/* Axis Settings */}
+            <div className="space-y-1.5">
+              <label className="text-xs font-medium">Show Axes</label>
+              <select
+                className="h-9 w-full rounded-md border bg-background px-2 text-xs"
+                value={String(props.showAxes ?? true)}
+                onChange={(e) => onSlotUpdate("showAxes", e.target.value === "true")}
+              >
+                <option value="true">Yes</option>
+                <option value="false">No</option>
+              </select>
+            </div>
+
+            <div className="grid grid-cols-2 gap-2">
+              <div className="space-y-1.5">
+                <label className="text-xs font-medium">Axis Color</label>
+                <div className="flex items-center gap-2 rounded-xl border bg-card/60 px-2 py-1.5">
+                  <input
+                    type="color"
+                    className="h-7 w-8 bg-transparent"
+                    value={String(props.axisColor ?? props.textColor ?? "#ffffff")}
+                    onChange={(e) => onSlotUpdate("axisColor", e.target.value)}
+                  />
+                  <Input
+                    value={String(props.axisColor ?? props.textColor ?? "#ffffff")}
+                    onChange={(e) => onSlotUpdate("axisColor", e.target.value)}
+                    className="h-7 text-xs"
+                  />
+                </div>
+              </div>
+              <div className="space-y-1.5">
+                <label className="text-xs font-medium">Y Axis Ticks</label>
+                <Input
+                  type="number"
+                  min={2}
+                  max={10}
+                  value={Number(props.yAxisTickCount ?? 5)}
+                  onChange={(e) => onSlotUpdate("yAxisTickCount", Number(e.target.value))}
+                  className="h-9 text-xs"
+                />
+              </div>
+            </div>
+          </>
         )}
 
         {type === "pie" && (

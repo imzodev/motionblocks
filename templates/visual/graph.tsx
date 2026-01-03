@@ -30,6 +30,9 @@ export const GraphTemplate: AnimationTemplate = {
     textColor: z.string().default("#ffffff"),
     introFrames: z.number().min(0).max(120).default(DEFAULT_GRAPH_INTRO_FRAMES),
     perItemFrames: z.number().min(10).max(120).default(DEFAULT_GRAPH_PER_ITEM_FRAMES),
+    showAxes: z.boolean().default(true),
+    axisColor: z.string().default("#ffffff"),
+    yAxisTickCount: z.number().min(2).max(10).default(5),
   }),
   render: ({ assets, frame, props }: RenderProps) => {
     const p = (props ?? {}) as Record<string, unknown>;
@@ -67,6 +70,10 @@ export const GraphTemplate: AnimationTemplate = {
         pieHeight={Number(p.pieHeight ?? 40)}
         colors={colors}
         textColor={String(p.textColor ?? "#ffffff")}
+        // Axis config
+        showAxes={Boolean(p.showAxes ?? true)}
+        axisColor={String(p.axisColor ?? p.textColor ?? "#ffffff")}
+        yAxisTickCount={Number(p.yAxisTickCount ?? 5)}
       />
     );
   },
