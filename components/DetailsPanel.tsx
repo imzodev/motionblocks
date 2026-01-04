@@ -20,6 +20,7 @@ import {
   DEFAULT_GRAPH_PER_ITEM_FRAMES
 } from "@/components/animations/Graph3D";
 import { ChaptersTemplateSection } from "./details-panel/ChaptersTemplateSection";
+import { ListTemplateSection } from "./details-panel/ListTemplateSection";
 
 interface DetailsPanelProps {
   selectedTrack?: Track;
@@ -120,6 +121,15 @@ export function DetailsPanel({
       nextDuration = Math.max(90, intro + count * per);
     }
 
+    if (selectedTrack.template === "list") {
+      const data = typeof nextTemplateProps.data === "string" ? nextTemplateProps.data : "";
+      const lines = data.split(/\r?\n/).filter((l) => l.trim().length > 0);
+      const count = Math.max(1, lines.length);
+      const perItem = typeof nextTemplateProps.perItemFrames === "number" ? nextTemplateProps.perItemFrames : 60;
+      
+      nextDuration = count * perItem;
+    }
+
     if (selectedTrack.template === "chapters") {
       const data = typeof nextTemplateProps.data === "string" ? nextTemplateProps.data : "";
       const lines = data.split(/\r?\n/).filter((l) => l.trim().length > 0);
@@ -155,6 +165,7 @@ export function DetailsPanel({
         <GraphTemplateSection selectedTrack={selectedTrack} onSlotUpdate={handleSlotUpdate} />
         <HighlightTemplateSection selectedTrack={selectedTrack} onSlotUpdate={handleSlotUpdate} />
         <ChaptersTemplateSection selectedTrack={selectedTrack} onSlotUpdate={handleSlotUpdate} />
+        <ListTemplateSection selectedTrack={selectedTrack} onSlotUpdate={handleSlotUpdate} />
         <KineticTextTemplateSection
           selectedTrack={selectedTrack}
           onSlotUpdate={handleSlotUpdate}

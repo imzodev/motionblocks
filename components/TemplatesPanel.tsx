@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { Sparkles, Layout, BarChart3, Share2, Type } from "lucide-react";
+import { Sparkles, Layout, BarChart3, Share2, Type, List } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -25,6 +25,7 @@ const TEMPLATES = [
   { id: "highlight", name: "Text Highlight", type: "text", icon: Type },
   { id: "kinetic-text", name: "Kinetic Text", type: "text", icon: Type },
   { id: "chapters", name: "Chapters", type: "text", icon: Type },
+  { id: "list", name: "Bullet List", type: "text", icon: List },
 ];
 
 interface TemplatesPanelProps {
