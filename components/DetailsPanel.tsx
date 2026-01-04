@@ -19,6 +19,7 @@ import {
   DEFAULT_GRAPH_INTRO_FRAMES,
   DEFAULT_GRAPH_PER_ITEM_FRAMES
 } from "@/components/animations/Graph3D";
+import { ChaptersTemplateSection } from "./details-panel/ChaptersTemplateSection";
 
 interface DetailsPanelProps {
   selectedTrack?: Track;
@@ -119,6 +120,15 @@ export function DetailsPanel({
       nextDuration = Math.max(90, intro + count * per);
     }
 
+    if (selectedTrack.template === "chapters") {
+      const data = typeof nextTemplateProps.data === "string" ? nextTemplateProps.data : "";
+      const lines = data.split(/\r?\n/).filter((l) => l.trim().length > 0);
+      const count = Math.max(1, lines.length);
+      const framesPerChapter = typeof nextTemplateProps.framesPerChapter === "number" ? nextTemplateProps.framesPerChapter : 60;
+      
+      nextDuration = count * framesPerChapter;
+    }
+
     onUpdateTrack({
       ...selectedTrack,
       duration: nextDuration,
@@ -144,6 +154,7 @@ export function DetailsPanel({
         <MindMapTemplateSection selectedTrack={selectedTrack} onSlotUpdate={handleSlotUpdate} />
         <GraphTemplateSection selectedTrack={selectedTrack} onSlotUpdate={handleSlotUpdate} />
         <HighlightTemplateSection selectedTrack={selectedTrack} onSlotUpdate={handleSlotUpdate} />
+        <ChaptersTemplateSection selectedTrack={selectedTrack} onSlotUpdate={handleSlotUpdate} />
         <KineticTextTemplateSection
           selectedTrack={selectedTrack}
           onSlotUpdate={handleSlotUpdate}
