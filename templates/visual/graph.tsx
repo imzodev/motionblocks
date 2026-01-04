@@ -25,7 +25,7 @@ export const GraphTemplate: AnimationTemplate = {
     lineThickness: z.number().min(1).max(50).default(8),
     pieRadius: z.number().min(50).max(500).default(200),
     pieHeight: z.number().min(5).max(200).default(40),
-    colors: z.string().default("#3b82f6,#60a5fa,#93c5fd,#2563eb,#1d4ed8"),
+    colors: z.string().default("#3b82f6,#ef4444,#10b981,#f59e0b,#8b5cf6,#ec4899,#06b6d4,#84cc16"),
     textColor: z.string().default("#ffffff"),
     introFrames: z.number().min(0).max(120).default(DEFAULT_GRAPH_INTRO_FRAMES),
     perItemFrames: z.number().min(10).max(120).default(DEFAULT_GRAPH_PER_ITEM_FRAMES),
@@ -50,7 +50,7 @@ export const GraphTemplate: AnimationTemplate = {
 
     // Parse Props
     const type = (p.type as GraphType) || "bar";
-    const colors = (typeof p.colors === "string" ? p.colors : "#3b82f6").split(",");
+    const colors = (typeof p.colors === "string" ? p.colors : "#3b82f6,#ef4444,#10b981,#f59e0b,#8b5cf6,#ec4899,#06b6d4,#84cc16").split(",");
     
     return (
       <Graph3D

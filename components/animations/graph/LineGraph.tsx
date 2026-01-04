@@ -153,7 +153,7 @@ export function LineGraph({
   frame,
   introFrames,
   perItemFrames,
-  colors = ["#3b82f6"],
+  colors = ["#3b82f6", "#ef4444", "#10b981", "#f59e0b", "#8b5cf6", "#ec4899", "#06b6d4", "#84cc16"],
   fontUrl,
   textColor = "white",
   thickness = 8,

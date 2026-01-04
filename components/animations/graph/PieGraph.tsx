@@ -45,7 +45,16 @@ export function PieGraph({
   frame,
   introFrames,
   perItemFrames,
-  colors = ["#3b82f6", "#60a5fa", "#93c5fd"],
+  colors = [
+    "#3b82f6", // Blue
+    "#ef4444", // Red
+    "#10b981", // Emerald
+    "#f59e0b", // Amber
+    "#8b5cf6", // Violet
+    "#ec4899", // Pink
+    "#06b6d4", // Cyan
+    "#84cc16", // Lime
+  ],
   fontUrl,
   textColor = "white",
   radius = 200,
@@ -70,7 +79,7 @@ export function PieGraph({
         const startAngle = currentAngle;
         currentAngle += angle;
 
-        const color = colors[i % colors.length];
+        const color = item.color || colors[i % colors.length];
 
         // Calculate mid-angle for label placement
         const midAngle = startAngle + angle / 2;
@@ -87,11 +96,13 @@ export function PieGraph({
           return s;
         }, [radius, startAngle, angle]);
 
-        // Explode effect on hover/focus (we simulate focus loop)
-        const isFocused = Math.floor((frame - introFrames - 60) / 60) % data.length === i;
-        const explode = isFocused && frame > introFrames + 60 ? 20 : 0;
+        // Explode effect - Constant separation for all items
+        const explode = 5;
+        // Correct for 45-degree tilt foreshortening on Y axis (approx 1.41)
+        const scaleY = 1 / Math.cos(Math.PI / 4);
+        
         const explodeX = Math.cos(midAngle) * explode;
-        const explodeY = Math.sin(midAngle) * explode;
+        const explodeY = Math.sin(midAngle) * explode * scaleY;
 
         return (
           <group key={i} position={[explodeX, explodeY, 0]}>
