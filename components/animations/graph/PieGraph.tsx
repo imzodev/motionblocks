@@ -38,6 +38,109 @@ export interface PieGraphProps {
   height?: number;
 }
 
+// --- Sub-components ---
+
+interface PieSliceProps {
+  item: GraphDataPoint;
+  index: number;
+  total: number;
+  startAngle: number;
+  fullAngle: number;
+  frame: number;
+  introFrames: number;
+  perItemFrames: number;
+  colors: string[];
+  radius: number;
+  height: number;
+  fontUrl?: string;
+  textColor: string;
+}
+
+function PieSlice({
+  item,
+  index,
+  total,
+  startAngle,
+  fullAngle,
+  frame,
+  introFrames,
+  perItemFrames,
+  colors,
+  radius,
+  height,
+  fontUrl,
+  textColor,
+}: PieSliceProps) {
+  const value = item.value;
+
+  // Animation progress for this slice
+  const itemStart = introFrames + index * perItemFrames;
+  const itemDuration = perItemFrames;
+  const progress = clamp01((frame - itemStart) / itemDuration);
+  const easedProgress = easeInOutCubic(progress);
+
+  const angle = fullAngle * easedProgress;
+
+  // Extrude shape (animates with angle)
+  const shape = useMemo(() => {
+    const s = new THREE.Shape();
+    s.moveTo(0, 0);
+    s.arc(0, 0, radius, startAngle, startAngle + angle, false);
+    s.lineTo(0, 0);
+    return s;
+  }, [radius, startAngle, angle]);
+
+  if (progress <= 0) return null;
+
+  const color = item.color || colors[index % colors.length];
+
+  // Calculate mid-angle for label placement (based on FULL angle for stability)
+  const midAngle = startAngle + fullAngle / 2;
+  const labelRadius = radius + 60;
+  const labelX = Math.cos(midAngle) * labelRadius;
+  const labelZ = Math.sin(midAngle) * labelRadius; // Z because we will rotate shape to be flat-ish
+
+  // Explode effect - Constant separation for all items
+  const explode = 5;
+  // Correct for 45-degree tilt foreshortening on Y axis (approx 1.41)
+  const scaleY = 1 / Math.cos(Math.PI / 4);
+
+  const explodeX = Math.cos(midAngle) * explode;
+  const explodeY = Math.sin(midAngle) * explode * scaleY;
+
+  return (
+    <group position={[explodeX, explodeY, 0]}>
+      <Extrude
+        args={[shape, { depth: height, bevelEnabled: true, bevelSize: 2, bevelThickness: 2 }]}
+        rotation={[0, 0, 0]} // Shape is in XY plane
+      >
+        <meshStandardMaterial
+          color={color}
+          roughness={0.2}
+          metalness={0.6}
+          emissive={color}
+          emissiveIntensity={0.1}
+        />
+      </Extrude>
+
+      {/* Label - positioned in 3D space around the pie */}
+      <Billboard position={[labelX, labelZ, height/2]}>
+        <group scale={[easedProgress, easedProgress, easedProgress]}>
+          <Text
+            font={fontUrl}
+            fontSize={24}
+            color={textColor}
+            anchorX={Math.cos(midAngle) > 0 ? "left" : "right"}
+            anchorY="middle"
+          >
+            {item.label} ({Math.round((value / total) * 100)}%)
+          </Text>
+        </group>
+      </Billboard>
+    </group>
+  );
+}
+
 // --- Component ---
 
 export function PieGraph({
@@ -64,74 +167,33 @@ export function PieGraph({
 
   let currentAngle = 0;
 
-  // Intro animation: Spin and expand
-  // Scale duration by number of items to respect "per item" setting
-  const duration = Math.max(perItemFrames * data.length, 30);
-  const introT = clamp01((frame - introFrames) / duration);
-  const expand = easeOutBack(introT);
-  const spin = (1 - easeInOutCubic(introT)) * Math.PI * 2;
-
+  // Intro animation: Sequential fill
+  // Remove global spin/expand. Fixed rotation for view.
+  
   return (
-    <group rotation={[Math.PI / 4, spin, 0]} scale={[expand, expand, expand]}>
+    <group rotation={[Math.PI / 4, 0, 0]}>
       {data.map((item, i) => {
-        const value = item.value;
-        const angle = (value / total) * Math.PI * 2;
+        const fullAngle = (item.value / total) * Math.PI * 2;
         const startAngle = currentAngle;
-        currentAngle += angle;
-
-        const color = item.color || colors[i % colors.length];
-
-        // Calculate mid-angle for label placement
-        const midAngle = startAngle + angle / 2;
-        const labelRadius = radius + 60;
-        const labelX = Math.cos(midAngle) * labelRadius;
-        const labelZ = Math.sin(midAngle) * labelRadius; // Z because we will rotate shape to be flat-ish
-        
-        // Extrude shape
-        const shape = useMemo(() => {
-          const s = new THREE.Shape();
-          s.moveTo(0, 0);
-          s.arc(0, 0, radius, startAngle, startAngle + angle, false);
-          s.lineTo(0, 0);
-          return s;
-        }, [radius, startAngle, angle]);
-
-        // Explode effect - Constant separation for all items
-        const explode = 5;
-        // Correct for 45-degree tilt foreshortening on Y axis (approx 1.41)
-        const scaleY = 1 / Math.cos(Math.PI / 4);
-        
-        const explodeX = Math.cos(midAngle) * explode;
-        const explodeY = Math.sin(midAngle) * explode * scaleY;
+        currentAngle += fullAngle;
 
         return (
-          <group key={i} position={[explodeX, explodeY, 0]}>
-            <Extrude
-              args={[shape, { depth: height, bevelEnabled: true, bevelSize: 2, bevelThickness: 2 }]}
-              rotation={[0, 0, 0]} // Shape is in XY plane
-            >
-               <meshStandardMaterial
-                  color={color}
-                  roughness={0.2}
-                  metalness={0.6}
-                  emissive={color}
-                  emissiveIntensity={0.1}
-                />
-            </Extrude>
-
-            {/* Label - positioned in 3D space around the pie */}
-            <Billboard position={[labelX, labelZ, height/2]}>
-               <Text
-                font={fontUrl}
-                fontSize={24}
-                color={textColor}
-                anchorX={Math.cos(midAngle) > 0 ? "left" : "right"}
-                anchorY="middle"
-              >
-                {item.label} ({Math.round((value / total) * 100)}%)
-              </Text>
-            </Billboard>
-          </group>
+          <PieSlice
+            key={i}
+            item={item}
+            index={i}
+            total={total}
+            startAngle={startAngle}
+            fullAngle={fullAngle}
+            frame={frame}
+            introFrames={introFrames}
+            perItemFrames={perItemFrames}
+            colors={colors}
+            radius={radius}
+            height={height}
+            fontUrl={fontUrl}
+            textColor={textColor}
+          />
         );
       })}
     </group>
