@@ -1,9 +1,11 @@
 "use client";
 
 import React from "react";
-import { Text } from "@react-three/drei";
+import { Text, Image as DreiImage } from "@react-three/drei";
 import { useFrame, useThree } from "@react-three/fiber";
 import * as THREE from "three";
+import type { Asset } from "../../types/timeline";
+import { getVideoTexture } from "../../templates/text/shared";
 
 // --- Utils ---
 
@@ -39,6 +41,13 @@ export interface ChaptersProps {
   accentColor?: string;
   textColor?: string;
   fontUrl?: string;
+  // Background
+  backgroundEnabled?: boolean;
+  backgroundOpacity?: number;
+  backgroundScale?: number;
+  backgroundVideoAspect?: number;
+  backgroundColor?: string;
+  backgroundAsset?: Asset;
 }
 
 // --- Component ---
@@ -53,6 +62,12 @@ export function Chapters({
   accentColor = "#00d09c",
   textColor = "#1a1a1a",
   fontUrl,
+  backgroundEnabled = false,
+  backgroundOpacity = 1,
+  backgroundScale = 6000,
+  backgroundVideoAspect = 1.77,
+  backgroundColor = "#ffffff",
+  backgroundAsset,
 }: ChaptersProps) {
   const { viewport } = useThree();
   
@@ -120,6 +135,42 @@ export function Chapters({
 
   return (
     <group>
+      {/* Background Layer */}
+      {backgroundEnabled && backgroundAsset?.src && (backgroundAsset.type === "image" || backgroundAsset.type === "svg") ? (
+        <group position={[0, 0, -120]}>
+          <DreiImage
+            url={backgroundAsset.src}
+            scale={[backgroundScale, backgroundScale]}
+            transparent
+            opacity={clamp01(backgroundOpacity)}
+          />
+        </group>
+      ) : null}
+
+      {backgroundEnabled && backgroundAsset?.src && backgroundAsset.type === "video" ? (
+        <mesh position={[0, 0, -120]} renderOrder={-10}>
+          <planeGeometry args={[backgroundScale, backgroundScale / backgroundVideoAspect]} />
+          <meshBasicMaterial
+            map={getVideoTexture(backgroundAsset.src)}
+            transparent={backgroundOpacity < 1}
+            opacity={clamp01(backgroundOpacity)}
+            depthWrite={false}
+          />
+        </mesh>
+      ) : null}
+
+      {backgroundEnabled && !backgroundAsset ? (
+        <mesh position={[0, 0, -120]} renderOrder={-10}>
+          <planeGeometry args={[backgroundScale, backgroundScale]} />
+          <meshBasicMaterial
+            color={backgroundColor}
+            transparent={backgroundOpacity < 1}
+            opacity={clamp01(backgroundOpacity)}
+            depthWrite={false}
+          />
+        </mesh>
+      ) : null}
+
       {/* Chapter Number - Left Side */}
       {showNumber && (
         <group position={[-200, 0, 0]} scale={[numberScale, numberScale, numberScale]}>
