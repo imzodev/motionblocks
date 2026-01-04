@@ -1,6 +1,6 @@
 import { z } from "zod";
 import type { AnimationTemplate, RenderProps } from "../../types/template";
-import { List, type BulletType } from "../../components/animations/List";
+import { List, type BulletType, type ListStyle } from "../../components/animations/List";
 
 export const ListTemplate: AnimationTemplate = {
   id: "list",
@@ -17,6 +17,7 @@ export const ListTemplate: AnimationTemplate = {
     introFrames: z.number().min(10).max(120).default(30),
     perItemFrames: z.number().min(5).max(120).default(60),
     bulletType: z.enum(["none", "bullet", "number", "arrow"]).default("bullet"),
+    listStyle: z.enum(["classic", "neon", "3d"]).default("classic"),
   }),
   render: ({ assets, frame, props }: RenderProps) => {
     const p = (props ?? {}) as Record<string, unknown>;
@@ -43,12 +44,13 @@ export const ListTemplate: AnimationTemplate = {
         title={title}
         frame={frame}
         introFrames={Number(p.introFrames ?? 30)}
-        perItemFrames={Number(p.perItemFrames ?? 20)}
+        perItemFrames={Number(p.perItemFrames ?? 60)}
         textColor={String(p.textColor ?? "#1a1a1a")}
         bulletColor={String(p.bulletColor ?? "#00d09c")}
         fontSize={Number(p.fontSize ?? 40)}
         gap={Number(p.gap ?? 60)}
         bulletType={(p.bulletType as BulletType) ?? "bullet"}
+        listStyle={(p.listStyle as ListStyle) ?? "classic"}
         fontUrl={globalFontUrl}
       />
     );

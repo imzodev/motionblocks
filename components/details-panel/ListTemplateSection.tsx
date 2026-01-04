@@ -85,18 +85,33 @@ export function ListTemplateSection({
           </div>
         </div>
 
-        <div className="space-y-1.5">
-            <label className="text-xs font-medium">Bullet Type</label>
-            <select
-                className="flex h-9 w-full rounded-md border border-input bg-transparent dark:bg-input/30 px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 text-foreground"
-                value={String(selectedTrack.templateProps.bulletType ?? "bullet")}
-                onChange={(e) => onSlotUpdate("bulletType", e.target.value)}
-            >
-                <option value="none" className="bg-background text-foreground">None</option>
-                <option value="bullet" className="bg-background text-foreground">Bullet (•)</option>
-                <option value="number" className="bg-background text-foreground">Number (1.)</option>
-                <option value="arrow" className="bg-background text-foreground">Arrow (►)</option>
-            </select>
+        <div className="grid grid-cols-2 gap-2">
+            <div className="space-y-1.5">
+                <label className="text-xs font-medium">Bullet Type</label>
+                <select
+                    className="flex h-9 w-full rounded-md border border-input bg-transparent dark:bg-input/30 px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 text-foreground"
+                    value={String(selectedTrack.templateProps.bulletType ?? "bullet")}
+                    onChange={(e) => onSlotUpdate("bulletType", e.target.value)}
+                >
+                    <option value="none" className="bg-background text-foreground">None</option>
+                    <option value="bullet" className="bg-background text-foreground">Bullet (•)</option>
+                    <option value="number" className="bg-background text-foreground">Number (1.)</option>
+                    <option value="arrow" className="bg-background text-foreground">Arrow (►)</option>
+                </select>
+            </div>
+
+            <div className="space-y-1.5">
+                <label className="text-xs font-medium">List Style</label>
+                <select
+                    className="flex h-9 w-full rounded-md border border-input bg-transparent dark:bg-input/30 px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 text-foreground"
+                    value={String(selectedTrack.templateProps.listStyle ?? "classic")}
+                    onChange={(e) => onSlotUpdate("listStyle", e.target.value)}
+                >
+                    <option value="classic" className="bg-background text-foreground">Classic</option>
+                    <option value="neon" className="bg-background text-foreground">Neon Glow</option>
+                    <option value="3d" className="bg-background text-foreground">3D Stack</option>
+                </select>
+            </div>
         </div>
 
         <div className="grid grid-cols-2 gap-2">
