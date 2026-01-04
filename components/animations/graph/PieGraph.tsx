@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useMemo } from "react";
-import { Text, Extrude } from "@react-three/drei";
+import { Text, Extrude, Billboard } from "@react-three/drei";
 import * as THREE from "three";
 
 import type { GraphDataPoint } from "../Graph3D";
@@ -120,7 +120,7 @@ export function PieGraph({
             </Extrude>
 
             {/* Label - positioned in 3D space around the pie */}
-            <group position={[labelX, labelZ, height/2]} rotation={[-Math.PI/4, 0, 0]}>
+            <Billboard position={[labelX, labelZ, height/2]}>
                <Text
                 font={fontUrl}
                 fontSize={24}
@@ -130,7 +130,7 @@ export function PieGraph({
               >
                 {item.label} ({Math.round((value / total) * 100)}%)
               </Text>
-            </group>
+            </Billboard>
           </group>
         );
       })}
