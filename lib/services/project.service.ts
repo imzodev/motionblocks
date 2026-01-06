@@ -1,5 +1,6 @@
 import { ProjectRepository } from "../repositories/project.repository";
 import { Project, ProjectListItem, CreateProjectParams, UpdateProjectParams } from "@/types/project";
+import { Asset } from "@/types/timeline";
 
 /**
  * Project Service (Business Logic Layer)
@@ -27,7 +28,9 @@ export class ProjectService {
     if (currentId) {
       const project = await this.repository.getById(currentId);
       if (project) {
-        this.currentProject = project;
+        // Filter out assets with invalid blob URLs
+        const cleanedProject = this.cleanInvalidAssets(project);
+        this.currentProject = cleanedProject;
       }
     }
   }
@@ -83,10 +86,13 @@ export class ProjectService {
       throw new Error(`Project "${id}" not found`);
     }
 
-    this.currentProject = project;
+    // Filter out assets with invalid blob URLs
+    const cleanedProject = this.cleanInvalidAssets(project);
+
+    this.currentProject = cleanedProject;
     await this.repository.setCurrentProjectId(id);
 
-    return project;
+    return cleanedProject;
   }
 
   /**
@@ -217,5 +223,43 @@ export class ProjectService {
    */
   private generateId(): string {
     return `proj_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+  }
+
+  /**
+   * Filter out assets with invalid blob URLs
+   * Blob URLs are only valid for the current session and become invalid on page refresh
+   */
+  private cleanInvalidAssets(project: Project): Project {
+    const validAssets = project.assets.filter((asset: Asset) => {
+      // Keep assets without src (text assets)
+      if (!asset.src) return true;
+      
+      // Filter out blob URLs as they're invalid after page refresh
+      if (asset.src.startsWith('blob:')) return false;
+      
+      // Keep other URLs (http, https, data, etc.)
+      return true;
+    });
+
+    // Also clean up track templateProps that reference invalid assets
+    const validAssetIds = new Set(validAssets.map(a => a.id));
+    const cleanedTracks = project.tracks.map(track => ({
+      ...track,
+      templateProps: Object.fromEntries(
+        Object.entries(track.templateProps).filter(([key, value]) => {
+          // Keep non-asset values
+          if (typeof value !== 'string') return true;
+          
+          // Filter out references to invalid assets
+          return !validAssetIds.has(value) || key === 'assetId';
+        })
+      ),
+    }));
+
+    return {
+      ...project,
+      assets: validAssets,
+      tracks: cleanedTracks,
+    };
   }
 }
