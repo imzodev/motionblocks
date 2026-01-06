@@ -21,6 +21,7 @@ import {
 } from "@/components/animations/Graph3D";
 import { ChaptersTemplateSection } from "./details-panel/ChaptersTemplateSection";
 import { ListTemplateSection } from "./details-panel/ListTemplateSection";
+import { SlideTemplateSection } from "./details-panel/SlideTemplateSection";
 
 interface DetailsPanelProps {
   selectedTrack?: Track;
@@ -156,6 +157,7 @@ export function DetailsPanel({
         <DetailsPanelSlotsSection
           selectedTrack={selectedTrack}
           template={template}
+          assets={_assets}
           onSlotUpdate={handleSlotUpdate}
         />
 
@@ -166,6 +168,7 @@ export function DetailsPanel({
         <HighlightTemplateSection selectedTrack={selectedTrack} onSlotUpdate={handleSlotUpdate} />
         <ChaptersTemplateSection selectedTrack={selectedTrack} onSlotUpdate={handleSlotUpdate} />
         <ListTemplateSection selectedTrack={selectedTrack} onSlotUpdate={handleSlotUpdate} />
+        <SlideTemplateSection selectedTrack={selectedTrack} onSlotUpdate={handleSlotUpdate} />
         <KineticTextTemplateSection
           selectedTrack={selectedTrack}
           onSlotUpdate={handleSlotUpdate}

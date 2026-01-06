@@ -1,18 +1,20 @@
 "use client";
 
 import React from "react";
-import type { Track } from "@/types/timeline";
+import type { Track, Asset } from "@/types/timeline";
 import type { AnimationTemplate, TemplateSlot } from "@/types/template";
-import { Database, Layout } from "lucide-react";
+import { Database, Layout, TypeIcon, FileIcon, VideoIcon, X } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { cn } from "@/lib/utils";
 
 interface DetailsPanelSlotsSectionProps {
   selectedTrack: Track;
   template?: AnimationTemplate;
+  assets: Asset[];
   onSlotUpdate: (slotId: string, value: unknown) => void;
 }
 
@@ -24,6 +26,7 @@ function shouldRenderSlot(selectedTrack: Track, slot: TemplateSlot) {
 export function DetailsPanelSlotsSection({
   selectedTrack,
   template,
+  assets,
   onSlotUpdate,
 }: DetailsPanelSlotsSectionProps) {
   return (
@@ -50,28 +53,73 @@ export function DetailsPanelSlotsSection({
             </div>
 
             {slot.type === "file" && (
-              <div className="rounded-xl border bg-muted/20 px-2 py-1.5">
-                {selectedTrack.templateProps[slot.id] ? (
-                  <div className="flex items-center gap-2 text-xs">
-                    <div className="w-6 h-6 bg-muted rounded-md overflow-hidden shrink-0 grid place-items-center">
-                      <Layout className="w-3.5 h-3.5 text-muted-foreground" />
+              <div className="space-y-2">
+                {/* Selected Asset Preview */}
+                {selectedTrack.templateProps[slot.id] ? (() => {
+                  const selectedAsset = assets.find(a => a.id === selectedTrack.templateProps[slot.id]);
+                  return (
+                    <div className="rounded-xl border bg-muted/20 px-2 py-1.5">
+                      <div className="flex items-center gap-2 text-xs">
+                        <div className="w-10 h-10 bg-muted rounded-md overflow-hidden shrink-0 grid place-items-center">
+                          {selectedAsset?.type === "image" && selectedAsset.src ? (
+                            <img
+                              src={selectedAsset.src}
+                              alt={selectedAsset.id}
+                              className="w-full h-full object-cover"
+                            />
+                          ) : selectedAsset?.type === "video" ? (
+                            <VideoIcon className="w-4 h-4 text-muted-foreground" />
+                          ) : selectedAsset?.type === "text" ? (
+                            <TypeIcon className="w-4 h-4 text-muted-foreground" />
+                          ) : (
+                            <FileIcon className="w-4 h-4 text-muted-foreground" />
+                          )}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="font-mono text-xs truncate">
+                            {selectedAsset?.type === "image" || selectedAsset?.type === "svg"
+                              ? selectedAsset.src?.split('/').pop() || selectedAsset.id
+                              : selectedAsset?.content || selectedAsset?.id
+                            }
+                          </p>
+                          <p className="text-[10px] text-muted-foreground capitalize">{selectedAsset?.type}</p>
+                        </div>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="text-muted-foreground hover:text-destructive h-7 w-7 shrink-0"
+                          onClick={() => onSlotUpdate(slot.id, "")}
+                          aria-label="Clear slot"
+                        >
+                          <X className="w-4 h-4" />
+                        </Button>
+                      </div>
                     </div>
-                    <span className="flex-1 truncate font-mono text-xs">
-                      {String(selectedTrack.templateProps[slot.id])}
-                    </span>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="text-muted-foreground hover:text-destructive h-7 w-7"
-                      onClick={() => onSlotUpdate(slot.id, "")}
-                      aria-label="Clear slot"
-                    >
-                      ×
-                    </Button>
+                  );
+                })() : (
+                  <div className="rounded-xl border border-dashed bg-muted/10 px-2 py-1.5">
+                    <p className="text-[10px] text-muted-foreground italic px-1">No asset selected</p>
                   </div>
-                ) : (
-                  <p className="text-[10px] text-muted-foreground italic px-1">Click asset in library to assign</p>
                 )}
+
+                {/* Asset Selector Dropdown */}
+                <div className="relative">
+                  <select
+                    className="w-full h-8 rounded-md border border-input bg-background px-2 py-1 text-xs shadow-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
+                    value={String(selectedTrack.templateProps[slot.id] || "")}
+                    onChange={(e) => onSlotUpdate(slot.id, e.target.value || "")}
+                  >
+                    <option value="">Select an asset...</option>
+                    {assets.map((asset) => (
+                      <option key={asset.id} value={asset.id}>
+                        {asset.type === "image" || asset.type === "svg"
+                          ? `${asset.src?.split('/').pop() || asset.id} (${asset.type})`
+                          : `${asset.content || asset.id} (${asset.type})`
+                        }
+                      </option>
+                    ))}
+                  </select>
+                </div>
               </div>
             )}
 
@@ -97,6 +145,12 @@ export function DetailsPanelSlotsSection({
       {!template && (
         <Card className="p-4 text-center border border-dashed bg-card/60">
           <p className="text-[10px] text-muted-foreground">No dynamic slots defined for this template yet.</p>
+        </Card>
+      )}
+
+      {template && template.slots.filter((slot) => shouldRenderSlot(selectedTrack, slot)).length === 0 && (
+        <Card className="p-4 text-center border border-dashed bg-card/60">
+          <p className="text-[10px] text-muted-foreground">No slots available for this template.</p>
         </Card>
       )}
     </div>

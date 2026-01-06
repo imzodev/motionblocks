@@ -40,31 +40,115 @@ export const FadeInTemplate: AnimationTemplate = {
   },
 };
 
+interface SlideSceneProps {
+  items: Asset[];
+  frame: number;
+  duration: number;
+  direction: "left" | "right" | "top" | "bottom";
+  layout: "row" | "column";
+  gap: number;
+  globalFontUrl?: string;
+  fontSize: number;
+  textColor: string;
+  imageSize: number;
+}
+
+function SlideScene({ items, frame, duration, direction, layout, gap, globalFontUrl, fontSize, textColor, imageSize }: SlideSceneProps) {
+  // Animation progress
+  const progress = Math.min(1, Math.max(0, frame / duration));
+  // Ease out cubic
+  const ease = 1 - Math.pow(1 - progress, 3);
+
+  // Calculate offset based on direction
+  // Start 800 units away
+  const distance = 800;
+  let startX = 0, startY = 0;
+
+  switch (direction) {
+    case "left": startX = -distance; break; // From left
+    case "right": startX = distance; break; // From right
+    case "top": startY = distance; break;   // From top
+    case "bottom": startY = -distance; break; // From bottom
+  }
+
+  const currentX = startX * (1 - ease);
+  const currentY = startY * (1 - ease);
+
+  return (
+    <group position={[currentX, currentY, 0]}>
+      {items.map((asset, index) => {
+          // Calculate layout position
+          // Center the group of items
+          const totalSize = (items.length - 1) * gap;
+          const offset = -totalSize / 2 + index * gap;
+          
+          const posX = layout === "row" ? offset : 0;
+          const posY = layout === "column" ? -offset : 0; // -offset because Y goes up
+
+          return (
+            <group key={asset.id} position={[posX, posY, 0]}>
+              {(asset.type === "image" || asset.type === "svg") && asset.src ? (
+                <DreiImage url={asset.src} scale={[imageSize, imageSize]} />
+              ) : (
+                <Text font={globalFontUrl} fontSize={fontSize} color={textColor} anchorX="center" anchorY="middle">
+                  {asset.content || "Text"}
+                </Text>
+              )}
+            </group>
+          );
+      })}
+    </group>
+  );
+}
+
 export const SlideTemplate: AnimationTemplate = {
   id: "slide-in",
   name: "Slide In",
   slots: [
-    { id: "asset", name: "Main Asset", type: "file", required: true }
+    { id: "asset", name: "Asset 1", type: "file", required: true },
+    { id: "asset2", name: "Asset 2 (Optional)", type: "file", required: false },
+    { id: "asset3", name: "Asset 3 (Optional)", type: "file", required: false },
   ],
   propsSchema: z.object({
     direction: z.enum(["left", "right", "top", "bottom"]).default("left"),
     duration: z.number().default(30),
+    layout: z.enum(["row", "column"]).default("row"),
+    gap: z.number().default(50),
+    fontSize: z.number().default(60),
+    textColor: z.string().default("#0f172a"),
+    imageSize: z.number().default(400),
   }),
   render: ({ assets, frame, props }: RenderProps) => {
     const p = (props ?? {}) as Record<string, unknown>;
     const globalFontUrl = typeof p.globalFontUrl === "string" ? p.globalFontUrl : undefined;
-    const asset = isAsset(assets.asset) ? assets.asset : undefined;
-    if (!asset) return null;
-    const offset = Math.max(0, 1 - frame / 30) * 800;
     
+    // Gather assets
+    const items = [assets.asset, assets.asset2, assets.asset3]
+      .filter(isAsset);
+
+    if (items.length === 0) return null;
+
+    const direction = (p.direction as "left" | "right" | "top" | "bottom") || "left";
+    const duration = Number(p.duration) || 30;
+    const layout = (p.layout as "row" | "column") || "row";
+    const gap = Number(p.gap) || 50;
+    const fontSize = Number(p.fontSize) || 60;
+    const textColor = String(p.textColor || "#0f172a");
+    const imageSize = Number(p.imageSize) || 400;
+
     return (
-      <group position={[offset, 0, 0]}>
-        {(asset.type === "image" || asset.type === "svg") && asset.src ? (
-          <DreiImage url={asset.src} scale={[400, 400]} />
-        ) : (
-          <Text font={globalFontUrl} fontSize={60} color="#0f172a">{asset.content || "Text"}</Text>
-        )}
-      </group>
+      <SlideScene 
+        items={items}
+        frame={frame}
+        duration={duration}
+        direction={direction}
+        layout={layout}
+        gap={gap}
+        globalFontUrl={globalFontUrl}
+        fontSize={fontSize}
+        textColor={textColor}
+        imageSize={imageSize}
+      />
     );
   },
 };
