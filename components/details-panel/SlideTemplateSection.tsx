@@ -21,7 +21,7 @@ export function SlideTemplateSection({
 
   const direction = (selectedTrack.templateProps.direction as string) || "left";
   const layout = (selectedTrack.templateProps.layout as string) || "row";
-  const gap = typeof selectedTrack.templateProps.gap === "number" ? selectedTrack.templateProps.gap : 50;
+  const gap = typeof selectedTrack.templateProps.gap === "number" ? selectedTrack.templateProps.gap : 100;
   const duration = typeof selectedTrack.templateProps.duration === "number" ? selectedTrack.templateProps.duration : 30;
 
   return (

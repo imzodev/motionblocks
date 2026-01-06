@@ -78,9 +78,9 @@ function SlideScene({ items, frame, duration, direction, layout, gap, globalFont
     <group position={[currentX, currentY, 0]}>
       {items.map((asset, index) => {
           // Calculate layout position
-          // Center the group of items
-          const totalSize = (items.length - 1) * gap;
-          const offset = -totalSize / 2 + index * gap;
+          // Center the group of items by calculating total width/height including gaps
+          const totalSize = (items.length - 1) * (imageSize + gap);
+          const offset = -totalSize / 2 + index * (imageSize + gap);
           
           const posX = layout === "row" ? offset : 0;
           const posY = layout === "column" ? -offset : 0; // -offset because Y goes up
@@ -113,7 +113,7 @@ export const SlideTemplate: AnimationTemplate = {
     direction: z.enum(["left", "right", "top", "bottom"]).default("left"),
     duration: z.number().default(30),
     layout: z.enum(["row", "column"]).default("row"),
-    gap: z.number().default(50),
+    gap: z.number().default(100),
     fontSize: z.number().default(60),
     textColor: z.string().default("#0f172a"),
     imageSize: z.number().default(400),
