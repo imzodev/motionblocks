@@ -51,14 +51,10 @@ interface SlideSceneProps {
   fontSize: number;
   textColor: string;
   imageSize: number;
+  staggerFrames: number;
 }
 
-function SlideScene({ items, frame, duration, direction, layout, gap, globalFontUrl, fontSize, textColor, imageSize }: SlideSceneProps) {
-  // Animation progress
-  const progress = Math.min(1, Math.max(0, frame / duration));
-  // Ease out cubic
-  const ease = 1 - Math.pow(1 - progress, 3);
-
+function SlideScene({ items, frame, duration, direction, layout, gap, globalFontUrl, fontSize, textColor, imageSize, staggerFrames }: SlideSceneProps) {
   // Calculate offset based on direction
   // Start 800 units away
   const distance = 800;
@@ -71,12 +67,22 @@ function SlideScene({ items, frame, duration, direction, layout, gap, globalFont
     case "bottom": startY = -distance; break; // From bottom
   }
 
-  const currentX = startX * (1 - ease);
-  const currentY = startY * (1 - ease);
-
   return (
-    <group position={[currentX, currentY, 0]}>
+    <group>
       {items.map((asset, index) => {
+          // Calculate animation progress for this specific item
+          // Each item starts after staggerFrames * index frames
+          const itemStartFrame = staggerFrames * index;
+          const itemFrame = frame - itemStartFrame;
+          
+          // Animation progress
+          const progress = Math.min(1, Math.max(0, itemFrame / duration));
+          // Ease out cubic
+          const ease = 1 - Math.pow(1 - progress, 3);
+
+          const currentX = startX * (1 - ease);
+          const currentY = startY * (1 - ease);
+
           // Calculate layout position
           // Center the group of items by calculating total width/height including gaps
           const totalSize = (items.length - 1) * (imageSize + gap);
@@ -86,7 +92,7 @@ function SlideScene({ items, frame, duration, direction, layout, gap, globalFont
           const posY = layout === "column" ? -offset : 0; // -offset because Y goes up
 
           return (
-            <group key={asset.id} position={[posX, posY, 0]}>
+            <group key={asset.id} position={[posX + currentX, posY + currentY, 0]}>
               {(asset.type === "image" || asset.type === "svg") && asset.src ? (
                 <DreiImage url={asset.src} scale={[imageSize, imageSize]} />
               ) : (
@@ -117,6 +123,7 @@ export const SlideTemplate: AnimationTemplate = {
     fontSize: z.number().default(60),
     textColor: z.string().default("#0f172a"),
     imageSize: z.number().default(400),
+    staggerFrames: z.number().default(0),
   }),
   render: ({ assets, frame, props }: RenderProps) => {
     const p = (props ?? {}) as Record<string, unknown>;
@@ -135,9 +142,10 @@ export const SlideTemplate: AnimationTemplate = {
     const fontSize = Number(p.fontSize) || 60;
     const textColor = String(p.textColor || "#0f172a");
     const imageSize = Number(p.imageSize) || 400;
+    const staggerFrames = Number(p.staggerFrames) || 0;
 
     return (
-      <SlideScene 
+      <SlideScene
         items={items}
         frame={frame}
         duration={duration}
@@ -148,6 +156,7 @@ export const SlideTemplate: AnimationTemplate = {
         fontSize={fontSize}
         textColor={textColor}
         imageSize={imageSize}
+        staggerFrames={staggerFrames}
       />
     );
   },

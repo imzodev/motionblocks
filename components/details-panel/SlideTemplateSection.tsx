@@ -23,6 +23,7 @@ export function SlideTemplateSection({
   const layout = (selectedTrack.templateProps.layout as string) || "row";
   const gap = typeof selectedTrack.templateProps.gap === "number" ? selectedTrack.templateProps.gap : 100;
   const duration = typeof selectedTrack.templateProps.duration === "number" ? selectedTrack.templateProps.duration : 30;
+  const staggerFrames = typeof selectedTrack.templateProps.staggerFrames === "number" ? selectedTrack.templateProps.staggerFrames : 0;
 
   return (
     <>
@@ -164,6 +165,22 @@ export function SlideTemplateSection({
                 onChange={(e) => onSlotUpdate("textColor", e.target.value)}
               />
             </div>
+        </div>
+
+        {/* Stagger Frames Control */}
+        <div className="space-y-1.5">
+          <label className="text-xs font-medium">Stagger Frames (0 = all at once)</label>
+          <Input
+            type="number"
+            min={0}
+            max={120}
+            step={5}
+            value={staggerFrames}
+            onChange={(e) => onSlotUpdate("staggerFrames", Number(e.target.value))}
+          />
+          <p className="text-[10px] text-muted-foreground">
+            Each image appears {staggerFrames === 0 ? "at the same time" : `${staggerFrames} frames apart`}
+          </p>
         </div>
 
       </div>
