@@ -3,6 +3,7 @@ import type { AnimationTemplate, RenderProps } from "../../types/template";
 import { Text, Image as DreiImage } from "@react-three/drei";
 import React from "react";
 import type { Asset } from "../../types/timeline";
+import { getVideoTexture } from "../text/shared";
 
 function isAsset(value: unknown): value is Asset {
   return (
@@ -52,9 +53,33 @@ interface SlideSceneProps {
   textColor: string;
   imageSize: number;
   staggerFrames: number;
+  backgroundEnabled: boolean;
+  backgroundOpacity: number;
+  backgroundScale: number;
+  backgroundVideoAspect: number;
+  backgroundColor: string;
+  backgroundAsset?: Asset;
 }
 
-function SlideScene({ items, frame, duration, direction, layout, gap, globalFontUrl, fontSize, textColor, imageSize, staggerFrames }: SlideSceneProps) {
+function SlideScene({
+  items,
+  frame,
+  duration,
+  direction,
+  layout,
+  gap,
+  globalFontUrl,
+  fontSize,
+  textColor,
+  imageSize,
+  staggerFrames,
+  backgroundEnabled,
+  backgroundOpacity,
+  backgroundScale,
+  backgroundVideoAspect,
+  backgroundColor,
+  backgroundAsset,
+}: SlideSceneProps) {
   // Calculate offset based on direction
   // Start 800 units away
   const distance = 800;
@@ -69,6 +94,41 @@ function SlideScene({ items, frame, duration, direction, layout, gap, globalFont
 
   return (
     <group>
+      {backgroundEnabled && backgroundAsset?.src && (backgroundAsset.type === "image" || backgroundAsset.type === "svg") ? (
+        <group position={[0, 0, -120]}>
+          <DreiImage
+            url={backgroundAsset.src}
+            scale={[backgroundScale, backgroundScale]}
+            transparent
+            opacity={Math.min(1, Math.max(0, backgroundOpacity))}
+          />
+        </group>
+      ) : null}
+
+      {backgroundEnabled && backgroundAsset?.src && backgroundAsset.type === "video" ? (
+        <mesh position={[0, 0, -120]} renderOrder={-10}>
+          <planeGeometry args={[backgroundScale, backgroundScale / backgroundVideoAspect]} />
+          <meshBasicMaterial
+            map={getVideoTexture(backgroundAsset.src)}
+            transparent={backgroundOpacity < 1}
+            opacity={Math.min(1, Math.max(0, backgroundOpacity))}
+            depthWrite={false}
+          />
+        </mesh>
+      ) : null}
+
+      {backgroundEnabled && !backgroundAsset ? (
+        <mesh position={[0, 0, -120]} renderOrder={-10}>
+          <planeGeometry args={[backgroundScale, backgroundScale]} />
+          <meshBasicMaterial
+            color={backgroundColor}
+            transparent={backgroundOpacity < 1}
+            opacity={Math.min(1, Math.max(0, backgroundOpacity))}
+            depthWrite={false}
+          />
+        </mesh>
+      ) : null}
+
       {items.map((asset, index) => {
           // Calculate animation progress for this specific item
           // Each item starts after staggerFrames * index frames
@@ -111,6 +171,7 @@ export const SlideTemplate: AnimationTemplate = {
   id: "slide-in",
   name: "Slide In",
   slots: [
+    { id: "background", name: "Background (Image/Video)", type: "file" },
     { id: "asset", name: "Asset 1", type: "file", required: true },
     { id: "asset2", name: "Asset 2 (Optional)", type: "file", required: false },
     { id: "asset3", name: "Asset 3 (Optional)", type: "file", required: false },
@@ -124,6 +185,11 @@ export const SlideTemplate: AnimationTemplate = {
     textColor: z.string().default("#0f172a"),
     imageSize: z.number().default(400),
     staggerFrames: z.number().default(0),
+    backgroundEnabled: z.boolean().default(false),
+    backgroundColor: z.string().default("#ffffff"),
+    backgroundOpacity: z.number().min(0).max(1).default(1),
+    backgroundScale: z.number().min(1000).max(12000).default(6000),
+    backgroundVideoAspect: z.number().min(0.2).max(5).default(16 / 9),
   }),
   render: ({ assets, frame, props }: RenderProps) => {
     const p = (props ?? {}) as Record<string, unknown>;
@@ -134,6 +200,14 @@ export const SlideTemplate: AnimationTemplate = {
       .filter(isAsset);
 
     if (items.length === 0) return null;
+
+    const backgroundEnabled = typeof p.backgroundEnabled === "boolean" ? p.backgroundEnabled : false;
+    const backgroundColor = typeof p.backgroundColor === "string" ? p.backgroundColor : "#ffffff";
+    const backgroundOpacity = typeof p.backgroundOpacity === "number" ? p.backgroundOpacity : 1;
+    const backgroundScale = typeof p.backgroundScale === "number" ? p.backgroundScale : 6000;
+    const backgroundVideoAspectRaw = typeof p.backgroundVideoAspect === "number" ? p.backgroundVideoAspect : 16 / 9;
+    const backgroundVideoAspect = Math.max(0.2, Math.min(5, backgroundVideoAspectRaw));
+    const backgroundAsset = isAsset(assets.background) ? assets.background : undefined;
 
     const direction = (p.direction as "left" | "right" | "top" | "bottom") || "left";
     const duration = Number(p.duration) || 30;
@@ -157,6 +231,12 @@ export const SlideTemplate: AnimationTemplate = {
         textColor={textColor}
         imageSize={imageSize}
         staggerFrames={staggerFrames}
+        backgroundEnabled={backgroundEnabled}
+        backgroundOpacity={backgroundOpacity}
+        backgroundScale={backgroundScale}
+        backgroundVideoAspect={backgroundVideoAspect}
+        backgroundColor={backgroundColor}
+        backgroundAsset={backgroundAsset}
       />
     );
   },
