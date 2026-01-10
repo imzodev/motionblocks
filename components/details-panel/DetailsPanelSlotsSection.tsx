@@ -31,6 +31,12 @@ export function DetailsPanelSlotsSection({
 }: DetailsPanelSlotsSectionProps) {
   const [openFileSlotId, setOpenFileSlotId] = useState<string | null>(null);
 
+  const slideScaleKeysBySlotId: Record<"asset" | "asset2" | "asset3", { x: string; y: string }> = {
+    asset: { x: "assetScaleX", y: "assetScaleY" },
+    asset2: { x: "asset2ScaleX", y: "asset2ScaleY" },
+    asset3: { x: "asset3ScaleX", y: "asset3ScaleY" },
+  };
+
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between">
@@ -58,6 +64,21 @@ export function DetailsPanelSlotsSection({
               const selectedAssetId = selectedTrack.templateProps[slot.id] as string;
               const selectedAsset = assets.find((a) => a.id === selectedAssetId);
               const isOpen = openFileSlotId === slot.id;
+
+              const isSlideScaleSlot =
+                selectedTrack.template === "slide-in" &&
+                (slot.id === "asset" || slot.id === "asset2" || slot.id === "asset3");
+
+              const scaleKeys = isSlideScaleSlot
+                ? slideScaleKeysBySlotId[slot.id as "asset" | "asset2" | "asset3"]
+                : undefined;
+
+              const scaleX = scaleKeys && typeof selectedTrack.templateProps[scaleKeys.x] === "number"
+                ? (selectedTrack.templateProps[scaleKeys.x] as number)
+                : 1;
+              const scaleY = scaleKeys && typeof selectedTrack.templateProps[scaleKeys.y] === "number"
+                ? (selectedTrack.templateProps[scaleKeys.y] as number)
+                : 1;
 
               return (
                 <div className="space-y-2">
@@ -171,6 +192,33 @@ export function DetailsPanelSlotsSection({
                       </div>
                     )}
                   </div>
+
+                  {isSlideScaleSlot && scaleKeys && (
+                    <div className="grid grid-cols-2 gap-2">
+                      <div className="space-y-1.5">
+                        <label className="text-[10px] font-medium text-muted-foreground">Scale X</label>
+                        <Input
+                          type="number"
+                          min={0.1}
+                          max={5}
+                          step={0.05}
+                          value={scaleX}
+                          onChange={(e) => onSlotUpdate(scaleKeys.x, Number(e.target.value))}
+                        />
+                      </div>
+                      <div className="space-y-1.5">
+                        <label className="text-[10px] font-medium text-muted-foreground">Scale Y</label>
+                        <Input
+                          type="number"
+                          min={0.1}
+                          max={5}
+                          step={0.05}
+                          value={scaleY}
+                          onChange={(e) => onSlotUpdate(scaleKeys.y, Number(e.target.value))}
+                        />
+                      </div>
+                    </div>
+                  )}
                 </div>
               );
             })()}

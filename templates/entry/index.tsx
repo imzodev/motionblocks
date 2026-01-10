@@ -42,7 +42,7 @@ export const FadeInTemplate: AnimationTemplate = {
 };
 
 interface SlideSceneProps {
-  items: Asset[];
+  items: { slotId: "asset" | "asset2" | "asset3"; asset: Asset }[];
   frame: number;
   duration: number;
   direction: "left" | "right" | "top" | "bottom";
@@ -52,6 +52,8 @@ interface SlideSceneProps {
   fontSize: number;
   textColor: string;
   imageSize: number;
+  imageScaleXBySlot: Record<"asset" | "asset2" | "asset3", number>;
+  imageScaleYBySlot: Record<"asset" | "asset2" | "asset3", number>;
   staggerFrames: number;
   backgroundEnabled: boolean;
   backgroundOpacity: number;
@@ -72,6 +74,8 @@ function SlideScene({
   fontSize,
   textColor,
   imageSize,
+  imageScaleXBySlot,
+  imageScaleYBySlot,
   staggerFrames,
   backgroundEnabled,
   backgroundOpacity,
@@ -129,7 +133,22 @@ function SlideScene({
         </mesh>
       ) : null}
 
-      {items.map((asset, index) => {
+      {(() => {
+        const sizes = items.map(({ slotId }) => {
+          const sx = Number(imageScaleXBySlot[slotId]) || 1;
+          const sy = Number(imageScaleYBySlot[slotId]) || 1;
+          return imageSize * Math.max(0.01, Math.max(sx, sy));
+        });
+
+        const totalAxisSize = sizes.reduce((sum, s) => sum + s, 0) + Math.max(0, items.length - 1) * gap;
+        let cursor = -totalAxisSize / 2;
+        const axisCenters = sizes.map((s) => {
+          const center = cursor + s / 2;
+          cursor += s + gap;
+          return center;
+        });
+
+        return items.map(({ asset, slotId }, index) => {
           // Calculate animation progress for this specific item
           // Each item starts after staggerFrames * index frames
           const itemStartFrame = staggerFrames * index;
@@ -144,17 +163,18 @@ function SlideScene({
           const currentY = startY * (1 - ease);
 
           // Calculate layout position
-          // Center the group of items by calculating total width/height including gaps
-          const totalSize = (items.length - 1) * (imageSize + gap);
-          const offset = -totalSize / 2 + index * (imageSize + gap);
-          
+          const offset = axisCenters[index] ?? 0;
+
           const posX = layout === "row" ? offset : 0;
           const posY = layout === "column" ? -offset : 0; // -offset because Y goes up
+
+          const scaleX = imageSize * (Number(imageScaleXBySlot[slotId]) || 1);
+          const scaleY = imageSize * (Number(imageScaleYBySlot[slotId]) || 1);
 
           return (
             <group key={asset.id} position={[posX + currentX, posY + currentY, 0]}>
               {(asset.type === "image" || asset.type === "svg") && asset.src ? (
-                <DreiImage url={asset.src} scale={[imageSize, imageSize]} />
+                <DreiImage url={asset.src} scale={[scaleX, scaleY]} />
               ) : (
                 <Text font={globalFontUrl} fontSize={fontSize} color={textColor} anchorX="center" anchorY="middle">
                   {asset.content || "Text"}
@@ -162,7 +182,8 @@ function SlideScene({
               )}
             </group>
           );
-      })}
+        });
+      })()}
     </group>
   );
 }
@@ -184,6 +205,12 @@ export const SlideTemplate: AnimationTemplate = {
     fontSize: z.number().default(60),
     textColor: z.string().default("#0f172a"),
     imageSize: z.number().default(400),
+    assetScaleX: z.number().default(1),
+    assetScaleY: z.number().default(1),
+    asset2ScaleX: z.number().default(1),
+    asset2ScaleY: z.number().default(1),
+    asset3ScaleX: z.number().default(1),
+    asset3ScaleY: z.number().default(1),
     staggerFrames: z.number().default(0),
     backgroundEnabled: z.boolean().default(false),
     backgroundColor: z.string().default("#ffffff"),
@@ -196,8 +223,10 @@ export const SlideTemplate: AnimationTemplate = {
     const globalFontUrl = typeof p.globalFontUrl === "string" ? p.globalFontUrl : undefined;
     
     // Gather assets
-    const items = [assets.asset, assets.asset2, assets.asset3]
-      .filter(isAsset);
+    const items: { slotId: "asset" | "asset2" | "asset3"; asset: Asset }[] = [];
+    if (isAsset(assets.asset)) items.push({ slotId: "asset", asset: assets.asset });
+    if (isAsset(assets.asset2)) items.push({ slotId: "asset2", asset: assets.asset2 });
+    if (isAsset(assets.asset3)) items.push({ slotId: "asset3", asset: assets.asset3 });
 
     if (items.length === 0) return null;
 
@@ -218,6 +247,18 @@ export const SlideTemplate: AnimationTemplate = {
     const imageSize = Number(p.imageSize) || 400;
     const staggerFrames = Number(p.staggerFrames) || 0;
 
+    const imageScaleXBySlot: Record<"asset" | "asset2" | "asset3", number> = {
+      asset: typeof p.assetScaleX === "number" ? p.assetScaleX : 1,
+      asset2: typeof p.asset2ScaleX === "number" ? p.asset2ScaleX : 1,
+      asset3: typeof p.asset3ScaleX === "number" ? p.asset3ScaleX : 1,
+    };
+
+    const imageScaleYBySlot: Record<"asset" | "asset2" | "asset3", number> = {
+      asset: typeof p.assetScaleY === "number" ? p.assetScaleY : 1,
+      asset2: typeof p.asset2ScaleY === "number" ? p.asset2ScaleY : 1,
+      asset3: typeof p.asset3ScaleY === "number" ? p.asset3ScaleY : 1,
+    };
+
     return (
       <SlideScene
         items={items}
@@ -230,6 +271,8 @@ export const SlideTemplate: AnimationTemplate = {
         fontSize={fontSize}
         textColor={textColor}
         imageSize={imageSize}
+        imageScaleXBySlot={imageScaleXBySlot}
+        imageScaleYBySlot={imageScaleYBySlot}
         staggerFrames={staggerFrames}
         backgroundEnabled={backgroundEnabled}
         backgroundOpacity={backgroundOpacity}
