@@ -22,7 +22,7 @@ import { Badge } from "@/components/ui/badge";
 import { Slider } from "@/components/ui/slider";
 import type { Asset, Track } from "@/types/timeline";
 import type { TemplateSlot } from "@/types/template";
-import { Box, Layers, Play, Pause, Save, Sparkles, Clock, Maximize2, Minimize2, FolderOpen, X } from "lucide-react";
+import { Box, Layers, Play, Pause, Save, Sparkles, Clock, Maximize2, Minimize2, FolderOpen, X, Repeat } from "lucide-react";
 
 export default function Home() {
   // Zustand stores
@@ -65,6 +65,9 @@ export default function Home() {
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [currentProjectName, setCurrentProjectName] = useState<string>("");
   const [isInitialized, setIsInitialized] = useState(false);
+  const [loopEnabled, setLoopEnabled] = useState(false);
+  const [showFsControls, setShowFsControls] = useState(true);
+  const fsControlsTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Get assets and tracks from project
   const assets = project?.assets || [];
@@ -111,8 +114,12 @@ export default function Home() {
       interval = setInterval(() => {
         const next = currentFrame + 1;
         if (next >= totalDuration) {
-          pause();
-          setCurrentFrame(Math.max(0, totalDuration - 1));
+          if (loopEnabled) {
+            setCurrentFrame(0);
+          } else {
+            pause();
+            setCurrentFrame(Math.max(0, totalDuration - 1));
+          }
         } else {
           incrementFrame();
         }
@@ -121,7 +128,7 @@ export default function Home() {
     return () => {
       if (interval) clearInterval(interval);
     };
-  }, [isPlaying, totalDuration, currentFrame, pause, incrementFrame, setCurrentFrame]);
+  }, [isPlaying, totalDuration, currentFrame, pause, incrementFrame, setCurrentFrame, loopEnabled]);
 
   useEffect(() => {
     const onFsChange = () => {
@@ -510,6 +517,57 @@ export default function Home() {
                     <p className="text-foreground font-mono tracking-[0.4em] text-[10px] uppercase font-bold">Waiting for Sequence</p>
                   </div>
                 </div>
+              )}
+
+              {/* Fullscreen overlay controls */}
+              {isFullscreen && (
+                <>
+                  {/* Invisible layer to always capture mouse movement */}
+                  <div
+                    className="absolute inset-0 z-50"
+                    onMouseMove={() => {
+                      setShowFsControls(true);
+                      if (fsControlsTimeout.current) clearTimeout(fsControlsTimeout.current);
+                      fsControlsTimeout.current = setTimeout(() => setShowFsControls(false), 1000);
+                    }}
+                  />
+                  {/* Visible controls that fade in/out */}
+                  <div
+                    className={`absolute inset-x-0 bottom-0 z-51 flex justify-center pb-8 transition-opacity duration-300 pointer-events-none ${showFsControls ? "opacity-100" : "opacity-0"}`}
+                  >
+                    <div className="flex items-center gap-4 bg-black/70 backdrop-blur-md px-6 py-3 rounded-full shadow-2xl border border-white/10 pointer-events-auto">
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        className="text-white hover:bg-white/20 h-10 w-10"
+                        onClick={() => {
+                          if (isPlaying) {
+                            pause();
+                          } else {
+                            if (totalDuration > 0 && currentFrame >= totalDuration - 1) {
+                              seekToFrame(0);
+                            }
+                            play();
+                          }
+                        }}
+                      >
+                        {isPlaying ? <Pause className="w-5 h-5" /> : <Play className="w-5 h-5" />}
+                      </Button>
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        className={`h-10 w-10 ${loopEnabled ? "text-primary bg-white/20" : "text-white hover:bg-white/20"}`}
+                        onClick={() => setLoopEnabled((v) => !v)}
+                        title={loopEnabled ? "Loop enabled" : "Loop disabled"}
+                      >
+                        <Repeat className="w-5 h-5" />
+                      </Button>
+                      <div className="text-white text-xs font-mono tabular-nums">
+                        {currentFrame} / {totalDuration}
+                      </div>
+                    </div>
+                  </div>
+                </>
               )}
             </div>
           </div>
