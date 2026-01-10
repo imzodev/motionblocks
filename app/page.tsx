@@ -214,6 +214,32 @@ export default function Home() {
     void forceSave();
   }, [updateTrack, forceSave]);
 
+  const handleDuplicateTrack = useCallback((trackId: string) => {
+    const source = tracks.find((t) => t.id === trackId);
+    if (!source) return;
+
+    const cloneTemplateProps = (value: unknown) => {
+      try {
+        if (typeof structuredClone === "function") return structuredClone(value);
+      } catch {
+        // fall through
+      }
+      return JSON.parse(JSON.stringify(value ?? {})) as unknown;
+    };
+
+    const nextTrack: Track = {
+      ...source,
+      id: Math.random().toString(36).substr(2, 9),
+      templateProps: cloneTemplateProps(source.templateProps) as Track["templateProps"],
+    };
+
+    const index = tracks.findIndex((t) => t.id === trackId);
+    const nextTracks = [...tracks.slice(0, index + 1), nextTrack, ...tracks.slice(index + 1)];
+    reorderTracks(nextTracks);
+    setSelectedTrackId(nextTrack.id);
+    void forceSave();
+  }, [tracks, reorderTracks, setSelectedTrackId, forceSave]);
+
   const handleReorderTracks = useCallback((newOrder: Track[]) => {
     reorderTracks(newOrder);
   }, [reorderTracks]);
@@ -532,6 +558,7 @@ export default function Home() {
                     onReorder={handleReorderTracks}
                     onSelect={(t) => setSelectedTrackId(t.id)}
                     onDelete={(id) => removeTrack(id)}
+                    onDuplicate={handleDuplicateTrack}
                     selectedId={selectedTrackId}
                   />
                 </section>

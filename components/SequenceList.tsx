@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   DndContext,
   closestCenter,
@@ -23,13 +23,14 @@ import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { GripVertical, Trash2 } from "lucide-react";
+import { Copy, GripVertical, MoreVertical, Trash2 } from "lucide-react";
 
 interface SequenceListProps {
   tracks: Track[];
   onReorder: (tracks: Track[]) => void;
   onSelect?: (track: Track) => void;
   onDelete?: (id: string) => void;
+  onDuplicate?: (id: string) => void;
   selectedId?: string;
   className?: string;
 }
@@ -39,6 +40,7 @@ interface SortableItemProps {
   isSelected: boolean;
   onSelect: () => void;
   onDelete: () => void;
+  onDuplicate?: () => void;
 }
 
 function SortableItem({
@@ -46,7 +48,23 @@ function SortableItem({
   isSelected,
   onSelect,
   onDelete,
+  onDuplicate,
 }: SortableItemProps) {
+  const [menuOpen, setMenuOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    if (!menuOpen) return;
+    const onPointerDown = (e: PointerEvent) => {
+      const el = menuRef.current;
+      if (!el) return;
+      if (e.target instanceof Node && el.contains(e.target)) return;
+      setMenuOpen(false);
+    };
+    window.addEventListener("pointerdown", onPointerDown);
+    return () => window.removeEventListener("pointerdown", onPointerDown);
+  }, [menuOpen]);
+
   const {
     attributes,
     listeners,
@@ -100,18 +118,52 @@ function SortableItem({
         </Badge>
       </div>
 
-      <Button
-        onClick={(e) => {
-          e.stopPropagation();
-          onDelete();
-        }}
-        variant="ghost"
-        size="icon"
-        className="text-muted-foreground hover:text-destructive h-7 w-7 shrink-0"
-        aria-label="Delete block"
-      >
-        <Trash2 className="w-4 h-4" />
-      </Button>
+      <div ref={menuRef} className="relative shrink-0">
+        <Button
+          onClick={(e) => {
+            e.stopPropagation();
+            setMenuOpen((v) => !v);
+          }}
+          variant="ghost"
+          size="icon"
+          className="text-muted-foreground hover:text-foreground h-7 w-7"
+          aria-label="Block actions"
+        >
+          <MoreVertical className="w-4 h-4" />
+        </Button>
+
+        {menuOpen && (
+          <div
+            className="absolute right-0 top-8 z-50 min-w-36 overflow-hidden rounded-md border bg-background shadow-lg"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {onDuplicate && (
+              <button
+                className="w-full px-2 py-1.5 text-left text-xs hover:bg-muted flex items-center gap-2"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setMenuOpen(false);
+                  onDuplicate();
+                }}
+              >
+                <Copy className="w-3.5 h-3.5" />
+                Duplicate
+              </button>
+            )}
+            <button
+              className="w-full px-2 py-1.5 text-left text-xs hover:bg-muted flex items-center gap-2 text-destructive"
+              onClick={(e) => {
+                e.stopPropagation();
+                setMenuOpen(false);
+                onDelete();
+              }}
+            >
+              <Trash2 className="w-3.5 h-3.5" />
+              Delete
+            </button>
+          </div>
+        )}
+      </div>
     </Card>
   );
 }
@@ -124,6 +176,7 @@ export function SequenceList({
   onReorder,
   onSelect,
   onDelete,
+  onDuplicate,
   selectedId,
   className,
 }: SequenceListProps) {
@@ -163,6 +216,7 @@ export function SequenceList({
               isSelected={selectedId === track.id}
               onSelect={() => onSelect?.(track)}
               onDelete={() => onDelete?.(track.id)}
+              onDuplicate={onDuplicate ? () => onDuplicate(track.id) : undefined}
             />
           ))}
         </SortableContext>
