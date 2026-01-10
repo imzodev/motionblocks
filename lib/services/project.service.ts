@@ -30,7 +30,8 @@ export class ProjectService {
       if (project) {
         // Filter out assets with invalid blob URLs
         const cleanedProject = this.cleanInvalidAssets(project);
-        this.currentProject = cleanedProject;
+        const hydrated = await this.hydratePersistedAssets(cleanedProject);
+        this.currentProject = this.cleanMissingAssetReferences(hydrated);
       }
     }
   }
@@ -88,11 +89,14 @@ export class ProjectService {
 
     // Filter out assets with invalid blob URLs
     const cleanedProject = this.cleanInvalidAssets(project);
+    const hydratedProject = this.cleanMissingAssetReferences(
+      await this.hydratePersistedAssets(cleanedProject)
+    );
 
-    this.currentProject = cleanedProject;
+    this.currentProject = hydratedProject;
     await this.repository.setCurrentProjectId(id);
 
-    return cleanedProject;
+    return hydratedProject;
   }
 
   /**
@@ -158,6 +162,14 @@ export class ProjectService {
    * Delete a project by ID
    */
   async delete(id: string): Promise<void> {
+    // Best-effort: delete persisted assets for this project (SQLite + local files)
+    // Projects are still stored in localStorage, but assets are stored server-side.
+    try {
+      await fetch(`/api/assets/project/${encodeURIComponent(id)}`, { method: "DELETE" });
+    } catch (error) {
+      console.error(`Failed to delete assets for project "${id}":`, error);
+    }
+
     const deleted = await this.repository.delete(id);
 
     if (!deleted) {
@@ -226,6 +238,54 @@ export class ProjectService {
   }
 
   /**
+   * Hydrate assets that are persisted server-side (non-text assets) for a given project.
+   * Keeps any local text assets stored in the project itself.
+   */
+  private async hydratePersistedAssets(project: Project): Promise<Project> {
+    try {
+      const res = await fetch(`/api/assets/project/${encodeURIComponent(project.metadata.id)}`);
+      if (!res.ok) return project;
+
+      const json = (await res.json()) as { assets: Asset[] };
+      const persistedAssets = Array.isArray(json.assets) ? json.assets : [];
+
+      const localTextAssets = project.assets.filter((a: Asset) => a.type === "text" || !a.src);
+
+      return {
+        ...project,
+        assets: [...localTextAssets, ...persistedAssets],
+      };
+    } catch {
+      return project;
+    }
+  }
+
+  private cleanMissingAssetReferences(project: Project): Project {
+    const validAssetIds = new Set(project.assets.map((a: Asset) => a.id));
+    const cleanedTracks = project.tracks.map((track) => {
+      const entries = Object.entries(track.templateProps);
+      let changed = false;
+
+      const cleanedTemplateProps = Object.fromEntries(
+        entries.map(([key, value]) => {
+          if (typeof value !== "string") return [key, value];
+          if (!value.startsWith("asset_")) return [key, value];
+          if (validAssetIds.has(value)) return [key, value];
+          changed = true;
+          return [key, ""];
+        })
+      );
+
+      return changed ? { ...track, templateProps: cleanedTemplateProps } : track;
+    });
+
+    return {
+      ...project,
+      tracks: cleanedTracks,
+    };
+  }
+
+  /**
    * Filter out assets with invalid blob URLs
    * Blob URLs are only valid for the current session and become invalid on page refresh
    */
@@ -241,25 +301,9 @@ export class ProjectService {
       return true;
     });
 
-    // Also clean up track templateProps that reference invalid assets
-    const validAssetIds = new Set(validAssets.map(a => a.id));
-    const cleanedTracks = project.tracks.map(track => ({
-      ...track,
-      templateProps: Object.fromEntries(
-        Object.entries(track.templateProps).filter(([key, value]) => {
-          // Keep non-asset values
-          if (typeof value !== 'string') return true;
-          
-          // Filter out references to invalid assets
-          return !validAssetIds.has(value) || key === 'assetId';
-        })
-      ),
-    }));
-
     return {
       ...project,
       assets: validAssets,
-      tracks: cleanedTracks,
     };
   }
 }

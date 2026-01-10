@@ -39,7 +39,11 @@ export class ProjectRepository {
 
       // Validate project structure
       const validated = ProjectSchema.parse(project);
-      return validated;
+
+      // Strip any Proxy / non-serializable references by round-tripping through JSON
+      const plain = JSON.parse(JSON.stringify(validated)) as Project;
+
+      return plain;
     } catch (error) {
       console.error(`Error getting project "${id}":`, error);
       return null;
@@ -53,17 +57,20 @@ export class ProjectRepository {
     try {
       // Validate project structure
       const validated = ProjectSchema.parse(project);
+
+      // Strip any Proxy / non-serializable references by round-tripping through JSON
+      const plain = JSON.parse(JSON.stringify(validated)) as Project;
       
       // Update timestamp
-      validated.metadata.updatedAt = Date.now();
+      plain.metadata.updatedAt = Date.now();
 
       // Save full project
-      await this.storage.set(validated.metadata.id, validated);
+      await this.storage.set(plain.metadata.id, plain);
 
       // Update project list
-      await this.updateProjectListItem(validated);
+      await this.updateProjectListItem(plain);
 
-      return validated;
+      return plain;
     } catch (error) {
       console.error("Error saving project:", error);
       throw error;
