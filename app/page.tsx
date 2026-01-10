@@ -621,7 +621,14 @@ export default function Home() {
                   <SequenceList
                     tracks={tracks}
                     onReorder={handleReorderTracks}
-                    onSelect={(t) => setSelectedTrackId(t.id)}
+                    onSelect={(t) => {
+                      setSelectedTrackId(t.id);
+                      const targetFrame = Math.min(
+                        Math.max(0, (t.startFrame ?? 0) + 10),
+                        Math.max(0, totalDuration - 1)
+                      );
+                      seekToFrame(targetFrame);
+                    }}
                     onDelete={(id) => removeTrack(id)}
                     onDuplicate={handleDuplicateTrack}
                     onRename={handleRenameTrack}
