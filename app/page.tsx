@@ -133,15 +133,49 @@ export default function Home() {
     return () => document.removeEventListener("fullscreenchange", onFsChange);
   }, []);
 
-  const handleFileUpload = useCallback((files: File[]) => {
-    const newAssets: Asset[] = files.map((file) => ({
-      id: Math.random().toString(36).substr(2, 9),
-      type: file.type.startsWith("video/") ? "video" : file.type.includes("svg") ? "svg" : "image",
-      src: URL.createObjectURL(file),
-    }));
-    
-    addAssets(newAssets);
-  }, [addAssets]);
+  const handleFileUpload = useCallback(async (files: File[]) => {
+    if (files.length === 0) return;
+
+    let currentProject = project || projectService.getCurrent();
+
+    if (!currentProject) {
+      const newProject = await projectService.create({
+        name: "Untitled Project",
+        description: "",
+        settings: {},
+      });
+      setProject(newProject);
+      setCurrentProjectName(newProject.metadata.name);
+      currentProject = newProject;
+    }
+
+    try {
+      const uploadedAssets: Asset[] = [];
+
+      for (const file of files) {
+        const formData = new FormData();
+        formData.set("file", file);
+
+        const res = await fetch(`/api/assets/upload?projectId=${encodeURIComponent(currentProject.metadata.id)}`,
+          {
+            method: "POST",
+            body: formData,
+          }
+        );
+
+        if (!res.ok) {
+          throw new Error(`Upload failed (${res.status})`);
+        }
+
+        const json = (await res.json()) as { asset: Asset };
+        uploadedAssets.push(json.asset);
+      }
+
+      addAssets(uploadedAssets);
+    } catch (error) {
+      console.error("Asset upload failed:", error);
+    }
+  }, [addAssets, project, setProject, setCurrentProjectName]);
 
   const addTemplateToSequence = useCallback(async (templateId: string) => {
     // If no project exists, create a default one

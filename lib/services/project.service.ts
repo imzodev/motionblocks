@@ -30,7 +30,7 @@ export class ProjectService {
       if (project) {
         // Filter out assets with invalid blob URLs
         const cleanedProject = this.cleanInvalidAssets(project);
-        this.currentProject = cleanedProject;
+        this.currentProject = await this.hydratePersistedAssets(cleanedProject);
       }
     }
   }
@@ -88,11 +88,12 @@ export class ProjectService {
 
     // Filter out assets with invalid blob URLs
     const cleanedProject = this.cleanInvalidAssets(project);
+    const hydratedProject = await this.hydratePersistedAssets(cleanedProject);
 
-    this.currentProject = cleanedProject;
+    this.currentProject = hydratedProject;
     await this.repository.setCurrentProjectId(id);
 
-    return cleanedProject;
+    return hydratedProject;
   }
 
   /**
@@ -158,6 +159,14 @@ export class ProjectService {
    * Delete a project by ID
    */
   async delete(id: string): Promise<void> {
+    // Best-effort: delete persisted assets for this project (SQLite + local files)
+    // Projects are still stored in localStorage, but assets are stored server-side.
+    try {
+      await fetch(`/api/assets/project/${encodeURIComponent(id)}`, { method: "DELETE" });
+    } catch (error) {
+      console.error(`Failed to delete assets for project "${id}":`, error);
+    }
+
     const deleted = await this.repository.delete(id);
 
     if (!deleted) {
@@ -223,6 +232,29 @@ export class ProjectService {
    */
   private generateId(): string {
     return `proj_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+  }
+
+  /**
+   * Hydrate assets that are persisted server-side (non-text assets) for a given project.
+   * Keeps any local text assets stored in the project itself.
+   */
+  private async hydratePersistedAssets(project: Project): Promise<Project> {
+    try {
+      const res = await fetch(`/api/assets/project/${encodeURIComponent(project.metadata.id)}`);
+      if (!res.ok) return project;
+
+      const json = (await res.json()) as { assets: Asset[] };
+      const persistedAssets = Array.isArray(json.assets) ? json.assets : [];
+
+      const localTextAssets = project.assets.filter((a: Asset) => a.type === "text" || !a.src);
+
+      return {
+        ...project,
+        assets: [...localTextAssets, ...persistedAssets],
+      };
+    } catch {
+      return project;
+    }
   }
 
   /**
