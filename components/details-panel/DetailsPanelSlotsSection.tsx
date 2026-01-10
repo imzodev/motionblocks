@@ -29,6 +29,8 @@ export function DetailsPanelSlotsSection({
   assets,
   onSlotUpdate,
 }: DetailsPanelSlotsSectionProps) {
+  const [openFileSlotId, setOpenFileSlotId] = useState<string | null>(null);
+
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between">
@@ -54,12 +56,11 @@ export function DetailsPanelSlotsSection({
 
             {slot.type === "file" && (() => {
               const selectedAssetId = selectedTrack.templateProps[slot.id] as string;
-              const selectedAsset = assets.find(a => a.id === selectedAssetId);
-              const [isOpen, setIsOpen] = useState(false);
+              const selectedAsset = assets.find((a) => a.id === selectedAssetId);
+              const isOpen = openFileSlotId === slot.id;
 
               return (
                 <div className="space-y-2">
-                  {/* Selected Asset Preview */}
                   {selectedAsset ? (
                     <div className="rounded-xl border bg-muted/20 px-2 py-1.5">
                       <div className="flex items-center gap-2 text-xs">
@@ -82,8 +83,7 @@ export function DetailsPanelSlotsSection({
                           <p className="font-mono text-xs truncate">
                             {selectedAsset.type === "image" || selectedAsset.type === "svg"
                               ? `Image ${assets.indexOf(selectedAsset) + 1}`
-                              : selectedAsset.content || selectedAsset.id
-                            }
+                              : selectedAsset.content || selectedAsset.id}
                           </p>
                           <p className="text-[10px] text-muted-foreground capitalize">{selectedAsset.type}</p>
                         </div>
@@ -91,7 +91,10 @@ export function DetailsPanelSlotsSection({
                           variant="ghost"
                           size="icon"
                           className="text-muted-foreground hover:text-destructive h-7 w-7 shrink-0"
-                          onClick={() => onSlotUpdate(slot.id, "")}
+                          onClick={() => {
+                            onSlotUpdate(slot.id, "");
+                            if (openFileSlotId === slot.id) setOpenFileSlotId(null);
+                          }}
                           aria-label="Clear slot"
                         >
                           <X className="w-4 h-4" />
@@ -104,17 +107,16 @@ export function DetailsPanelSlotsSection({
                     </div>
                   )}
 
-                  {/* Custom Asset Selector Dropdown */}
                   <div className="relative">
                     <Button
                       variant="outline"
                       className="w-full h-8 justify-between text-xs font-normal"
-                      onClick={() => setIsOpen(!isOpen)}
+                      onClick={() => setOpenFileSlotId(isOpen ? null : slot.id)}
                     >
                       <span>{selectedAsset ? `Image ${assets.indexOf(selectedAsset) + 1}` : "Select an asset..."}</span>
                       <ChevronDown className="w-4 h-4" />
                     </Button>
-                    
+
                     {isOpen && (
                       <div className="absolute z-50 w-full mt-1 max-h-60 overflow-y-auto rounded-md border bg-background shadow-lg">
                         <div className="grid grid-cols-2 gap-1 p-1">
@@ -123,7 +125,7 @@ export function DetailsPanelSlotsSection({
                               key={asset.id}
                               onClick={() => {
                                 onSlotUpdate(slot.id, asset.id);
-                                setIsOpen(false);
+                                setOpenFileSlotId(null);
                               }}
                               className={cn(
                                 "relative aspect-square rounded-md overflow-hidden border transition-all hover:border-primary",
@@ -161,8 +163,7 @@ export function DetailsPanelSlotsSection({
                               <div className="absolute bottom-0 left-0 right-0 bg-black/50 text-white text-[9px] px-1 py-0.5">
                                 {asset.type === "image" || asset.type === "svg"
                                   ? `Image ${assets.indexOf(asset) + 1}`
-                                  : asset.content || asset.id
-                                }
+                                  : asset.content || asset.id}
                               </div>
                             </button>
                           ))}
