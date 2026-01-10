@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useCallback } from "react";
+import React, { useCallback, useEffect } from "react";
 import { useDropzone } from "react-dropzone";
 import { Upload } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -23,6 +23,36 @@ export function AssetsPanel({ onUpload, className }: AssetsPanelProps) {
     },
     [onUpload]
   );
+
+  useEffect(() => {
+    const onPaste = (e: ClipboardEvent) => {
+      const target = e.target as HTMLElement | null;
+      const tagName = target?.tagName?.toLowerCase();
+      const isEditable =
+        !!target &&
+        (target.isContentEditable || tagName === "input" || tagName === "textarea" || tagName === "select");
+
+      if (isEditable) return;
+
+      const items = e.clipboardData?.items;
+      if (!items || items.length === 0) return;
+
+      const files: File[] = [];
+      for (const item of items) {
+        if (item.kind !== "file") continue;
+        if (!item.type.startsWith("image/")) continue;
+        const file = item.getAsFile();
+        if (file) files.push(file);
+      }
+
+      if (files.length === 0) return;
+      e.preventDefault();
+      onUpload(files);
+    };
+
+    window.addEventListener("paste", onPaste);
+    return () => window.removeEventListener("paste", onPaste);
+  }, [onUpload]);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
