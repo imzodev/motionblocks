@@ -221,6 +221,13 @@ export default function Home() {
     void forceSave();
   }, [updateTrack, forceSave]);
 
+  const handleRenameTrack = useCallback((trackId: string, name: string) => {
+    const track = tracks.find((t) => t.id === trackId);
+    if (!track) return;
+    updateTrack(trackId, { ...track, name: name || undefined });
+    void forceSave();
+  }, [tracks, updateTrack, forceSave]);
+
   const handleDuplicateTrack = useCallback((trackId: string) => {
     const source = tracks.find((t) => t.id === trackId);
     if (!source) return;
@@ -617,6 +624,7 @@ export default function Home() {
                     onSelect={(t) => setSelectedTrackId(t.id)}
                     onDelete={(id) => removeTrack(id)}
                     onDuplicate={handleDuplicateTrack}
+                    onRename={handleRenameTrack}
                     selectedId={selectedTrackId}
                   />
                 </section>

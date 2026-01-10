@@ -11,6 +11,7 @@ export type Asset = z.infer<typeof AssetSchema>;
 
 export const TrackSchema = z.object({
   id: z.string(),
+  name: z.string().optional(),
   assetId: z.string(),
   template: z.string(),
   startFrame: z.number(),

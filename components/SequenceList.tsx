@@ -23,7 +23,9 @@ import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Copy, GripVertical, MoreVertical, Trash2 } from "lucide-react";
+import { Copy, GripVertical, MoreVertical, Pencil, Trash2 } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Input } from "@/components/ui/input";
 
 interface SequenceListProps {
   tracks: Track[];
@@ -31,6 +33,7 @@ interface SequenceListProps {
   onSelect?: (track: Track) => void;
   onDelete?: (id: string) => void;
   onDuplicate?: (id: string) => void;
+  onRename?: (id: string, name: string) => void;
   selectedId?: string;
   className?: string;
 }
@@ -41,6 +44,7 @@ interface SortableItemProps {
   onSelect: () => void;
   onDelete: () => void;
   onDuplicate?: () => void;
+  onRename?: (name: string) => void;
 }
 
 function SortableItem({
@@ -49,9 +53,38 @@ function SortableItem({
   onSelect,
   onDelete,
   onDuplicate,
+  onRename,
 }: SortableItemProps) {
   const [menuOpen, setMenuOpen] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editValue, setEditValue] = useState("");
+  const inputRef = useRef<HTMLInputElement | null>(null);
   const menuRef = useRef<HTMLDivElement | null>(null);
+
+  const displayName = track.name || track.template.toUpperCase();
+  const hasCustomName = !!track.name;
+  const maxDisplayLength = 12;
+  const isTruncated = displayName.length > maxDisplayLength;
+  const truncatedName = isTruncated ? displayName.slice(0, maxDisplayLength) + "…" : displayName;
+
+  const startEditing = () => {
+    setEditValue(track.name || "");
+    setIsEditing(true);
+    setTimeout(() => inputRef.current?.focus(), 0);
+  };
+
+  const commitEdit = () => {
+    const trimmed = editValue.trim();
+    if (onRename) {
+      onRename(trimmed);
+    }
+    setIsEditing(false);
+  };
+
+  const cancelEdit = () => {
+    setIsEditing(false);
+    setEditValue("");
+  };
 
   useEffect(() => {
     if (!menuOpen) return;
@@ -101,21 +134,69 @@ function SortableItem({
         <GripVertical className="w-4 h-4 text-muted-foreground" />
       </Button>
 
-      <p className="flex-1 min-w-0 text-xs font-semibold truncate uppercase tracking-tight leading-none">
-        {track.template}
-      </p>
+      <div
+        className="flex-1 min-w-0 flex items-center gap-1.5"
+        onDoubleClick={(e) => {
+          e.stopPropagation();
+          if (onRename) startEditing();
+        }}
+      >
+        {isEditing ? (
+          <Input
+            ref={inputRef}
+            value={editValue}
+            onChange={(e) => setEditValue(e.target.value)}
+            onBlur={commitEdit}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                e.preventDefault();
+                commitEdit();
+              } else if (e.key === "Escape") {
+                cancelEdit();
+              }
+            }}
+            onClick={(e) => e.stopPropagation()}
+            className="h-6 text-xs px-1.5 py-0"
+            placeholder={track.template.toUpperCase()}
+          />
+        ) : (
+          <TooltipProvider delayDuration={300}>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <span className="text-xs font-semibold truncate uppercase tracking-tight leading-none cursor-default">
+                  {truncatedName}
+                </span>
+              </TooltipTrigger>
+              {isTruncated && (
+                <TooltipContent side="top" className="text-xs">
+                  {displayName}
+                </TooltipContent>
+              )}
+            </Tooltip>
+          </TooltipProvider>
+        )}
+      </div>
 
       <div className="shrink-0 flex items-center gap-1">
         <Badge variant="secondary" className="tabular-nums text-[10px] px-2 py-0 leading-none">
           {track.duration}f
         </Badge>
-        <Badge
-          variant="outline"
-          className="tabular-nums font-mono text-[10px] px-2 py-0 leading-none text-muted-foreground"
-          title={track.id}
-        >
-          {track.id.slice(-6)}
-        </Badge>
+        {hasCustomName ? (
+          <Badge
+            variant="outline"
+            className="text-[9px] px-1.5 py-0 leading-none text-muted-foreground"
+          >
+            {track.template}
+          </Badge>
+        ) : (
+          <Badge
+            variant="outline"
+            className="tabular-nums font-mono text-[10px] px-2 py-0 leading-none text-muted-foreground"
+            title={track.id}
+          >
+            {track.id.slice(-6)}
+          </Badge>
+        )}
       </div>
 
       <div ref={menuRef} className="relative shrink-0">
@@ -137,6 +218,19 @@ function SortableItem({
             className="absolute right-0 top-8 z-50 min-w-36 overflow-hidden rounded-md border bg-background shadow-lg"
             onClick={(e) => e.stopPropagation()}
           >
+            {onRename && (
+              <button
+                className="w-full px-2 py-1.5 text-left text-xs hover:bg-muted flex items-center gap-2"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setMenuOpen(false);
+                  startEditing();
+                }}
+              >
+                <Pencil className="w-3.5 h-3.5" />
+                Rename
+              </button>
+            )}
             {onDuplicate && (
               <button
                 className="w-full px-2 py-1.5 text-left text-xs hover:bg-muted flex items-center gap-2"
@@ -177,6 +271,7 @@ export function SequenceList({
   onSelect,
   onDelete,
   onDuplicate,
+  onRename,
   selectedId,
   className,
 }: SequenceListProps) {
@@ -217,6 +312,7 @@ export function SequenceList({
               onSelect={() => onSelect?.(track)}
               onDelete={() => onDelete?.(track.id)}
               onDuplicate={onDuplicate ? () => onDuplicate(track.id) : undefined}
+              onRename={onRename ? (name) => onRename(track.id, name) : undefined}
             />
           ))}
         </SortableContext>
