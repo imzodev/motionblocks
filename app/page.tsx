@@ -211,7 +211,8 @@ export default function Home() {
 
   const handleUpdateTrack = useCallback((updatedTrack: Track) => {
     updateTrack(updatedTrack.id, updatedTrack);
-  }, [updateTrack]);
+    void forceSave();
+  }, [updateTrack, forceSave]);
 
   const handleReorderTracks = useCallback((newOrder: Track[]) => {
     reorderTracks(newOrder);

@@ -144,6 +144,14 @@ export const useProjectStore = create<ProjectState>()(
           }
         }
       });
+
+      const state = get();
+      if (state.project) {
+        projectService.saveProjectState(state.project).catch((error) => {
+          console.error("Failed to save project after track update:", error);
+        });
+      }
+
       triggerAutosave(get, set);
     },
 
