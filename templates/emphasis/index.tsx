@@ -3,6 +3,7 @@ import type { AnimationTemplate, RenderProps } from "../../types/template";
 import { Text, Image as DreiImage } from "@react-three/drei";
 import React from "react";
 import type { Asset } from "../../types/timeline";
+import { HtmlImage, isGifAsset } from "../text/shared";
 
 function isAsset(value: unknown): value is Asset {
   return (
@@ -33,7 +34,11 @@ export const PulseTemplate: AnimationTemplate = {
     return (
       <group scale={[scale, scale, scale]}>
         {(asset.type === "image" || asset.type === "svg") && asset.src ? (
-          <DreiImage url={asset.src} scale={[400, 400]} />
+          isGifAsset(asset) ? (
+            <HtmlImage url={asset.src} scale={[400, 400]} />
+          ) : (
+            <DreiImage url={asset.src} scale={[400, 400]} />
+          )
         ) : (
           <Text font={globalFontUrl} fontSize={60} color="#0f172a">{asset.content || "Text"}</Text>
         )}
@@ -60,7 +65,11 @@ export const GlowTemplate: AnimationTemplate = {
     return (
       <group>
         {(asset.type === "image" || asset.type === "svg") && asset.src ? (
-          <DreiImage url={asset.src} scale={[400, 400]} />
+          isGifAsset(asset) ? (
+            <HtmlImage url={asset.src} scale={[400, 400]} />
+          ) : (
+            <DreiImage url={asset.src} scale={[400, 400]} />
+          )
         ) : (
           <Text font={globalFontUrl} fontSize={60} color="#0f172a">{asset.content || "Text"}</Text>
         )}
@@ -88,7 +97,11 @@ export const BounceTemplate: AnimationTemplate = {
     return (
       <group position={[0, y, 0]}>
         {(asset.type === "image" || asset.type === "svg") && asset.src ? (
-          <DreiImage url={asset.src} scale={[400, 400]} />
+          isGifAsset(asset) ? (
+            <HtmlImage url={asset.src} scale={[400, 400]} />
+          ) : (
+            <DreiImage url={asset.src} scale={[400, 400]} />
+          )
         ) : (
           <Text font={globalFontUrl} fontSize={60} color="#0f172a">{asset.content || "Text"}</Text>
         )}
@@ -117,7 +130,11 @@ export const ShakeTemplate: AnimationTemplate = {
     return (
       <group position={[x, 0, 0]}>
         {(asset.type === "image" || asset.type === "svg") && asset.src ? (
-          <DreiImage url={asset.src} scale={[400, 400]} />
+          isGifAsset(asset) ? (
+            <HtmlImage url={asset.src} scale={[400, 400]} />
+          ) : (
+            <DreiImage url={asset.src} scale={[400, 400]} />
+          )
         ) : (
           <Text font={globalFontUrl} fontSize={60} color="#0f172a">{asset.content || "Text"}</Text>
         )}

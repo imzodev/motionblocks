@@ -4,6 +4,8 @@ export type AssetPublic = {
   id: string;
   type: AssetType;
   src?: string;
+  mimeType?: string;
+  originalName?: string;
   content?: string;
 };
 

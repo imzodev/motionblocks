@@ -1,5 +1,7 @@
 import type { Asset } from "../../types/timeline";
 import * as THREE from "three";
+import React from "react";
+import { Html } from "@react-three/drei";
 
 export function isAsset(value: unknown): value is Asset {
   return (
@@ -7,6 +9,49 @@ export function isAsset(value: unknown): value is Asset {
     value !== null &&
     "id" in value &&
     "type" in value
+  );
+}
+
+export function isGifAsset(asset: Asset): boolean {
+  if (asset.mimeType === "image/gif") return true;
+  const src = asset.src?.toLowerCase() || "";
+  const name = asset.originalName?.toLowerCase() || "";
+  return src.endsWith(".gif") || name.endsWith(".gif");
+}
+
+export function HtmlImage({
+  url,
+  scale,
+  opacity,
+}: {
+  url: string;
+  scale: [number, number];
+  opacity?: number;
+}) {
+  const o = typeof opacity === "number" ? opacity : 1;
+  const w = Number.isFinite(scale[0]) ? scale[0] : 1;
+  const h = Number.isFinite(scale[1]) ? scale[1] : 1;
+
+  const BASE_SCALE = 0.1;
+
+  // Use a fixed-size DOM baseline and scale it in 3D so it respects template sizing.
+  // Baseline: 100px @ distanceFactor 100 ~= 1 world unit.
+  return React.createElement(
+    "group" as unknown as React.ComponentType<any>,
+    { scale: [w * BASE_SCALE, h * BASE_SCALE, 1] },
+    React.createElement(
+      Html as unknown as React.ComponentType<any>,
+      { transform: true, center: true, distanceFactor: 100, style: { pointerEvents: "none" } },
+      React.createElement(
+        "div",
+        { style: { width: "100px", height: "100px", opacity: o } },
+        React.createElement("img", {
+          src: url,
+          draggable: false,
+          style: { width: "100%", height: "100%", objectFit: "contain", display: "block" },
+        })
+      )
+    )
   );
 }
 

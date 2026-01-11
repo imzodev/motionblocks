@@ -3,7 +3,7 @@ import type { AnimationTemplate, RenderProps } from "../../types/template";
 import { Text, Image as DreiImage } from "@react-three/drei";
 import React from "react";
 import type { Asset } from "../../types/timeline";
-import { getVideoTexture } from "../text/shared";
+import { getVideoTexture, HtmlImage, isGifAsset } from "../text/shared";
 
 function isAsset(value: unknown): value is Asset {
   return (
@@ -31,6 +31,9 @@ export const FadeInTemplate: AnimationTemplate = {
     const opacity = Math.min(1, frame / 30);
 
     if ((asset.type === "image" || asset.type === "svg") && asset.src) {
+      if (isGifAsset(asset)) {
+        return <HtmlImage url={asset.src} scale={[400, 400]} opacity={opacity} />;
+      }
       return <DreiImage url={asset.src} transparent opacity={opacity} scale={[400, 400]} />;
     }
     return (
@@ -100,12 +103,20 @@ function SlideScene({
     <group>
       {backgroundEnabled && backgroundAsset?.src && (backgroundAsset.type === "image" || backgroundAsset.type === "svg") ? (
         <group position={[0, 0, -120]}>
-          <DreiImage
-            url={backgroundAsset.src}
-            scale={[backgroundScale, backgroundScale]}
-            transparent
-            opacity={Math.min(1, Math.max(0, backgroundOpacity))}
-          />
+          {isGifAsset(backgroundAsset) ? (
+            <HtmlImage
+              url={backgroundAsset.src}
+              scale={[backgroundScale, backgroundScale]}
+              opacity={Math.min(1, Math.max(0, backgroundOpacity))}
+            />
+          ) : (
+            <DreiImage
+              url={backgroundAsset.src}
+              scale={[backgroundScale, backgroundScale]}
+              transparent
+              opacity={Math.min(1, Math.max(0, backgroundOpacity))}
+            />
+          )}
         </group>
       ) : null}
 
@@ -174,7 +185,11 @@ function SlideScene({
           return (
             <group key={asset.id} position={[posX + currentX, posY + currentY, 0]}>
               {(asset.type === "image" || asset.type === "svg") && asset.src ? (
-                <DreiImage url={asset.src} scale={[scaleX, scaleY]} />
+                isGifAsset(asset) ? (
+                  <HtmlImage url={asset.src} scale={[scaleX, scaleY]} />
+                ) : (
+                  <DreiImage url={asset.src} scale={[scaleX, scaleY]} />
+                )
               ) : (
                 <Text font={globalFontUrl} fontSize={fontSize} color={textColor} anchorX="center" anchorY="middle">
                   {asset.content || "Text"}

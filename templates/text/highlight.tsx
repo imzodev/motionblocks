@@ -4,7 +4,7 @@ import { Text, Image as DreiImage } from "@react-three/drei";
 import React, { useMemo, useState, useEffect } from "react";
 import { useThree } from "@react-three/fiber";
 import type { Asset } from "../../types/timeline";
-import { getVideoTexture, isAsset, preserveEdgeSpaces, readTextWidth } from "./shared";
+import { getVideoTexture, HtmlImage, isAsset, isGifAsset, preserveEdgeSpaces, readTextWidth } from "./shared";
 
 function HighlightScene(props: {
   frame: number;
@@ -128,12 +128,20 @@ function HighlightScene(props: {
     <group>
       {backgroundEnabled && backgroundAsset?.src && (backgroundAsset.type === "image" || backgroundAsset.type === "svg") ? (
         <group position={[0, 0, -120]}>
-          <DreiImage
-            url={backgroundAsset.src}
-            scale={[backgroundScale, backgroundScale]}
-            transparent
-            opacity={clamp01(backgroundOpacity)}
-          />
+          {isGifAsset(backgroundAsset) ? (
+            <HtmlImage
+              url={backgroundAsset.src}
+              scale={[backgroundScale, backgroundScale]}
+              opacity={clamp01(backgroundOpacity)}
+            />
+          ) : (
+            <DreiImage
+              url={backgroundAsset.src}
+              scale={[backgroundScale, backgroundScale]}
+              transparent
+              opacity={clamp01(backgroundOpacity)}
+            />
+          )}
         </group>
       ) : null}
 

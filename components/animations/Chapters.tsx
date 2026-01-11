@@ -5,7 +5,7 @@ import { Text, Image as DreiImage } from "@react-three/drei";
 import { useFrame, useThree } from "@react-three/fiber";
 import * as THREE from "three";
 import type { Asset } from "../../types/timeline";
-import { getVideoTexture } from "../../templates/text/shared";
+import { getVideoTexture, HtmlImage, isGifAsset } from "../../templates/text/shared";
 
 // --- Utils ---
 
@@ -138,12 +138,20 @@ export function Chapters({
       {/* Background Layer */}
       {backgroundEnabled && backgroundAsset?.src && (backgroundAsset.type === "image" || backgroundAsset.type === "svg") ? (
         <group position={[0, 0, -120]}>
-          <DreiImage
-            url={backgroundAsset.src}
-            scale={[backgroundScale, backgroundScale]}
-            transparent
-            opacity={clamp01(backgroundOpacity)}
-          />
+          {isGifAsset(backgroundAsset) ? (
+            <HtmlImage
+              url={backgroundAsset.src}
+              scale={[backgroundScale, backgroundScale]}
+              opacity={clamp01(backgroundOpacity)}
+            />
+          ) : (
+            <DreiImage
+              url={backgroundAsset.src}
+              scale={[backgroundScale, backgroundScale]}
+              transparent
+              opacity={clamp01(backgroundOpacity)}
+            />
+          )}
         </group>
       ) : null}
 

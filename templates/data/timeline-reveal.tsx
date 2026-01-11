@@ -3,6 +3,7 @@ import type { AnimationTemplate, RenderProps } from "../../types/template";
 import { Sparkles, Text, Image as DreiImage } from "@react-three/drei";
 import type { Asset } from "../../types/timeline";
 import * as THREE from "three";
+import { HtmlImage, isGifAsset } from "../text/shared";
 
 let cachedNodeGlowTexture: THREE.Texture | null = null;
 let cachedNodeDiscTexture: THREE.Texture | null = null;
@@ -253,12 +254,16 @@ export const TimelineRevealTemplate: AnimationTemplate = {
       <group scale={[zoom, zoom, 1]} position={[panX * introEase, 0, 0]}>
         {backgroundEnabled && bgAsset?.src && (bgAsset.type === "image" || bgAsset.type === "svg") ? (
           <group position={[0, 0, -60]}>
-            <DreiImage
-              url={bgAsset.src}
-              scale={[backgroundScale, backgroundScale]}
-              transparent
-              opacity={clamp01(backgroundOpacity)}
-            />
+            {isGifAsset(bgAsset) ? (
+              <HtmlImage url={bgAsset.src} scale={[backgroundScale, backgroundScale]} opacity={clamp01(backgroundOpacity)} />
+            ) : (
+              <DreiImage
+                url={bgAsset.src}
+                scale={[backgroundScale, backgroundScale]}
+                transparent
+                opacity={clamp01(backgroundOpacity)}
+              />
+            )}
           </group>
         ) : null}
 
@@ -428,7 +433,11 @@ export const TimelineRevealTemplate: AnimationTemplate = {
                   </mesh>
                   {hasImg && img?.src ? (
                     <group position={[0, hasLabel ? 26 : 0, 2]}>
-                      <DreiImage url={img.src} scale={[imageSize, imageSize]} />
+                      {isGifAsset(img) ? (
+                        <HtmlImage url={img.src} scale={[imageSize, imageSize]} />
+                      ) : (
+                        <DreiImage url={img.src} scale={[imageSize, imageSize]} />
+                      )}
                     </group>
                   ) : null}
 

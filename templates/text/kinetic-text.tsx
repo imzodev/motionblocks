@@ -3,7 +3,7 @@ import type { AnimationTemplate, RenderProps } from "../../types/template";
 import { Text, Image as DreiImage } from "@react-three/drei";
 import React, { useState } from "react";
 import type { Asset } from "../../types/timeline";
-import { getVideoTexture, preserveEdgeSpaces, readTextWidth } from "./shared";
+import { getVideoTexture, HtmlImage, isGifAsset, preserveEdgeSpaces, readTextWidth } from "./shared";
 import { CameraRig } from "./kinetic-text.camera";
 import { buildKineticTextRenderModel } from "./kinetic-text.render";
 import {
@@ -147,12 +147,20 @@ function KineticTextScene(props: {
       />
       {backgroundEnabled && backgroundAsset?.src && (backgroundAsset.type === "image" || backgroundAsset.type === "svg") ? (
         <group position={[0, 0, -120]}>
-          <DreiImage
-            url={backgroundAsset.src}
-            scale={[backgroundScale, backgroundScale]}
-            transparent
-            opacity={Math.min(1, Math.max(0, backgroundOpacity))}
-          />
+          {isGifAsset(backgroundAsset) ? (
+            <HtmlImage
+              url={backgroundAsset.src}
+              scale={[backgroundScale, backgroundScale]}
+              opacity={Math.min(1, Math.max(0, backgroundOpacity))}
+            />
+          ) : (
+            <DreiImage
+              url={backgroundAsset.src}
+              scale={[backgroundScale, backgroundScale]}
+              transparent
+              opacity={Math.min(1, Math.max(0, backgroundOpacity))}
+            />
+          )}
         </group>
       ) : null}
 

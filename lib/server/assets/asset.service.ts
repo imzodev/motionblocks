@@ -33,12 +33,18 @@ export class AssetService {
       createdAt: Date.now(),
     });
 
-    return { id: assetId, type, src: `/api/assets/${assetId}` };
+    return { id: assetId, type, src: `/api/assets/${assetId}`, mimeType, originalName };
   }
 
   async listProjectAssets(projectId: string): Promise<AssetPublic[]> {
     const rows = await this.repository.listAssetsByProject(projectId);
-    return rows.map((r) => ({ id: r.id, type: r.type, src: `/api/assets/${r.id}` }));
+    return rows.map((r) => ({
+      id: r.id,
+      type: r.type,
+      src: `/api/assets/${r.id}`,
+      mimeType: r.mime_type ?? undefined,
+      originalName: r.original_name ?? undefined,
+    }));
   }
 
   async getAssetFile(assetId: string): Promise<{ bytes: Buffer; mimeType: string | null } | null> {

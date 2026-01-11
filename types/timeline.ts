@@ -4,6 +4,8 @@ export const AssetSchema = z.object({
   id: z.string(),
   type: z.enum(["image", "text", "svg", "video"]),
   src: z.string().optional(),
+  mimeType: z.string().optional(),
+  originalName: z.string().optional(),
   content: z.string().optional(),
 });
 

@@ -14,7 +14,7 @@ export interface AssetRepository {
   ensureProject(projectId: string): Promise<void>;
   createAsset(record: CreateAssetRecord): Promise<void>;
   getAssetById(id: string): Promise<AssetRow | null>;
-  listAssetsByProject(projectId: string): Promise<Pick<AssetRow, "id" | "type">[]>;
+  listAssetsByProject(projectId: string): Promise<Pick<AssetRow, "id" | "type" | "mime_type" | "original_name">[]>;
   listAssetPathsByProject(projectId: string): Promise<Pick<AssetRow, "storage_path">[]>;
   deleteProject(projectId: string): Promise<void>;
 }

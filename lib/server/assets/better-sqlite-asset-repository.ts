@@ -38,11 +38,15 @@ export class BetterSqliteAssetRepository implements AssetRepository {
     return row ?? null;
   }
 
-  async listAssetsByProject(projectId: string): Promise<Pick<AssetRow, "id" | "type">[]> {
+  async listAssetsByProject(
+    projectId: string
+  ): Promise<Pick<AssetRow, "id" | "type" | "mime_type" | "original_name">[]> {
     const db = await getMotionblocksDb();
     const rows = db
-      .prepare("SELECT id, type FROM mb_assets WHERE project_id = ? ORDER BY created_at DESC")
-      .all(projectId) as Pick<AssetRow, "id" | "type">[];
+      .prepare(
+        "SELECT id, type, mime_type, original_name FROM mb_assets WHERE project_id = ? ORDER BY created_at DESC"
+      )
+      .all(projectId) as Pick<AssetRow, "id" | "type" | "mime_type" | "original_name">[];
 
     return rows || [];
   }

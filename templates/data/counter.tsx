@@ -3,6 +3,7 @@ import type { AnimationTemplate, RenderProps } from "../../types/template";
 import { Text, Image as DreiImage } from "@react-three/drei";
 import * as THREE from "three";
 import type { Asset } from "../../types/timeline";
+import { HtmlImage, isGifAsset } from "../text/shared";
 
 let cachedGlowTexture: THREE.Texture | null = null;
 
@@ -176,12 +177,16 @@ export const CounterTemplate: AnimationTemplate = {
       <group>
         {backgroundEnabled && bgAsset?.src && (bgAsset.type === "image" || bgAsset.type === "svg") ? (
           <group position={[0, 0, -120]}>
-            <DreiImage
-              url={bgAsset.src}
-              scale={[backgroundScale, backgroundScale]}
-              transparent
-              opacity={clamp01(backgroundOpacity)}
-            />
+            {isGifAsset(bgAsset) ? (
+              <HtmlImage url={bgAsset.src} scale={[backgroundScale, backgroundScale]} opacity={clamp01(backgroundOpacity)} />
+            ) : (
+              <DreiImage
+                url={bgAsset.src}
+                scale={[backgroundScale, backgroundScale]}
+                transparent
+                opacity={clamp01(backgroundOpacity)}
+              />
+            )}
           </group>
         ) : null}
 
