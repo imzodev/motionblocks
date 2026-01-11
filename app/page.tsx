@@ -68,6 +68,7 @@ export default function Home() {
   const [loopEnabled, setLoopEnabled] = useState(false);
   const [showFsControls, setShowFsControls] = useState(true);
   const fsControlsTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [autoRenameTrackId, setAutoRenameTrackId] = useState<string | null>(null);
 
   // Get assets and tracks from project
   const assets = project?.assets || [];
@@ -251,6 +252,7 @@ export default function Home() {
     const nextTracks = [...tracks.slice(0, index + 1), nextTrack, ...tracks.slice(index + 1)];
     reorderTracks(nextTracks);
     setSelectedTrackId(nextTrack.id);
+    setAutoRenameTrackId(nextTrack.id);
     void forceSave();
   }, [tracks, reorderTracks, setSelectedTrackId, forceSave]);
 
@@ -633,6 +635,8 @@ export default function Home() {
                     onDuplicate={handleDuplicateTrack}
                     onRename={handleRenameTrack}
                     selectedId={selectedTrackId}
+                    autoRenameId={autoRenameTrackId ?? undefined}
+                    onAutoRenameConsumed={() => setAutoRenameTrackId(null)}
                   />
                 </section>
                 <Separator className="opacity-50" />

@@ -35,6 +35,8 @@ interface SequenceListProps {
   onDuplicate?: (id: string) => void;
   onRename?: (id: string, name: string) => void;
   selectedId?: string;
+  autoRenameId?: string;
+  onAutoRenameConsumed?: () => void;
   className?: string;
 }
 
@@ -45,6 +47,8 @@ interface SortableItemProps {
   onDelete: () => void;
   onDuplicate?: () => void;
   onRename?: (name: string) => void;
+  autoStartEditing?: boolean;
+  onAutoStartEditingDone?: () => void;
 }
 
 function SortableItem({
@@ -54,6 +58,8 @@ function SortableItem({
   onDelete,
   onDuplicate,
   onRename,
+  autoStartEditing,
+  onAutoStartEditingDone,
 }: SortableItemProps) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
@@ -85,6 +91,14 @@ function SortableItem({
     setIsEditing(false);
     setEditValue("");
   };
+
+  useEffect(() => {
+    if (!autoStartEditing) return;
+    if (!onRename) return;
+    if (isEditing) return;
+    startEditing();
+    onAutoStartEditingDone?.();
+  }, [autoStartEditing, onRename, isEditing, onAutoStartEditingDone]);
 
   useEffect(() => {
     if (!menuOpen) return;
@@ -273,6 +287,8 @@ export function SequenceList({
   onDuplicate,
   onRename,
   selectedId,
+  autoRenameId,
+  onAutoRenameConsumed,
   className,
 }: SequenceListProps) {
   const sensors = useSensors(
@@ -313,6 +329,14 @@ export function SequenceList({
               onDelete={() => onDelete?.(track.id)}
               onDuplicate={onDuplicate ? () => onDuplicate(track.id) : undefined}
               onRename={onRename ? (name) => onRename(track.id, name) : undefined}
+              autoStartEditing={!!autoRenameId && autoRenameId === track.id}
+              onAutoStartEditingDone={
+                autoRenameId === track.id
+                  ? () => {
+                      onAutoRenameConsumed?.();
+                    }
+                  : undefined
+              }
             />
           ))}
         </SortableContext>
