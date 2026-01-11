@@ -26,6 +26,7 @@ export function SlideTemplateSection({
   const gap = typeof selectedTrack.templateProps.gap === "number" ? selectedTrack.templateProps.gap : 100;
   const duration = typeof selectedTrack.templateProps.duration === "number" ? selectedTrack.templateProps.duration : 30;
   const staggerFrames = typeof selectedTrack.templateProps.staggerFrames === "number" ? selectedTrack.templateProps.staggerFrames : 0;
+  const disableSlideAnimation = selectedTrack.templateProps.disableSlideAnimation === true;
 
   return (
     <>
@@ -45,6 +46,18 @@ export function SlideTemplateSection({
             value={duration}
             onChange={(e) => onSlotUpdate("duration", Number(e.target.value))}
           />
+        </div>
+
+        <div className="flex items-center justify-between">
+          <label className="text-xs font-medium">Disable slide animation</label>
+          <Button
+            variant="outline"
+            size="sm"
+            className="h-7 px-2 text-xs"
+            onClick={() => onSlotUpdate("disableSlideAnimation", !disableSlideAnimation)}
+          >
+            {disableSlideAnimation ? "On" : "Off"}
+          </Button>
         </div>
 
         {/* Direction Control */}

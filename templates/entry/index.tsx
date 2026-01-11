@@ -58,6 +58,7 @@ interface SlideSceneProps {
   imageScaleXBySlot: Record<"asset" | "asset2" | "asset3", number>;
   imageScaleYBySlot: Record<"asset" | "asset2" | "asset3", number>;
   staggerFrames: number;
+  disableSlideAnimation: boolean;
   backgroundEnabled: boolean;
   backgroundOpacity: number;
   backgroundScale: number;
@@ -80,6 +81,7 @@ function SlideScene({
   imageScaleXBySlot,
   imageScaleYBySlot,
   staggerFrames,
+  disableSlideAnimation,
   backgroundEnabled,
   backgroundOpacity,
   backgroundScale,
@@ -166,12 +168,11 @@ function SlideScene({
           const itemFrame = frame - itemStartFrame;
           
           // Animation progress
-          const progress = Math.min(1, Math.max(0, itemFrame / duration));
-          // Ease out cubic
-          const ease = 1 - Math.pow(1 - progress, 3);
+          const progress = disableSlideAnimation ? 1 : Math.min(1, Math.max(0, itemFrame / duration));
+          const ease = disableSlideAnimation ? 1 : 1 - Math.pow(1 - progress, 3);
 
-          const currentX = startX * (1 - ease);
-          const currentY = startY * (1 - ease);
+          const currentX = disableSlideAnimation ? 0 : startX * (1 - ease);
+          const currentY = disableSlideAnimation ? 0 : startY * (1 - ease);
 
           // Calculate layout position
           const offset = axisCenters[index] ?? 0;
@@ -215,6 +216,7 @@ export const SlideTemplate: AnimationTemplate = {
   propsSchema: z.object({
     direction: z.enum(["left", "right", "top", "bottom"]).default("left"),
     duration: z.number().default(30),
+    disableSlideAnimation: z.boolean().default(false),
     layout: z.enum(["row", "column"]).default("row"),
     gap: z.number().default(100),
     fontSize: z.number().default(60),
@@ -255,6 +257,7 @@ export const SlideTemplate: AnimationTemplate = {
 
     const direction = (p.direction as "left" | "right" | "top" | "bottom") || "left";
     const duration = Number(p.duration) || 30;
+    const disableSlideAnimation = typeof p.disableSlideAnimation === "boolean" ? p.disableSlideAnimation : false;
     const layout = (p.layout as "row" | "column") || "row";
     const gap = Number(p.gap) || 50;
     const fontSize = Number(p.fontSize) || 60;
@@ -280,6 +283,7 @@ export const SlideTemplate: AnimationTemplate = {
         frame={frame}
         duration={duration}
         direction={direction}
+        disableSlideAnimation={disableSlideAnimation}
         layout={layout}
         gap={gap}
         globalFontUrl={globalFontUrl}
