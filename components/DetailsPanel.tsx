@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useRef } from "react";
 import type { Track, Asset } from "@/types/timeline";
 import type { AnimationTemplate } from "@/types/template";
 import { cn } from "@/lib/utils";
@@ -46,11 +46,19 @@ export function DetailsPanel({
     );
   }
 
+  const templatePropsRef = useRef<Record<string, any>>(selectedTrack.templateProps);
+
+  useEffect(() => {
+    templatePropsRef.current = selectedTrack.templateProps;
+  }, [selectedTrack.id, selectedTrack.templateProps]);
+
   const handleSlotUpdate = (slotId: string, value: unknown) => {
     const nextTemplateProps = {
-      ...selectedTrack.templateProps,
+      ...templatePropsRef.current,
       [slotId]: value,
     };
+
+    templatePropsRef.current = nextTemplateProps;
 
     let nextDuration = selectedTrack.duration;
     if (selectedTrack.template === "timeline-reveal") {

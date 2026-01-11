@@ -31,6 +31,32 @@ export function DetailsPanelSlotsSection({
 }: DetailsPanelSlotsSectionProps) {
   const [openFileSlotId, setOpenFileSlotId] = useState<string | null>(null);
 
+  const getImageDimensions = (src: string) =>
+    new Promise<{ width: number; height: number }>((resolve, reject) => {
+      const img = new window.Image();
+      img.onload = () => resolve({ width: img.naturalWidth, height: img.naturalHeight });
+      img.onerror = () => reject(new Error("Failed to load image"));
+      img.src = src;
+    });
+
+  const computeAspectScale = (width: number, height: number) => {
+    if (!Number.isFinite(width) || !Number.isFinite(height) || width <= 0 || height <= 0) {
+      return { x: 1, y: 1 };
+    }
+
+    const ratio = width / height;
+    // Keep the larger axis at 1, shrink the other to preserve aspect.
+    const raw = ratio >= 1 ? { x: 1, y: 1 / ratio } : { x: ratio, y: 1 };
+
+    const step = 0.05;
+    const roundUp = (v: number) => Math.ceil(v / step) * step;
+
+    return {
+      x: roundUp(raw.x),
+      y: roundUp(raw.y),
+    };
+  };
+
   const slideScaleKeysBySlotId: Record<"asset" | "asset2" | "asset3", { x: string; y: string }> = {
     asset: { x: "assetScaleX", y: "assetScaleY" },
     asset2: { x: "asset2ScaleX", y: "asset2ScaleY" },
@@ -146,6 +172,19 @@ export function DetailsPanelSlotsSection({
                               key={asset.id}
                               onClick={() => {
                                 onSlotUpdate(slot.id, asset.id);
+
+                                if (isSlideScaleSlot && scaleKeys && asset.src) {
+                                  void getImageDimensions(asset.src)
+                                    .then(({ width, height }) => {
+                                      const next = computeAspectScale(width, height);
+                                      onSlotUpdate(scaleKeys.x, next.x);
+                                      onSlotUpdate(scaleKeys.y, next.y);
+                                    })
+                                    .catch(() => {
+                                      // If we can't read dimensions, keep current scale.
+                                    });
+                                }
+
                                 setOpenFileSlotId(null);
                               }}
                               className={cn(
