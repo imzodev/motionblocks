@@ -11,6 +11,7 @@ import { Canvas3D } from "@/components/Canvas3D";
 import { Renderer3D, TEMPLATE_REGISTRY } from "@/components/Renderer3D";
 import { ProjectManager } from "@/components/project/ProjectManager";
 import { SaveStatusIndicator } from "@/components/project/SaveStatusIndicator";
+import { ProjectSpecActions } from "@/components/project/ProjectSpecActions";
 import { projectService, initializeProjectService } from "@/lib/services/project-service.factory";
 import { useProjectStore, useUIStore, useTimelineStore } from "@/lib/stores";
 import { Button } from "@/components/ui/button";
@@ -333,6 +334,7 @@ export default function Home() {
                 <CardTitle className="text-base font-black uppercase">Assets</CardTitle>
               </div>
               <div className="flex items-center gap-2">
+                <ProjectSpecActions />
                 <Button
                   variant="ghost"
                   size="icon"

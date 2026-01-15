@@ -3,10 +3,15 @@ import { z } from "zod";
 export const AssetSchema = z.object({
   id: z.string(),
   type: z.enum(["image", "text", "svg", "video"]),
+  scope: z.enum(["project", "global"]).optional().default("project"),
   src: z.string().optional(),
   mimeType: z.string().optional(),
   originalName: z.string().optional(),
   content: z.string().optional(),
+  name: z.string().optional(),
+  description: z.string().optional(),
+  whenToUse: z.string().optional(),
+  tags: z.array(z.string()).optional(),
 });
 
 export type Asset = z.infer<typeof AssetSchema>;
