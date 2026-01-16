@@ -4,7 +4,7 @@ import React from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { LogOut, Database, Home } from "lucide-react";
+import { LogOut, Database, Home, FileText } from "lucide-react";
 
 export function AdminHeader() {
   const pathname = usePathname();
@@ -18,6 +18,7 @@ export function AdminHeader() {
 
   const navItems = [
     { href: "/admin/assets", label: "Global Assets", icon: Database },
+    { href: "/admin/script", label: "Script Generator", icon: FileText },
   ];
 
   return (
