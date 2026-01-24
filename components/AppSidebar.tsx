@@ -5,9 +5,13 @@ import { Button } from "@/components/ui/button";
 import { LayoutDashboard, FileText, PenTool, Home as HomeIcon, Menu } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-export function AppSidebar() {
+interface AppSidebarProps {
+  defaultCollapsed?: boolean;
+}
+
+export function AppSidebar({ defaultCollapsed = false }: AppSidebarProps) {
   const pathname = usePathname();
-  const [isCollapsed, setIsCollapsed] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(defaultCollapsed);
 
   return (
     <aside 

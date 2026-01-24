@@ -293,26 +293,24 @@ export default function Home() {
       {/* Project Manager Overlay */}
 
       <div className="flex h-screen overflow-hidden bg-background text-foreground font-sans">
-      <AppSidebar />
+      <AppSidebar defaultCollapsed={true} />
       
-      {/* Left Sidebar */}
-      <aside className="w-80 border-r border-border bg-background flex flex-col">
-        <Card className="h-full rounded-none border-0 bg-card/50 backdrop-blur-sm flex flex-col">
-          <CardHeader className="py-4 border-b">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Box className="w-5 h-5 text-primary" />
-                <CardTitle className="text-base font-black uppercase">Assets</CardTitle>
-              </div>
-              <div className="flex items-center gap-2">
-                <ProjectSpecActions />
-                <ThemeToggle />
-              </div>
+      {/* Left Sidebar - Assets Panel */}
+      <aside className="w-80 border-r border-border bg-card/30 flex flex-col backdrop-blur-sm z-40">
+        <div className="h-16 flex items-center justify-between px-6 border-b border-border shrink-0">
+            <div className="flex items-center gap-2">
+              <Box className="w-5 h-5 text-primary" />
+              <span className="text-base font-black uppercase tracking-tight">Assets</span>
             </div>
-          </CardHeader>
-          <CardContent className="p-0 flex-1 min-h-0">
+            <div className="flex items-center gap-1">
+              <ProjectSpecActions />
+              <ThemeToggle />
+            </div>
+        </div>
+        
+        <div className="flex-1 min-h-0 relative">
             <ScrollArea className="h-full">
-              <div className="p-4 space-y-8">
+              <div className="p-6 space-y-8">
                 <section className="space-y-4">
                   <h2 className="text-[10px] font-black uppercase text-muted-foreground tracking-[0.2em] flex items-center gap-2">
                     <Sparkles className="w-3 h-3" /> Recipes
@@ -396,8 +394,7 @@ export default function Home() {
                 </section>
               </div>
             </ScrollArea>
-          </CardContent>
-        </Card>
+        </div>
       </aside>
 
       {/* Main Content Area */}
