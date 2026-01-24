@@ -4,10 +4,6 @@ import { createLLMProvider } from "@/lib/server/llm";
 import type { VideoScript } from "@/lib/admin/script-types";
 
 export async function POST(request: NextRequest) {
-  const token = request.cookies.get("admin_session")?.value;
-  if (!token || !isValidSessionToken(token)) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
 
   try {
     const { script, sectionType, sectionIndex, editInstruction, language } = await request.json();

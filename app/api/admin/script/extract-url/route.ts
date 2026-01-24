@@ -3,10 +3,6 @@ import { isValidSessionToken } from "@/lib/server/admin/auth";
 import { extractContentFromUrl } from "@/lib/server/script/url-extractor";
 
 export async function POST(request: NextRequest) {
-  const token = request.cookies.get("admin_session")?.value;
-  if (!token || !isValidSessionToken(token)) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
 
   try {
     const { url } = await request.json();

@@ -4,10 +4,7 @@ import { generateScript } from "@/lib/server/script";
 import type { GenerateScriptRequest } from "@/lib/admin/script-types";
 
 export async function POST(request: NextRequest) {
-  const token = request.cookies.get("admin_session")?.value;
-  if (!token || !isValidSessionToken(token)) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+// import { isValidSessionToken } from "@/lib/server/admin/auth";
 
   try {
     const body: GenerateScriptRequest = await request.json();
