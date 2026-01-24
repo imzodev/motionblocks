@@ -172,7 +172,7 @@ export function ScriptGenerator() {
         </p>
       </div>
 
-      <div className="flex-1 grid grid-cols-[400px_1fr] gap-4 p-4 min-h-0">
+      <div className="flex-1 grid grid-cols-[400px_1fr] grid-rows-[minmax(0,1fr)] gap-4 p-4 min-h-0 overflow-hidden">
         <ScrollArea className="h-full">
           <div className="space-y-4 pr-4">
             <Card>

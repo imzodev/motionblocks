@@ -5,7 +5,7 @@ import { AppSidebar } from "@/components/AppSidebar";
 
 export default function ScriptGeneratorPage() {
   return (
-    <div className="h-full">
+    <div className="flex flex-col flex-1 h-full w-full overflow-hidden">
        <ScriptGenerator />
     </div>
   );

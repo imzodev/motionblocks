@@ -158,7 +158,7 @@ export function ScriptOutput({
   }
 
   return (
-    <Card className="h-full flex flex-col">
+    <Card className="h-full flex flex-col min-h-0">
       <CardHeader className="py-3 px-4 border-b">
         <div className="flex items-center justify-between">
           <div>
@@ -188,7 +188,7 @@ export function ScriptOutput({
         </div>
       </CardHeader>
 
-      <ScrollArea className="flex-1">
+      <ScrollArea className="h-full min-h-0">
         <CardContent className="p-4 space-y-6">
           <div className="group relative bg-primary/5 border border-primary/20 rounded-lg p-4">
             <div className="flex items-center justify-between mb-2">
