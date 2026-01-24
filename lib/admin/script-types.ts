@@ -158,3 +158,17 @@ export const STRUCTURE_OPTIONS: { value: ScriptStructure; label: string; descrip
   { value: "before-after", label: "Before & After", description: "Transformation showcase" },
   { value: "step-by-step", label: "Step by Step", description: "Sequential instructions" },
 ];
+
+export type BRollType = "video" | "image" | "animation" | "text_overlay";
+
+export interface BRollSegment {
+  segmentText: string;
+  visualDescription: string;
+  visualType: BRollType;
+  matchType: "global_asset" | "generative";
+  assetId?: string;
+  assetName?: string;
+}
+
+export type VideoVisualPlan = BRollSegment[];
+
