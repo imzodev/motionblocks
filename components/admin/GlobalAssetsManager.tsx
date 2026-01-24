@@ -149,7 +149,7 @@ export function GlobalAssetsManager() {
         )}
       </div>
 
-      <ScrollArea className="flex-1">
+      <ScrollArea className="flex-1 min-h-0">
         <div className="p-4">
           {isLoading ? (
             <div className="flex items-center justify-center py-12">
