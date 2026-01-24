@@ -34,7 +34,7 @@ export function ScriptGenerator() {
   const [keywordsInput, setKeywordsInput] = useState("");
   const [urlInput, setUrlInput] = useState("");
   const [isExtractingUrl, setIsExtractingUrl] = useState(false);
-  const [extractedUrls, setExtractedUrls] = useState<{ url: string; title: string }[]>([]);
+  const [extractedSources, setExtractedSources] = useState<{ url: string; title: string; content: string }[]>([]);
 
   const [script, setScript] = useState<VideoScript | null>(null);
   const [provider, setProvider] = useState<string>("");
@@ -87,13 +87,16 @@ export function ScriptGenerator() {
         throw new Error(data.error || "Failed to extract content");
       }
 
-      setExtractedUrls((prev) => [...prev, { url: urlInput, title: data.title || urlInput }]);
+      const newSource = {
+        url: urlInput,
+        title: data.title || urlInput,
+        content: data.content
+      };
+
+      setExtractedSources((prev) => [...prev, newSource]);
       setInput((prev) => ({
         ...prev,
         sourceUrls: [...(prev.sourceUrls || []), urlInput],
-        extractedContent: prev.extractedContent
-          ? `${prev.extractedContent}\n\n--- Source: ${data.title || urlInput} ---\n${data.content}`
-          : `--- Source: ${data.title || urlInput} ---\n${data.content}`,
       }));
       setUrlInput("");
     } catch (err) {
@@ -104,15 +107,10 @@ export function ScriptGenerator() {
   };
 
   const removeUrl = (index: number) => {
-    const urlToRemove = extractedUrls[index];
-    setExtractedUrls((prev) => prev.filter((_, i) => i !== index));
+    setExtractedSources((prev) => prev.filter((_, i) => i !== index));
     setInput((prev) => ({
       ...prev,
       sourceUrls: prev.sourceUrls?.filter((_, i) => i !== index),
-      extractedContent: prev.extractedContent
-        ?.split(`--- Source: ${urlToRemove.title} ---`)
-        .filter((_, i) => i !== 1)
-        .join(""),
     }));
   };
 
@@ -139,6 +137,9 @@ export function ScriptGenerator() {
         brandContext: input.brandContext?.trim() || undefined,
         additionalContext: input.additionalContext?.trim() || undefined,
         topicsToAvoid: input.topicsToAvoid?.trim() || undefined,
+        extractedContent: extractedSources
+          .map((source) => `--- Source: ${source.title} ---\n${source.content}`)
+          .join("\n\n"),
       };
 
       const res = await fetch("/api/admin/script/generate", {
@@ -213,9 +214,9 @@ export function ScriptGenerator() {
                       )}
                     </Button>
                   </div>
-                  {extractedUrls.length > 0 && (
+                  {extractedSources.length > 0 && (
                     <div className="space-y-1">
-                      {extractedUrls.map((item, index) => (
+                      {extractedSources.map((item, index) => (
                         <div
                           key={index}
                           className="flex items-center gap-2 text-xs bg-muted/50 rounded px-2 py-1"
