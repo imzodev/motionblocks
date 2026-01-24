@@ -83,6 +83,11 @@ export class BetterSqliteAssetRepository implements AssetRepository {
     db.prepare("DELETE FROM mb_projects WHERE id = ?").run(projectId);
   }
 
+  async deleteAssetById(id: string): Promise<void> {
+    const db = await getMotionblocksDb();
+    db.prepare("DELETE FROM mb_assets WHERE id = ?").run(id);
+  }
+
   async listGlobalAssets(): Promise<AssetRow[]> {
     const db = await getMotionblocksDb();
     const rows = db

@@ -12,6 +12,38 @@ export class AssetService {
     this.fileStore = fileStore;
   }
 
+  async deleteGlobalAsset(assetId: string): Promise<boolean> {
+    const row = await this.repository.getAssetById(assetId);
+    if (!row || row.scope !== "global") {
+      return false;
+    }
+
+    try {
+      await this.fileStore.deleteFile(row.storage_path);
+    } catch {
+      // ignore
+    }
+
+    await this.repository.deleteAssetById(assetId);
+    return true;
+  }
+
+  async deleteGlobalAssets(assetIds: string[]): Promise<{ deleted: string[]; notFoundOrNotGlobal: string[] }> {
+    const deleted: string[] = [];
+    const notFoundOrNotGlobal: string[] = [];
+
+    for (const assetId of assetIds) {
+      const ok = await this.deleteGlobalAsset(assetId);
+      if (ok) {
+        deleted.push(assetId);
+      } else {
+        notFoundOrNotGlobal.push(assetId);
+      }
+    }
+
+    return { deleted, notFoundOrNotGlobal };
+  }
+
   async uploadFile(projectId: string, file: File): Promise<AssetPublic> {
     const mimeType = file.type || "application/octet-stream";
     const type = this.detectAssetType(mimeType);

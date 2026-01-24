@@ -51,3 +51,20 @@ export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }>
     return NextResponse.json({ error: "Update failed", message }, { status: 500 });
   }
 }
+
+export async function DELETE(_req: Request, ctx: { params: Promise<{ id: string }> }) {
+  const { id } = await ctx.params;
+
+  try {
+    const ok = await assetService.deleteGlobalAsset(id);
+    if (!ok) {
+      return NextResponse.json({ error: "Asset not found or not global" }, { status: 404 });
+    }
+
+    return NextResponse.json({ ok: true });
+  } catch (error) {
+    console.error("/api/assets/global/[id] DELETE failed:", error);
+    const message = error instanceof Error ? error.message : "Unknown error";
+    return NextResponse.json({ error: "Delete failed", message }, { status: 500 });
+  }
+}

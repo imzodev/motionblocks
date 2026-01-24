@@ -15,6 +15,24 @@ export async function GET() {
   }
 }
 
+export async function DELETE(req: Request) {
+  try {
+    const body = (await req.json()) as { assetIds?: string[] };
+    const assetIds = Array.isArray(body.assetIds) ? body.assetIds.filter((id) => typeof id === "string") : [];
+
+    if (assetIds.length === 0) {
+      return NextResponse.json({ error: "Missing assetIds" }, { status: 400 });
+    }
+
+    const result = await assetService.deleteGlobalAssets(assetIds);
+    return NextResponse.json({ ok: true, ...result });
+  } catch (error) {
+    console.error("/api/assets/global DELETE failed:", error);
+    const message = error instanceof Error ? error.message : "Unknown error";
+    return NextResponse.json({ error: "Bulk delete failed", message }, { status: 500 });
+  }
+}
+
 export async function POST(req: Request) {
   try {
     const formData = await req.formData();

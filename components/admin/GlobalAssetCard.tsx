@@ -5,14 +5,17 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { Edit, Copy, Image, Video, FileText, FileCode, Sparkles } from "lucide-react";
+import { Edit, Copy, Image, Video, FileText, FileCode, Sparkles, Trash2 } from "lucide-react";
 import type { GlobalAsset } from "@/lib/admin/types";
 
 interface GlobalAssetCardProps {
   asset: GlobalAsset;
   onEdit: (asset: GlobalAsset) => void;
   onCopyId: (id: string) => void;
+  onDelete?: (asset: GlobalAsset) => void;
   onCreateMeme?: (asset: GlobalAsset) => void;
+  selected?: boolean;
+  onToggleSelected?: (asset: GlobalAsset) => void;
 }
 
 const typeIcons = {
@@ -22,13 +25,32 @@ const typeIcons = {
   svg: FileCode,
 };
 
-export function GlobalAssetCard({ asset, onEdit, onCopyId, onCreateMeme }: GlobalAssetCardProps) {
+export function GlobalAssetCard({
+  asset,
+  onEdit,
+  onCopyId,
+  onDelete,
+  onCreateMeme,
+  selected,
+  onToggleSelected,
+}: GlobalAssetCardProps) {
   const TypeIcon = typeIcons[asset.type] || Image;
   const canCreateMeme = asset.type === "image" || asset.type === "video";
 
   return (
     <Card className="group overflow-hidden hover:ring-2 hover:ring-primary/50 transition-all">
       <div className="aspect-video bg-muted relative overflow-hidden">
+        {onToggleSelected && (
+          <div className="absolute top-2 left-2 z-10">
+            <input
+              type="checkbox"
+              checked={!!selected}
+              onChange={() => onToggleSelected(asset)}
+              className="h-4 w-4 accent-primary"
+              aria-label={selected ? "Deselect asset" : "Select asset"}
+            />
+          </div>
+        )}
         {asset.type === "image" && (
           <img
             src={asset.src}
@@ -63,6 +85,18 @@ export function GlobalAssetCard({ asset, onEdit, onCopyId, onCreateMeme }: Globa
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent>Create Meme</TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          )}
+          {onDelete && (
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button size="icon" variant="secondary" className="h-8 w-8" onClick={() => onDelete(asset)}>
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>Delete</TooltipContent>
               </Tooltip>
             </TooltipProvider>
           )}

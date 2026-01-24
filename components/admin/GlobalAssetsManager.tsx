@@ -5,6 +5,16 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   Plus,
@@ -47,6 +57,11 @@ export function GlobalAssetsManager() {
   const [showPromote, setShowPromote] = useState(false);
   const [editingAsset, setEditingAsset] = useState<GlobalAsset | null>(null);
   const [memeAsset, setMemeAsset] = useState<GlobalAsset | null>(null);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
+  const [confirmDeleteAsset, setConfirmDeleteAsset] = useState<GlobalAsset | null>(null);
+  const [confirmDeleteSelectedOpen, setConfirmDeleteSelectedOpen] = useState(false);
 
   const filteredAssets = useAssetFilter(assets, filter);
 
@@ -60,6 +75,78 @@ export function GlobalAssetsManager() {
 
   const handleCopyId = (id: string) => {
     navigator.clipboard.writeText(id);
+  };
+
+  const toggleSelected = (asset: GlobalAsset) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(asset.id)) {
+        next.delete(asset.id);
+      } else {
+        next.add(asset.id);
+      }
+      return next;
+    });
+  };
+
+  const requestDeleteOne = (asset: GlobalAsset) => {
+    setDeleteError(null);
+    setConfirmDeleteAsset(asset);
+  };
+
+  const handleDeleteOne = async (asset: GlobalAsset) => {
+    setIsDeleting(true);
+    setDeleteError(null);
+    try {
+      const res = await fetch(`/api/assets/global/${asset.id}`, { method: "DELETE" });
+      if (!res.ok) {
+        const data = (await res.json().catch(() => null)) as { message?: string; error?: string } | null;
+        throw new Error(data?.message || data?.error || "Delete failed");
+      }
+      setSelectedIds((prev) => {
+        const next = new Set(prev);
+        next.delete(asset.id);
+        return next;
+      });
+      await refetch();
+    } catch (err) {
+      setDeleteError(err instanceof Error ? err.message : "Delete failed");
+      throw err;
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
+  const requestDeleteSelected = () => {
+    if (selectedIds.size === 0) return;
+    setDeleteError(null);
+    setConfirmDeleteSelectedOpen(true);
+  };
+
+  const handleDeleteSelected = async () => {
+    const ids = Array.from(selectedIds);
+    if (ids.length === 0) return;
+
+    setIsDeleting(true);
+    setDeleteError(null);
+    try {
+      const res = await fetch("/api/assets/global", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ assetIds: ids }),
+      });
+      if (!res.ok) {
+        const data = (await res.json().catch(() => null)) as { message?: string; error?: string } | null;
+        throw new Error(data?.message || data?.error || "Bulk delete failed");
+      }
+      setSelectedIds(new Set());
+      await refetch();
+    } catch (err) {
+      setDeleteError(err instanceof Error ? err.message : "Bulk delete failed");
+      throw err;
+    } finally {
+      setIsDeleting(false);
+    }
   };
 
   const handleTagClick = (tag: string) => {
@@ -82,6 +169,15 @@ export function GlobalAssetsManager() {
             </p>
           </div>
           <div className="flex items-center gap-2">
+            {selectedIds.size > 0 && (
+              <Button
+                variant="destructive"
+                disabled={isLoading || isDeleting}
+                onClick={requestDeleteSelected}
+              >
+                Delete Selected ({selectedIds.size})
+              </Button>
+            )}
             <Button variant="outline" size="icon" onClick={refetch} disabled={isLoading}>
               <RefreshCw className={`h-4 w-4 ${isLoading ? "animate-spin" : ""}`} />
             </Button>
@@ -151,6 +247,13 @@ export function GlobalAssetsManager() {
 
       <ScrollArea className="flex-1 min-h-0">
         <div className="p-4">
+          {deleteError && (
+            <Card className="mb-4 bg-destructive/10 border-destructive/20">
+              <CardContent className="py-3">
+                <p className="text-sm text-destructive">{deleteError}</p>
+              </CardContent>
+            </Card>
+          )}
           {isLoading ? (
             <div className="flex items-center justify-center py-12">
               <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
@@ -190,12 +293,95 @@ export function GlobalAssetsManager() {
                   onEdit={setEditingAsset}
                   onCopyId={handleCopyId}
                   onCreateMeme={setMemeAsset}
+                  onDelete={requestDeleteOne}
+                  selected={selectedIds.has(asset.id)}
+                  onToggleSelected={toggleSelected}
                 />
               ))}
             </div>
           )}
         </div>
       </ScrollArea>
+
+      <AlertDialog
+        open={!!confirmDeleteAsset}
+        onOpenChange={(open) => {
+          if (!open) setConfirmDeleteAsset(null);
+        }}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete asset?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This cannot be undone.
+              {confirmDeleteAsset && (
+                <span className="block mt-2 break-all">
+                  {confirmDeleteAsset.name || confirmDeleteAsset.originalName || confirmDeleteAsset.id}
+                </span>
+              )}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel asChild>
+              <Button variant="outline" disabled={isDeleting}>
+                Cancel
+              </Button>
+            </AlertDialogCancel>
+            <AlertDialogAction asChild>
+              <Button
+                variant="destructive"
+                disabled={!confirmDeleteAsset || isDeleting}
+                onClick={async () => {
+                  if (!confirmDeleteAsset) return;
+                  try {
+                    await handleDeleteOne(confirmDeleteAsset);
+                    setConfirmDeleteAsset(null);
+                  } catch {
+                    // error handled via state
+                  }
+                }}
+              >
+                Delete
+              </Button>
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog open={confirmDeleteSelectedOpen} onOpenChange={setConfirmDeleteSelectedOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete selected assets?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This cannot be undone.
+              <span className="block mt-2">Selected: {selectedIds.size}</span>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel asChild>
+              <Button variant="outline" disabled={isDeleting}>
+                Cancel
+              </Button>
+            </AlertDialogCancel>
+            <AlertDialogAction asChild>
+              <Button
+                variant="destructive"
+                disabled={selectedIds.size === 0 || isDeleting}
+                onClick={async () => {
+                  try {
+                    await handleDeleteSelected();
+                    setConfirmDeleteSelectedOpen(false);
+                  } catch {
+                    // error handled via state
+                  }
+                }}
+              >
+                Delete
+              </Button>
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       <div className="border-t p-3 bg-muted/30">
         <div className="flex items-center justify-between text-sm text-muted-foreground">

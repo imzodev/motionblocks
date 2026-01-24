@@ -33,6 +33,7 @@ export interface AssetRepository {
   listAssetsByProject(projectId: string): Promise<Pick<AssetRow, "id" | "type" | "mime_type" | "original_name" | "scope">[]>;
   listAssetPathsByProject(projectId: string): Promise<Pick<AssetRow, "storage_path">[]>;
   deleteProject(projectId: string): Promise<void>;
+  deleteAssetById(id: string): Promise<void>;
   listGlobalAssets(): Promise<AssetRow[]>;
   updateAssetMetadata(id: string, metadata: UpdateAssetMetadataRecord): Promise<void>;
   updateAssetScope(id: string, scope: AssetScope): Promise<void>;
