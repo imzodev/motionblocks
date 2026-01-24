@@ -24,26 +24,19 @@ export default function Home() {
   };
 
   return (
-    <div className="flex h-screen bg-background text-foreground font-sans">
-      <AppSidebar />
-
-      {/* Main Content */}
-      <main className="flex-1 overflow-hidden flex flex-col">
-        <div className="flex-1 p-8 overflow-y-auto">
-          <div className="max-w-5xl mx-auto h-full flex flex-col">
-            {isInitialized ? (
-               <ProjectManager
-                 projectService={projectService}
-                 onProjectLoaded={handleProjectLoaded}
-               />
-            ) : (
-              <div className="flex items-center justify-center h-full text-muted-foreground">
-                Loading...
-              </div>
-            )}
+    <div className="flex-1 p-8 overflow-y-auto">
+      <div className="max-w-5xl mx-auto h-full flex flex-col">
+        {isInitialized ? (
+           <ProjectManager
+             projectService={projectService}
+             onProjectLoaded={handleProjectLoaded}
+           />
+        ) : (
+          <div className="flex items-center justify-center h-full text-muted-foreground">
+            Loading...
           </div>
-        </div>
-      </main>
+        )}
+      </div>
     </div>
   );
 }

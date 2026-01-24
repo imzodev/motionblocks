@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState, useEffect, useMemo, useRef, useCallback } from "react";
-import { AppSidebar } from "@/components/AppSidebar";
 import { AssetsPanel } from "@/components/AssetsPanel";
 import { AssetLibrary } from "@/components/AssetLibrary";
 import { TemplatesPanel } from "@/components/TemplatesPanel";
@@ -292,8 +291,7 @@ export default function Home() {
     <>
       {/* Project Manager Overlay */}
 
-      <div className="flex h-screen overflow-hidden bg-background text-foreground font-sans">
-      <AppSidebar defaultCollapsed={true} />
+      <div className="flex h-full w-full overflow-hidden bg-background text-foreground font-sans">
       
       {/* Left Sidebar - Assets Panel */}
       <aside className="w-80 border-r border-border bg-card/30 flex flex-col backdrop-blur-sm z-40">

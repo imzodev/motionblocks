@@ -1,4 +1,6 @@
-import { useState } from "react";
+"use client";
+
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Button } from "@/components/ui/button";
@@ -12,6 +14,15 @@ interface AppSidebarProps {
 export function AppSidebar({ defaultCollapsed = false }: AppSidebarProps) {
   const pathname = usePathname();
   const [isCollapsed, setIsCollapsed] = useState(defaultCollapsed);
+
+  // Sync state to cookie whenever it changes
+  useEffect(() => {
+    document.cookie = `sidebar:state=${isCollapsed}; path=/; max-age=${60 * 60 * 24 * 365}`;
+  }, [isCollapsed]);
+
+  // Prevent hydration mismatch by using defaultCollapsed during SSR/initial render
+  // but we can't easily avoid the mismatch if we want to use the stored value immediately.
+  // The useEffect approach ensures we match hydration then update.
 
   return (
     <aside 
