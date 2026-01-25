@@ -1,13 +1,11 @@
-"use client";
-
-import React from "react";
+import { useMemo } from "react";
 import { Text, Image as DreiImage } from "@react-three/drei";
-import { useFrame, useThree } from "@react-three/fiber";
-import * as THREE from "three";
+import { useThree } from "@react-three/fiber";
 import type { Asset } from "../../types/timeline";
 import { getVideoTexture, HtmlImage, isGifAsset } from "../../templates/text/shared";
+import { ChaptersProps, ChapterItem } from "./schemas/chapters";
 
-// --- Utils ---
+ // --- Utils ---
 
 function clamp01(v: number) {
   return Math.min(1, Math.max(0, v));
@@ -24,41 +22,34 @@ function easeOutBack(t: number, overshoot = 1.0) {
   return 1 + c3 * Math.pow(x - 1, 3) + c1 * Math.pow(x - 1, 2);
 }
 
-// --- Props ---
+function parseChapterData(dataString: string): ChapterItem[] {
+  const lines = dataString.split("\n").filter((l: string) => l.trim().length > 0);
+  const data = lines.map((line: string) => {
+    // Split by first comma only to allow commas in subtitle
+    const firstCommaIndex = line.indexOf(",");
+    if (firstCommaIndex === -1) {
+      return { title: line.trim(), subtitle: "" };
+    }
+    const title = line.substring(0, firstCommaIndex).trim();
+    const subtitle = line.substring(firstCommaIndex + 1).trim();
+    return { title, subtitle };
+  });
 
-export interface ChapterItem {
-  title: string;
-  subtitle?: string;
-}
-
-export interface ChaptersProps {
-  data: ChapterItem[];
-  startNumber?: number;
-  showNumber?: boolean;
-  frame: number;
-  introFrames?: number;
-  framesPerChapter?: number;
-  accentColor?: string;
-  textColor?: string;
-  fontUrl?: string;
-  // Background
-  backgroundEnabled?: boolean;
-  backgroundOpacity?: number;
-  backgroundScale?: number;
-  backgroundVideoAspect?: number;
-  backgroundColor?: string;
-  backgroundAsset?: Asset;
+  if (data.length === 0) {
+    data.push({ title: "Chapter Title", subtitle: "Subtitle" });
+  }
+  return data;
 }
 
 // --- Component ---
 
 export function Chapters({
-  data,
+  data: dataString,
   startNumber = 1,
   showNumber = true,
   frame,
   introFrames = 30,
-  framesPerChapter = 60, // Default duration per chapter
+  framesPerChapter = 60,
   accentColor = "#00d09c",
   textColor = "#1a1a1a",
   fontUrl,
@@ -67,11 +58,15 @@ export function Chapters({
   backgroundScale = 6000,
   backgroundVideoAspect = 1.77,
   backgroundColor = "#ffffff",
-  backgroundAsset,
+  background,
 }: ChaptersProps) {
   const { viewport } = useThree();
   
-  // 1. Determine active chapter
+  // Parse data
+  const data = useMemo(() => parseChapterData(dataString || ""), [dataString]);
+  
+  // Resolve background asset
+  const backgroundAsset = background as Asset | undefined;
   const currentIndex = Math.floor(frame / framesPerChapter);
   
   // Guard: If out of range, show nothing
