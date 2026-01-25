@@ -5,16 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   Plus,
@@ -303,85 +294,56 @@ export function GlobalAssetsManager() {
         </div>
       </ScrollArea>
 
-      <AlertDialog
+      <ConfirmDialog
         open={!!confirmDeleteAsset}
-        onOpenChange={(open) => {
-          if (!open) setConfirmDeleteAsset(null);
+        onOpenChange={(open) => !open && setConfirmDeleteAsset(null)}
+        title="Delete asset?"
+        description={
+          <>
+            This cannot be undone.
+            {confirmDeleteAsset && (
+              <span className="block mt-2 break-all">
+                {confirmDeleteAsset.name || confirmDeleteAsset.originalName || confirmDeleteAsset.id}
+              </span>
+            )}
+          </>
+        }
+        onConfirm={async () => {
+          if (!confirmDeleteAsset) return;
+          try {
+            await handleDeleteOne(confirmDeleteAsset);
+            setConfirmDeleteAsset(null);
+          } catch {
+            // error handled via state
+          }
         }}
-      >
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Delete asset?</AlertDialogTitle>
-            <AlertDialogDescription>
-              This cannot be undone.
-              {confirmDeleteAsset && (
-                <span className="block mt-2 break-all">
-                  {confirmDeleteAsset.name || confirmDeleteAsset.originalName || confirmDeleteAsset.id}
-                </span>
-              )}
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel asChild>
-              <Button variant="outline" disabled={isDeleting}>
-                Cancel
-              </Button>
-            </AlertDialogCancel>
-            <AlertDialogAction asChild>
-              <Button
-                variant="destructive"
-                disabled={!confirmDeleteAsset || isDeleting}
-                onClick={async () => {
-                  if (!confirmDeleteAsset) return;
-                  try {
-                    await handleDeleteOne(confirmDeleteAsset);
-                    setConfirmDeleteAsset(null);
-                  } catch {
-                    // error handled via state
-                  }
-                }}
-              >
-                Delete
-              </Button>
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+        isLoading={isDeleting}
+        confirmLabel="Delete"
+        variant="destructive"
+      />
 
-      <AlertDialog open={confirmDeleteSelectedOpen} onOpenChange={setConfirmDeleteSelectedOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Delete selected assets?</AlertDialogTitle>
-            <AlertDialogDescription>
-              This cannot be undone.
-              <span className="block mt-2">Selected: {selectedIds.size}</span>
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel asChild>
-              <Button variant="outline" disabled={isDeleting}>
-                Cancel
-              </Button>
-            </AlertDialogCancel>
-            <AlertDialogAction asChild>
-              <Button
-                variant="destructive"
-                disabled={selectedIds.size === 0 || isDeleting}
-                onClick={async () => {
-                  try {
-                    await handleDeleteSelected();
-                    setConfirmDeleteSelectedOpen(false);
-                  } catch {
-                    // error handled via state
-                  }
-                }}
-              >
-                Delete
-              </Button>
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <ConfirmDialog
+        open={confirmDeleteSelectedOpen}
+        onOpenChange={setConfirmDeleteSelectedOpen}
+        title="Delete selected assets?"
+        description={
+          <>
+            This cannot be undone.
+            <span className="block mt-2">Selected: {selectedIds.size}</span>
+          </>
+        }
+        onConfirm={async () => {
+          try {
+            await handleDeleteSelected();
+            setConfirmDeleteSelectedOpen(false);
+          } catch {
+            // error handled via state
+          }
+        }}
+        isLoading={isDeleting}
+        confirmLabel="Delete"
+        variant="destructive"
+      />
 
       <div className="border-t p-3 bg-muted/30">
         <div className="flex items-center justify-between text-sm text-muted-foreground">

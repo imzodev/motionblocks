@@ -5,6 +5,7 @@ import { CreateProjectDialog } from "./CreateProjectDialog";
 import { ProjectList } from "./ProjectList";
 import { Button } from "@/components/ui/button";
 import { Plus, FolderOpen } from "lucide-react";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 
 interface ProjectManagerProps {
   projectService: ProjectService;
@@ -15,6 +16,7 @@ export function ProjectManager({ projectService, onProjectLoaded }: ProjectManag
   const [projects, setProjects] = useState<ProjectListItem[]>([]);
   const [selectedId, setSelectedId] = useState<string>();
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   // Load projects
@@ -61,18 +63,21 @@ export function ProjectManager({ projectService, onProjectLoaded }: ProjectManag
     }
   }, [projectService, onProjectLoaded]);
 
-  const handleDeleteProject = useCallback(async (id: string) => {
-    if (!confirm("Are you sure you want to delete this project? This action cannot be undone.")) {
-      return;
-    }
+  const handleDeleteProject = useCallback((id: string) => {
+    setDeleteId(id);
+  }, []);
+
+  const confirmDelete = useCallback(async () => {
+    if (!deleteId) return;
 
     try {
-      await projectService.delete(id);
+      await projectService.delete(deleteId);
       await loadProjects();
+      setDeleteId(null);
     } catch (error) {
       console.error("Error deleting project:", error);
     }
-  }, [projectService, loadProjects]);
+  }, [projectService, loadProjects, deleteId]);
 
   const handleDuplicateProject = useCallback(async (id: string) => {
     try {
@@ -125,6 +130,17 @@ export function ProjectManager({ projectService, onProjectLoaded }: ProjectManag
         onOpenChange={setIsCreateDialogOpen}
         projectService={projectService}
         onCreate={handleCreateProject}
+      />
+
+      {/* Delete Alert Dialog */}
+      <ConfirmDialog
+        open={!!deleteId}
+        onOpenChange={(open) => !open && setDeleteId(null)}
+        title="Are you sure?"
+        description="This action cannot be undone. This will permanently delete the project and all of its data."
+        onConfirm={confirmDelete}
+        confirmLabel="Delete Project"
+        variant="destructive"
       />
     </div>
   );
