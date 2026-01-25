@@ -1,5 +1,5 @@
 import { expect, test, describe } from "bun:test";
-import { PulseTemplate, GlowTemplate, BounceTemplate, ShakeTemplate } from "../../templates/emphasis";
+import { PulseTemplate, GlowTemplate, BounceTemplate, ShakeTemplate } from "@templates/emphasis";
 import { AnimationTemplate } from "../../types/template";
 
 describe("Emphasis Templates", () => {

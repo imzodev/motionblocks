@@ -2,7 +2,6 @@ import { z } from "zod";
 import type { AnimationTemplate, RenderProps } from "../../types/template";
 import { Text, Image as DreiImage } from "@react-three/drei";
 import * as THREE from "three";
-import type { Asset } from "../../types/timeline";
 import { HtmlImage, isGifAsset, isAsset } from "../shared";
 
 let cachedGlowTexture: THREE.Texture | null = null;

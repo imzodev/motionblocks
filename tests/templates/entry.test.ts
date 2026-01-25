@@ -1,5 +1,5 @@
 import { expect, test, describe } from "bun:test";
-import { FadeInTemplate, SlideTemplate, ScalePopTemplate } from "../../templates/entry";
+import { FadeInTemplate, SlideTemplate, ScalePopTemplate } from "@templates/entry";
 import { AnimationTemplate } from "../../types/template";
 
 describe("Entry Templates", () => {

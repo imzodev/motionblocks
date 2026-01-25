@@ -1,5 +1,5 @@
 import { expect, test, describe } from "bun:test";
-import { CounterTemplate, TimelineRevealTemplate } from "../../templates/data";
+import { CounterTemplate, TimelineRevealTemplate } from "@templates/data";
 import { AnimationTemplate } from "../../types/template";
 
 describe("Data Templates", () => {

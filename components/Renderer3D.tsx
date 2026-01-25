@@ -5,11 +5,11 @@ import type { Track, Asset } from "@/types/timeline";
 import { AnimationTemplate } from "@/types/template";
 
 // Templates Registry
-import { FadeInTemplate, SlideTemplate, ScalePopTemplate, MaskRevealTemplate } from "@/templates/entry";
-import { PulseTemplate, GlowTemplate, BounceTemplate, ShakeTemplate } from "@/templates/emphasis";
-import { CounterTemplate, TimelineRevealTemplate } from "@/templates/data";
-import { MindMapTemplate, GraphTemplate } from "@/templates/visual";
-import { HighlightTemplate, KineticTextSequenceTemplate, ChaptersTemplate, ListTemplate } from "@/templates/text";
+import { FadeInTemplate, SlideTemplate, ScalePopTemplate, MaskRevealTemplate } from "@templates/entry";
+import { PulseTemplate, GlowTemplate, BounceTemplate, ShakeTemplate } from "@templates/emphasis";
+import { CounterTemplate, TimelineRevealTemplate } from "@templates/data";
+import { MindMapTemplate, GraphTemplate } from "@templates/visual";
+import { HighlightTemplate, KineticTextSequenceTemplate, ChaptersTemplate, ListTemplate } from "@templates/text";
 
 export const TEMPLATE_REGISTRY: Record<string, AnimationTemplate> = {
   "fade-in": FadeInTemplate,

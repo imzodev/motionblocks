@@ -1,5 +1,5 @@
 import { expect, test, describe } from "bun:test";
-import { FadeInTemplate } from "../templates/mock-template";
+import { FadeInTemplate } from "@templates/mock-template";
 import type { AnimationTemplate } from "../types/template";
 
 describe("Mock Template Implementation", () => {
