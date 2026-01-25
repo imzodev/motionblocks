@@ -1,6 +1,6 @@
 import type { Asset } from "../../types/timeline";
 import type { RenderProps } from "../../types/template";
-import { isAsset } from "./shared";
+import { readTextWidth, preserveEdgeSpaces, isAsset } from "../shared";
 import type { KineticEffect } from "./kinetic-text.utils";
 
 export type KineticTextRenderModel = {

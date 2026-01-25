@@ -1,9 +1,10 @@
 import { z } from "zod";
+import { isAsset } from "../shared";
 import type { AnimationTemplate, RenderProps } from "../../types/template";
 import { Text, Image as DreiImage } from "@react-three/drei";
 import React, { useState } from "react";
 import type { Asset } from "../../types/timeline";
-import { getVideoTexture, HtmlImage, isGifAsset, preserveEdgeSpaces, readTextWidth } from "./shared";
+import { getVideoTexture, HtmlImage, isGifAsset, preserveEdgeSpaces, readTextWidth } from "../shared";
 import { CameraRig } from "./kinetic-text.camera";
 import { buildKineticTextRenderModel } from "./kinetic-text.render";
 import {

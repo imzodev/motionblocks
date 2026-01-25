@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { isAsset } from "../shared";
 import type { AnimationTemplate, RenderProps } from "../../types/template";
 import { List, type BulletType, type ListStyle } from "../../components/animations/List";
 

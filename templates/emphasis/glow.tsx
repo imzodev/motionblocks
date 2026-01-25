@@ -2,7 +2,7 @@ import { z } from "zod";
 import type { AnimationTemplate, RenderProps } from "../../types/template";
 import { Text, Image as DreiImage } from "@react-three/drei";
 import React from "react";
-import { HtmlImage, isGifAsset, isAsset } from "../text/shared";
+import { HtmlImage, isGifAsset, isAsset } from "../shared";
 
 export const GlowTemplate: AnimationTemplate = {
   id: "glow",

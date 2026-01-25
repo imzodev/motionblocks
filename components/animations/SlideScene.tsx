@@ -1,6 +1,6 @@
 import React from "react";
 import { Text, Image as DreiImage } from "@react-three/drei";
-import { HtmlImage, getVideoTexture, isGifAsset } from "../../templates/text/shared";
+import { HtmlImage, getVideoTexture, isGifAsset } from "../../templates/shared";
 import { SlideSceneProps } from "./schemas/slide";
 
 export function SlideScene({

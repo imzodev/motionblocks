@@ -2,7 +2,7 @@ import { useMemo } from "react";
 import { Text, Image as DreiImage } from "@react-three/drei";
 import { useThree } from "@react-three/fiber";
 import type { Asset } from "../../types/timeline";
-import { getVideoTexture, HtmlImage, isGifAsset } from "../../templates/text/shared";
+import { getVideoTexture, HtmlImage, isGifAsset } from "../../templates/shared";
 import { ChaptersProps, ChapterItem } from "./schemas/chapters";
 
  // --- Utils ---

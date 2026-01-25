@@ -3,7 +3,7 @@ import type { AnimationTemplate, RenderProps } from "../../types/template";
 import { Sparkles, Text, Image as DreiImage } from "@react-three/drei";
 import type { Asset } from "../../types/timeline";
 import * as THREE from "three";
-import { HtmlImage, isGifAsset } from "../text/shared";
+import { HtmlImage, isGifAsset, isAsset } from "../shared";
 
 let cachedNodeGlowTexture: THREE.Texture | null = null;
 let cachedNodeDiscTexture: THREE.Texture | null = null;
@@ -71,14 +71,7 @@ function discTexture(size: number) {
   return tex;
 }
 
-function isAsset(value: unknown): value is Asset {
-  return (
-    typeof value === "object" &&
-    value !== null &&
-    "id" in value &&
-    "type" in value
-  );
-}
+
 
 type CachedVideo = {
   el: HTMLVideoElement;

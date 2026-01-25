@@ -1,6 +1,6 @@
 import type { AnimationTemplate, RenderProps } from "../../types/template";
 import { SlideScene, SlideSchema, type SlideConfig, type SlideItem } from "../../components/animations";
-import { isAsset } from "../text/shared";
+import { isAsset } from "../shared";
 import type { Asset } from "../../types/timeline";
 
 export const SlideTemplate: AnimationTemplate = {

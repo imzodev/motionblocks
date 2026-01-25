@@ -1,6 +1,6 @@
 import type { AnimationTemplate, RenderProps } from "../../types/template";
 import { Chapters, ChaptersSchema, type ChaptersConfig } from "../../components/animations";
-import { isAsset } from "./shared";
+import { isAsset } from "../shared";
 
 export const ChaptersTemplate: AnimationTemplate = {
   id: "chapters",

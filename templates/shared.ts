@@ -1,4 +1,4 @@
-import type { Asset } from "../../types/timeline";
+import type { Asset } from "../types/timeline";
 import * as THREE from "three";
 import React from "react";
 import { Html } from "@react-three/drei";

@@ -2,7 +2,7 @@ import { z } from "zod";
 import type { AnimationTemplate, RenderProps } from "../../types/template";
 import { Text, Image as DreiImage } from "@react-three/drei";
 import React from "react";
-import { isAsset } from "../text/shared";
+import { isAsset } from "../shared";
 
 export const ScalePopTemplate: AnimationTemplate = {
   id: "scale-pop",

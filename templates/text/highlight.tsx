@@ -4,7 +4,7 @@ import { Text, Image as DreiImage } from "@react-three/drei";
 import React, { useMemo, useState, useEffect } from "react";
 import { useThree } from "@react-three/fiber";
 import type { Asset } from "../../types/timeline";
-import { getVideoTexture, HtmlImage, isAsset, isGifAsset, preserveEdgeSpaces, readTextWidth } from "./shared";
+import { getVideoTexture, HtmlImage, isAsset, isGifAsset, preserveEdgeSpaces, readTextWidth } from "../shared";
 
 function HighlightScene(props: {
   frame: number;
