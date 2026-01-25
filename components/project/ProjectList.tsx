@@ -60,6 +60,7 @@ export function ProjectList({
           className={`cursor-pointer transition-all hover:shadow-md ${
             selectedId === project.id ? "ring-2 ring-primary" : ""
           }`}
+          onClick={() => onLoadProject(project.id)}
         >
           <CardHeader className="pb-3">
             <div className="flex items-start justify-between gap-3">
