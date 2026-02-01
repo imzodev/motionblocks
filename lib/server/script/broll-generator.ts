@@ -83,7 +83,7 @@ export async function generateBRollPlan(script: VideoScript): Promise<VideoVisua
 
   const response = await provider.generateText(userPrompt, {
     systemPrompt,
-    maxTokens: 4096,
+
   });
 
 

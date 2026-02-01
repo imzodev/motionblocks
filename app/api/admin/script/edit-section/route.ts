@@ -51,7 +51,7 @@ Provide the modified text only:`;
 
     const response = await provider.generateText(userPrompt, {
       systemPrompt,
-      maxTokens: 1024,
+
     });
 
     return NextResponse.json({

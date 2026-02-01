@@ -38,7 +38,7 @@ export class GeminiProvider implements ILLMProvider {
       contents,
       config: {
         temperature: options?.temperature ?? 0.7,
-        maxOutputTokens: options?.maxTokens ?? 4096,
+        ...(options?.maxTokens && { maxOutputTokens: options.maxTokens }),
       },
     });
 
@@ -71,7 +71,7 @@ export class GeminiProvider implements ILLMProvider {
       contents,
       config: {
         temperature: options?.temperature ?? 0.7,
-        maxOutputTokens: options?.maxTokens ?? 4096,
+        ...(options?.maxTokens && { maxOutputTokens: options.maxTokens }),
       },
     });
 

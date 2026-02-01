@@ -72,8 +72,13 @@ export class OpenAIProvider implements ILLMProvider {
 
     const data = await response.json();
 
+    const content = data.choices[0]?.message?.content;
+    if (!content) {
+      console.error("OpenAI Provider - No content received. Full response:", JSON.stringify(data, null, 2));
+    }
+
     return {
-      text: data.choices[0]?.message?.content || "",
+      text: content || "",
       usage: data.usage
         ? {
             promptTokens: data.usage.prompt_tokens,
