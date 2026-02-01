@@ -57,7 +57,11 @@ export class OpenAIProvider implements ILLMProvider {
         model: this.model,
         messages,
         ...(options?.temperature !== undefined && { temperature: options.temperature }),
-        max_completion_tokens: options?.maxTokens ?? 4096,
+        ...(options?.maxTokens && (
+          this.model.startsWith("o1-") || this.model.startsWith("gpt-5-")
+            ? { max_completion_tokens: options.maxTokens }
+            : { max_tokens: options.maxTokens }
+        )),
       }),
     });
 
@@ -102,7 +106,11 @@ export class OpenAIProvider implements ILLMProvider {
         model: this.model,
         messages,
         ...(options?.temperature !== undefined && { temperature: options.temperature }),
-        max_completion_tokens: options?.maxTokens ?? 4096,
+        ...(options?.maxTokens && (
+          this.model.startsWith("o1-") || this.model.startsWith("gpt-5-")
+            ? { max_completion_tokens: options.maxTokens }
+            : { max_tokens: options.maxTokens }
+        )),
         stream: true,
       }),
     });

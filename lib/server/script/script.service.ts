@@ -112,17 +112,23 @@ export async function generateScript(
 
   const response = await provider.generateText(userPrompt, {
     systemPrompt,
-    maxTokens: 4096,
+
   });
 
   let script: VideoScript;
   try {
-    const cleanedText = response.text
-      .replace(/```json\n?/g, "")
-      .replace(/```\n?/g, "")
-      .trim();
+    const text = response.text.trim();
+    const startIndex = text.indexOf("{");
+    const endIndex = text.lastIndexOf("}");
+
+    if (startIndex === -1 || endIndex === -1) {
+      throw new Error("No JSON object found in response");
+    }
+
+    const cleanedText = text.slice(startIndex, endIndex + 1);
     script = JSON.parse(cleanedText);
   } catch (error) {
+    console.error("Failed to parse script response. Raw text:", response.text);
     throw new Error(`Failed to parse script response: ${error}`);
   }
 
