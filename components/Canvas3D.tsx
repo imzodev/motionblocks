@@ -1,11 +1,10 @@
 "use client";
 
-import React, { Suspense } from "react";
+import React, { Suspense, useState, useEffect } from "react";
 import { Canvas } from "@react-three/fiber";
 import { OrbitControls, PerspectiveCamera, Environment, ContactShadows } from "@react-three/drei";
 import { useThree } from "@react-three/fiber";
 import { cn } from "@/lib/utils";
-import { useEffect } from "react";
 
 interface Canvas3DProps {
   children?: React.ReactNode;
@@ -40,10 +39,43 @@ function CameraManager({
   return null;
 }
 
+function isWebGLAvailable(): boolean {
+  try {
+    const canvas = document.createElement("canvas");
+    return !!(
+      window.WebGLRenderingContext &&
+      (canvas.getContext("webgl") || canvas.getContext("experimental-webgl"))
+    );
+  } catch {
+    return false;
+  }
+}
+
 /**
  * Canvas3D component sets up the React Three Fiber environment.
  */
 export function Canvas3D({ children, className, onCameraSave }: Canvas3DProps) {
+  const [webglSupported, setWebglSupported] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    setWebglSupported(isWebGLAvailable());
+  }, []);
+
+  if (webglSupported === false) {
+    return (
+      <div className={cn("w-full h-full relative bg-background flex items-center justify-center", className)}>
+        <div className="text-center space-y-2 opacity-50">
+          <p className="text-foreground font-mono text-xs uppercase tracking-widest font-bold">WebGL Not Available</p>
+          <p className="text-muted-foreground font-mono text-[10px]">Enable hardware acceleration in your browser settings</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (webglSupported === null) {
+    return <div className={cn("w-full h-full relative bg-background", className)} />;
+  }
+
   return (
     <div className={cn("w-full h-full relative bg-background", className)}>
       <Canvas
